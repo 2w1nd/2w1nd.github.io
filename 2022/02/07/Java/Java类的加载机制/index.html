@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Java类的加载机制 - 浅风w1ndの博客</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="w1nd&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="w1nd&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="pratice makes perfect"><meta property="og:type" content="blog"><meta property="og:title" content="w1nd"><meta property="og:url" content="https://2w1nd.github.io/2022/02/07/Java/Java%E7%B1%BB%E7%9A%84%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/"><meta property="og:site_name" content="w1ndcode"><meta property="og:description" content="pratice makes perfect"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://gitee.com/w1nd1/pic-go-pic/raw/master/blog/image-20220207164904659.png"><meta property="og:image" content="https://gitee.com/w1nd1/pic-go-pic/raw/master/blog/image-20220207210522062.png"><meta property="og:image" content="https://gitee.com/w1nd1/pic-go-pic/raw/master/blog/image-20220207212532574.png"><meta property="article:published_time" content="2022-02-07T08:43:26.000Z"><meta property="article:modified_time" content="2022-02-07T14:06:51.148Z"><meta property="article:author" content="w1nd"><meta property="article:tag" content="JVM"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://gitee.com/w1nd1/pic-go-pic/raw/master/blog/image-20220207164904659.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://2w1nd.github.io/2022/02/07/Java/Java%E7%B1%BB%E7%9A%84%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/"},"headline":"Java类的加载机制","image":["https://gitee.com/w1nd1/pic-go-pic/raw/master/blog/image-20220207164904659.png","https://gitee.com/w1nd1/pic-go-pic/raw/master/blog/image-20220207210522062.png","https://gitee.com/w1nd1/pic-go-pic/raw/master/blog/image-20220207212532574.png"],"datePublished":"2022-02-07T08:43:26.000Z","dateModified":"2022-02-07T14:06:51.148Z","author":{"@type":"Person","name":"w1nd"},"publisher":{"@type":"Organization","name":"浅风w1ndの博客","logo":{"@type":"ImageObject","url":"https://2w1nd.github.io/img/og_image.png"}},"description":"详解Java中类的加载机制"}</script><link rel="canonical" href="https://2w1nd.github.io/2022/02/07/Java/Java%E7%B1%BB%E7%9A%84%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/"><link rel="icon" href="/img/avatar.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" defer></script><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><meta name="generator" content="Hexo 6.0.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">存档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-lightbulb" id="night-icon"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-02-07T08:43:26.000Z" title="2022-2-7 16:43:26">2022-02-07</time>发表</span><span class="level-item"><time dateTime="2022-02-07T14:06:51.148Z" title="2022-2-7 22:06:51">2022-02-07</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Java/">Java</a></span><span class="level-item">6 分钟读完 (大约852个字)</span><span class="level-item" id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv">0</span>次访问</span></div></div><h1 class="title is-3 is-size-4-mobile">Java类的加载机制</h1><div class="content"><h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1 概述"></a>1 概述</h2><p>​    首先，先看如下的Java代码执行流程图</p>
+<p><img src="https://gitee.com/w1nd1/pic-go-pic/raw/master/blog/image-20220207164904659.png" alt="image-20220207164904659"></p>
+<p>​    类的加载是指图中：字节码进入Java虚拟机后的一系列过程。具体是：虚拟机把描述类的数据<strong>从Class文件加载到内存</strong>，并对<strong>数据进行校验</strong>，<strong>转换解析</strong>和<strong>初始化</strong>，最终<strong>形成可以被虚拟机直接使用的Java类型</strong>。</p>
+<p>​    简单来说，类的加载过程（从加载到虚拟机内存到卸出）：包括了<strong>加载</strong>，<strong>验证</strong>，<strong>准备</strong>，<strong>解析</strong>，<strong>初始化</strong>，<strong>使用</strong>，<strong>卸载</strong>。</p>
+<p><img src="https://gitee.com/w1nd1/pic-go-pic/raw/master/blog/image-20220207210522062.png" alt="类的加载过程"></p>
+<p>​    其他的过程顺序都是确定的，除了<strong>解析</strong>，它在某些情况下可以在初始化阶段后开始。注意：这里的顺序指的是<strong>按顺序开始</strong>，但之后执行与完成可能不是顺序的，这些阶段通常是交叉执行的。</p>
+<h2 id="2-类的加载过程"><a href="#2-类的加载过程" class="headerlink" title="2 类的加载过程"></a>2 类的加载过程</h2><h3 id="2-1-加载"><a href="#2-1-加载" class="headerlink" title="2.1 加载"></a>2.1 加载</h3><p>​    在这一阶段，虚拟机通常需要完成三件事情：</p>
+<p>1）通过类的全限定名（包名+类名），获取到该类的<code>.class</code>文件的二进制字节流</p>
+<p>2）将这个字节流所代表的<strong>静态存储结构</strong>转化为<strong>方法区的运行时数据结构</strong></p>
+<p>3）在Java堆中生成一个代表这个类的<code>java.lang.Class</code>对象，作为方法区这些数据的访问入口</p>
+<p>简单来说，就如下图</p>
+<p><img src="https://gitee.com/w1nd1/pic-go-pic/raw/master/blog/image-20220207212532574.png" alt="加载阶段"></p>
+<p>​    下面对再稍微细说下这三阶段</p>
+<ol>
+<li><p><strong>加载二进制数据到内存</strong></p>
+<p> ​    这一阶段并没有说明从哪里获取以及怎么获取，这是交给开发人员自定义的，一般的读取方式有以下</p>
+<ul>
+<li>从ZIP包中获取，或者JAR包（很常见现在），WAR包等</li>
+<li>从网络获取，例如Applet</li>
+<li>运行时计算生成，使用动态代理技术</li>
+<li>……</li>
+</ul>
+</li>
+<li><p><strong>映射jvm能够识别的结构</strong></p>
+<p> ​    将映射后可以被虚拟机识别的格式存储在方法区中，这种数据存储格式是由虚拟机自行定义</p>
+</li>
+<li><p><strong>在内存中生成class文件</strong></p>
+<p> ​    在Java堆中实例化一个<code>java.lang.Class</code>类的对象，这个对象将作为程序访问方法区中的这些类型数据的外部接口</p>
+</li>
+</ol>
+<h3 id="2-2-验证"><a href="#2-2-验证" class="headerlink" title="2.2 验证"></a>2.2 验证</h3><p>​    该阶段是连接阶段的第一步，这是要确保前面加载进来的字节流包含的数据是否符合要求</p>
+<p>​    一般有以下四个阶段的检验过程</p>
+<ul>
+<li><p><strong>文件格式检验</strong></p>
+<p>  ​    ==字节流是否符合Class文件格式的规范，并且能被当前版本的虚拟机处理==。例如魔数开头是否正确，版本号是否在范围内，常量池是否有不支持的常量等</p>
+</li>
+<li><p><strong>元数据验证</strong></p>
+<p>  ​    </p>
+</li>
+</ul>
+<h3 id="2-3-准备"><a href="#2-3-准备" class="headerlink" title="2.3 准备"></a>2.3 准备</h3><h3 id="2-4-解析"><a href="#2-4-解析" class="headerlink" title="2.4 解析"></a>2.4 解析</h3><h3 id="2-5-初始化"><a href="#2-5-初始化" class="headerlink" title="2.5 初始化"></a>2.5 初始化</h3><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>《深入理解Java虚拟机-第3版》</p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000037574626">jvm类加载器，类加载机制详解，看这一篇就够了 - SegmentFault 思否</a></p>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903564804882445">Java类加载机制（全套） - 掘金 (juejin.cn)</a></p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>Java类的加载机制</p><p><a href="https://2w1nd.github.io/2022/02/07/Java/Java类的加载机制/">https://2w1nd.github.io/2022/02/07/Java/Java类的加载机制/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>w1nd</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-02-07</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-02-07</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/JVM/">JVM</a></div><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_telegram"></a><a class="a2a_button_whatsapp"></a><a class="a2a_button_reddit"></a></div><script src="https://static.addtoany.com/menu/page.js" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="/img/zhifubao.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="/img/wechat.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/02/06/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC279%E5%9C%BA%E5%91%A8%E8%B5%9B/"><span class="level-item">第279场周赛</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css"><script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script><script>var gitalk = new Gitalk({
+            id: "f1a325c1624e3ca833db29187f0aeede",
+            repo: "2w1nd.github.io",
+            owner: "2w1nd",
+            clientID: "86f226e9ed3278ed531f",
+            clientSecret: "650a04c534ecc65811ab5d3c679243fecd804b1a",
+            admin: ["2w1nd"],
+            createIssueManually: false,
+            distractionFreeMode: false,
+            perPage: 10,
+            pagerDirection: "last",
+            
+            
+            enableHotKey: true,
+            language: "zh-CN",
+        })
+        gitalk.render('comment-container')</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="/img/avatar.png" alt="浅风"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">浅风</p><p class="is-size-6 is-block">pratice makes perfect</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>JiangXi</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">14</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">3</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">16</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/2w1nd" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1-概述"><span class="level-left"><span class="level-item">1 概述</span></span></a></li><li><a class="level is-mobile" href="#2-类的加载过程"><span class="level-left"><span class="level-item">2 类的加载过程</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-加载"><span class="level-left"><span class="level-item">2.1 加载</span></span></a></li><li><a class="level is-mobile" href="#2-2-验证"><span class="level-left"><span class="level-item">2.2 验证</span></span></a></li><li><a class="level is-mobile" href="#2-3-准备"><span class="level-left"><span class="level-item">2.3 准备</span></span></a></li><li><a class="level is-mobile" href="#2-4-解析"><span class="level-left"><span class="level-item">2.4 解析</span></span></a></li><li><a class="level is-mobile" href="#2-5-初始化"><span class="level-left"><span class="level-item">2.5 初始化</span></span></a></li></ul></li><li><a class="level is-mobile" href="#参考"><span class="level-left"><span class="level-item">参考</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a><p class="is-size-7"><span>&copy; 2022 w1nd</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>  <a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener"></a><br><span id="busuanzi_container_site_uv">共<span id="busuanzi_value_site_uv">0</span>个访客</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><script src="/js/night.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
