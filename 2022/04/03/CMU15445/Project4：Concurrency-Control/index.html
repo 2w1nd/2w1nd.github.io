@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Project4：Concurrency Control - 浅风w1ndの博客</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="w1nd&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="w1nd&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="pratice makes perfect"><meta property="og:type" content="blog"><meta property="og:title" content="w1nd"><meta property="og:url" content="https://2w1nd.github.io/2022/04/03/CMU15445/Project4%EF%BC%9AConcurrency-Control/"><meta property="og:site_name" content="w1ndcode"><meta property="og:description" content="pratice makes perfect"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220405161057839.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220405161423834.png"><meta property="article:published_time" content="2022-04-03T08:23:48.000Z"><meta property="article:modified_time" content="2022-04-05T11:58:26.212Z"><meta property="article:author" content="w1nd"><meta property="article:tag" content="CMU15445"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220405161057839.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://2w1nd.github.io/2022/04/03/CMU15445/Project4%EF%BC%9AConcurrency-Control/"},"headline":"Project4：Concurrency Control","image":["https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220405161057839.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220405161423834.png"],"datePublished":"2022-04-03T08:23:48.000Z","dateModified":"2022-04-05T11:58:26.212Z","author":{"@type":"Person","name":"w1nd"},"publisher":{"@type":"Organization","name":"浅风w1ndの博客","logo":{"@type":"ImageObject","url":"https://2w1nd.github.io/img/og_image.png"}},"description":"有关并发控制的实现"}</script><link rel="canonical" href="https://2w1nd.github.io/2022/04/03/CMU15445/Project4%EF%BC%9AConcurrency-Control/"><link rel="icon" href="/img/avatar.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" defer></script><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><meta name="generator" content="Hexo 6.0.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">存档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-lightbulb" id="night-icon"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-04-03T08:23:48.000Z" title="2022-4-3 16:23:48">2022-04-03</time>发表</span><span class="level-item"><time dateTime="2022-04-05T11:58:26.212Z" title="2022-4-5 19:58:26">2022-04-05</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Lab/">Lab</a></span><span class="level-item">15 分钟读完 (大约2259个字)</span><span class="level-item" id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv">0</span>次访问</span></div></div><h1 class="title is-3 is-size-4-mobile">Project4：Concurrency Control</h1><div class="content"><h2 id="0-前言-amp-要求"><a href="#0-前言-amp-要求" class="headerlink" title="0 前言&amp;要求"></a>0 前言&amp;要求</h2><p>​    该部分是做一些并发控制的功能，在DBMS中实现一个<code>Lock Manager</code>，使用其来支持并发执行。锁管理器负责跟踪向事务发出的行级锁，并支持根据隔离级别适当的加上或释放共享锁或排他锁。    </p>
+<p>​    LM的基本思想是：维护一个关于活动事务当前持有的锁的内部数据结构，然后事务在访问数据项之前向LM发出锁请求，LM将根据情况决定锁授予该事务、阻止该事务还是终止该事务。在<code>Task1</code>中就要实现LM中的相关API</p>
+<ol>
+<li><code>LockShared(Transaction, RID)</code>：<code>Transaction txn</code>试图对记录<code>id RID</code>获取一个共享锁。这应该在等待时被阻塞，并且应该在授予时返回<code>true</code>。如果事务回滚(中止)则返回false。</li>
+<li><code>LockExclusive(Transaction, RID)</code>：<code>Transaction txn</code>图对记录<code>id RID</code>进行排他锁。这应该在等待时被阻塞，并且应该在授予时返回<code>true</code>。如果事务回滚(中止)则返回false。</li>
+<li><code>LockUpgrade(Transaction, RID)</code>：<code>Transaction txn</code>试图在记录<code>id RID</code>上将共享锁升级为排他锁。这应该在等待时被阻塞，并且应该在授予时返回<code>true</code>。如果事务回滚(中止)则返回<code>false</code>。这还应该中止事务，如果另一个事务已经在等待升级其锁，则返回<code>false</code>。</li>
+<li><code>Unlock(Transaction, RID)</code>：解锁由事务持有的给定记录<code>id</code>标识的记录。</li>
+</ol>
+<p>​    在设计时，还需要考虑隔离级别<code>READ_UNCOMMITED</code>，<code>READ_COMMITTED</code>和<code>REPEATABLE_READ</code>。LM将根据事务隔离级别来授予或释放锁。</p>
+<p>​    <code>Task2</code>是说实现的锁要注意进行死锁预防，使用<code>WOUND-WAIT</code>算法来决定中止哪些事务。</p>
+<p>​    <code>Task3</code>也就是将实现好的LM应用到Lab3中Executor里，以此增加对并发查询的支持。</p>
+<h2 id="1-实验分析"><a href="#1-实验分析" class="headerlink" title="1 实验分析"></a>1 实验分析</h2><h3 id="1-1-数据结构"><a href="#1-1-数据结构" class="headerlink" title="1.1 数据结构"></a>1.1 数据结构</h3><p>​    <code>Lock_Manager</code>中有一个<code>lock_table_</code>哈希表，它的类型为<code>std::unordered_map&lt;RID, LockRequestQueue&gt;</code>。其中，又包含了<code>LockRequestQueue</code>和<code>LockRequest</code>。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LockRequest</span> &#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">LockRequest</span>(<span class="keyword">txn_id_t</span> txn_id, LockMode lock_mode) : <span class="built_in">txn_id_</span>(txn_id), <span class="built_in">lock_mode_</span>(lock_mode), <span class="built_in">granted_</span>(<span class="literal">false</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">txn_id_t</span> txn_id_;</span><br><span class="line">    LockMode lock_mode_;</span><br><span class="line">    <span class="keyword">bool</span> granted_;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LockRequestQueue</span> &#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    std::list&lt;LockRequest&gt; request_queue_;</span><br><span class="line">    std::condition_variable cv_;</span><br><span class="line">    <span class="keyword">txn_id_t</span> upgrading_ = INVALID_TXN_ID;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​    表示了，对于每个RID（也就是每个tuple），都有一个请求队列<code>LockReuqestQueue</code>，其中有一个<code>list&lt;LockRequest&gt; request_queue_;</code>来存储当前对该tuple的锁请求事务，<code>LockRequest</code>也就是用于描述该事务的id，锁类型，是否授予信息的。</p>
+<p>​                                                                <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220405161057839.png" alt="请求队列">        </p>
+<p>​        在《数据库系统概念》中有关锁管理器的算法。</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220405161423834.png" alt="锁管理器算法"></p>
+<h3 id="1-2-死锁预防"><a href="#1-2-死锁预防" class="headerlink" title="1.2 死锁预防"></a>1.2 死锁预防</h3><p>​    <code>wound-wait</code>通过使用抢占与事务回滚来实现死锁预防。当事务$T_i$申请的数据项被$T_j$所持有，当$T_i$的时间戳大于$T_j$的时间戳时（$T_i$比$T_j$年轻），允许$T_i$等待。否则，$T_j$回滚（$T_j$被$T_i$伤害）。</p>
+<h3 id="1-3-2PL"><a href="#1-3-2PL" class="headerlink" title="1.3 2PL"></a>1.3 2PL</h3><p>​    实验建议使用严格两阶段封锁协议来实现某些隔离级别，也就是整个事务分为两个阶段，前一个阶段为加锁（GROWING），后一个阶段为解锁（SHINKING）。在加锁阶段，事务只能加锁，也可以操作数据，但不能解锁，直到事务释放第一个锁，就进入解锁阶段，此过程中事务只能解锁，也可以操作数据，不能再加锁。</p>
+<h3 id="1-4-隔离级别"><a href="#1-4-隔离级别" class="headerlink" title="1.4 隔离级别"></a>1.4 隔离级别</h3><p>​    实验需要支持三种隔离级别：</p>
+<ol>
+<li><code>READ_UNCOMMITED</code>：读未提交，这种在需要时加写锁即可，因为允许脏读的发生，读锁不需要加</li>
+<li><code>READ_COMMITED</code>：读已提交，这要解决脏读的问题，解决方案就是读时上读锁，读完解读锁；写时上写锁，但等到commit时才解写锁；读时上读锁，读完解读锁。这样，永远不会读到未commit的数据，因为上面有写锁。</li>
+<li><code>REPEATABLE_READ</code>：可重复读，这需要解决不可重复读的问题了。也就是一个事务在读两次数据不会被其他事务的写干扰，这里需要用到二阶段封锁协议（2PL）。这样，第二次读取时，前一次的读锁还在，避免了中途被修改</li>
+</ol>
+<h2 id="2-实验过程"><a href="#2-实验过程" class="headerlink" title="2 实验过程"></a>2 实验过程</h2><h3 id="2-1-LockShare（共享锁）"><a href="#2-1-LockShare（共享锁）" class="headerlink" title="2.1 LockShare（共享锁）"></a>2.1 LockShare（共享锁）</h3><p>​    首先检查<code>txn</code>是不是<code>aborted</code>，是则返回<code>false</code>；</p>
+<p>​    然后检查<code>txn</code>的隔离级别，如果是<code>READ_UNCOMMIED</code>，是不需要共享锁的，将事务状态设置为<code>ABORTED</code>，返回<code>false</code></p>
+<p>​    检查<code>txn</code>的状态是否是<code>shrinking</code>。根据2PL的性质，该状态下不能申请锁，设置事务状态为<code>ABORTED</code>，返回<code>false</code></p>
+<p>​    判断该事务是否为该tuple加锁过，如果加锁过，返回<code>true</code></p>
+<p>​    然后遍历锁请求队列<code>lock_table[rid].request_queue</code>，如果当前事务（<code>txn</code>）为老事务并且占用独占锁的为新事务，则将新事务（遍历到的事务）abort掉；</p>
+<p>如果当前事务为新事务，老事务为独占锁，则等待，但也要向队列中插入该事务以及<code>sharedlockset</code>中进行标记，然后发出等待信号。</p>
+<p>​    如果遍历过程没有出现以上情况，说明锁队列为空或占用锁队列的均为共享锁，将当前事务状态设置为<code>GROWING</code>并且向队列添加事务即可。</p>
+<h3 id="2-2-LockExeclusive（排他锁）"><a href="#2-2-LockExeclusive（排他锁）" class="headerlink" title="2.2 LockExeclusive（排他锁）"></a>2.2 LockExeclusive（排他锁）</h3><p>​    与共享锁流程大同小异。要注意，如果是shrinking，根据2PL，不能继续申请锁，并且要在可重复读的隔离级别下。</p>
+<p>​    而且，既然是获取排他锁，那么其和其他锁都是不相容的，也就是说，要求该次请求必须为第一个请求，锁才能授予。那么在遍历队列时，如果当前事务为新事务，则要直接<code>abort</code>。</p>
+<h3 id="2-3-LockUpgrade（锁升级）"><a href="#2-3-LockUpgrade（锁升级）" class="headerlink" title="2.3 LockUpgrade（锁升级）"></a>2.3 LockUpgrade（锁升级）</h3><p>​    同样的，但锁升级需要判断该锁是否已经授予，如果已经授予，则返回false即可。否，则标记正在上锁。</p>
+<p>​    遍历队列，如果当前事务为老事务，则<code>abort</code>掉新事务的排他锁；当前事务为新事务，则进行等待。</p>
+<p>​    否则，进行锁升级，取出对头元素，设置为排他锁。</p>
+<h3 id="2-4-UnLock（解锁）"><a href="#2-4-UnLock（解锁）" class="headerlink" title="2.4 UnLock（解锁）"></a>2.4 UnLock（解锁）</h3><p>​    比较简单，遍历锁队列时，找到该事务，将该事务解锁（从队列中删除），再notify所有在该队列中睡眠的事务，因为这种情况下可能会有多个事务都获得锁。然后记得从事务对应的LockSet中删除该RID。还需要记得将事务状态设置为<code>shrinking</code>（<code>repeatable read</code>如果unlock是要shirnking的，<code>read commited</code>如果unlock的是sharelock则不用）。</p>
+<h3 id="2-5-并发执行器"><a href="#2-5-并发执行器" class="headerlink" title="2.5 并发执行器"></a>2.5 并发执行器</h3><p>​    这个部分是增加对并发query execution的支持。</p>
+<p><strong>seq_scan_executor</strong></p>
+<p>​    该executor就是在渎之前要加读锁，并且要注意未提交读情况不需要加锁。并且在<code>Next</code>结尾，如果隔离级别为<code>READ_COMMITED</code>，则直接释放该锁</p>
+<p><strong>update_executor</strong></p>
+<p>​    更新则要加锁独占锁，如果该锁已经被读锁占用，则进行升级锁，否则，加上独占锁。同样，提交读才需要解锁</p>
+<p>​    这里要记得记录事务变更</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">IndexWriteRecord <span class="title">write_record</span><span class="params">(tuple_rid, table_info_-&gt;oid_, WType::DELETE, new_tuple, index-&gt;index_oid_,</span></span></span><br><span class="line"><span class="params"><span class="function">                              exec_ctx_-&gt;GetCatalog())</span></span>;</span><br><span class="line">write_record.old_tuple_ = old_tuple;</span><br><span class="line">txn-&gt;<span class="built_in">GetIndexWriteSet</span>()-&gt;<span class="built_in">emplace_back</span>(write_record);</span><br></pre></td></tr></table></figure>
+
+<p><strong>insert_executor</strong></p>
+<p>​    和更新一样</p>
+<p><strong>delete_executor</strong></p>
+<p>​    同上= =</p>
+<h2 id="3-总结"><a href="#3-总结" class="headerlink" title="3 总结"></a>3 总结</h2><p>​    这部分是实现一个锁管理器，用来支持事务的并发执行。使用2PL来控制事务的并发，使用<code>wound-wait</code>策略来避免死锁，考虑了三种隔离级别。感觉难度还行，在实现时考虑的因素没有lab2要多，但很多细节需要注意就是。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://tech.meituan.com/2014/08/20/innodb-lock.html">Innodb中的事务隔离级别和锁的关系 - 美团技术团队 (meituan.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/420140287">15445-lab4：concurrency_control - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zszmhd/p/3365220.html">两阶段锁协议 - 使命召唤 - 博客园 (cnblogs.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.epis2048.net/2021/15445-lab4/">CMU-15445-BusTub 笔记 - Lab 4: Concurrency Control | 吃着土豆坐地铁的博客 (epis2048.net)</a></p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>Project4：Concurrency Control</p><p><a href="https://2w1nd.github.io/2022/04/03/CMU15445/Project4：Concurrency-Control/">https://2w1nd.github.io/2022/04/03/CMU15445/Project4：Concurrency-Control/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>w1nd</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-04-03</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-04-05</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/CMU15445/">CMU15445</a></div><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_telegram"></a><a class="a2a_button_whatsapp"></a><a class="a2a_button_reddit"></a></div><script src="https://static.addtoany.com/menu/page.js" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="/img/zhifubao.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="/img/wechat.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/04/03/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC75%E5%9C%BA%E5%8F%8C%E5%91%A8%E8%B5%9B/"><span class="level-item">第75场双周赛</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css"><script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script><script>var gitalk = new Gitalk({
+            id: "d0187cecc014768d3429ab7dfab95a1f",
+            repo: "2w1nd.github.io",
+            owner: "2w1nd",
+            clientID: "86f226e9ed3278ed531f",
+            clientSecret: "650a04c534ecc65811ab5d3c679243fecd804b1a",
+            admin: ["2w1nd"],
+            createIssueManually: false,
+            distractionFreeMode: false,
+            perPage: 10,
+            pagerDirection: "last",
+            
+            
+            enableHotKey: true,
+            language: "zh-CN",
+        })
+        gitalk.render('comment-container')</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="/img/avatar.png" alt="浅风"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">浅风</p><p class="is-size-6 is-block">pratice makes perfect</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>JiangXi</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">61</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">13</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">36</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/2w1nd" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#0-前言-amp-要求"><span class="level-left"><span class="level-item">0 前言&amp;要求</span></span></a></li><li><a class="level is-mobile" href="#1-实验分析"><span class="level-left"><span class="level-item">1 实验分析</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-1-数据结构"><span class="level-left"><span class="level-item">1.1 数据结构</span></span></a></li><li><a class="level is-mobile" href="#1-2-死锁预防"><span class="level-left"><span class="level-item">1.2 死锁预防</span></span></a></li><li><a class="level is-mobile" href="#1-3-2PL"><span class="level-left"><span class="level-item">1.3 2PL</span></span></a></li><li><a class="level is-mobile" href="#1-4-隔离级别"><span class="level-left"><span class="level-item">1.4 隔离级别</span></span></a></li></ul></li><li><a class="level is-mobile" href="#2-实验过程"><span class="level-left"><span class="level-item">2 实验过程</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-LockShare（共享锁）"><span class="level-left"><span class="level-item">2.1 LockShare（共享锁）</span></span></a></li><li><a class="level is-mobile" href="#2-2-LockExeclusive（排他锁）"><span class="level-left"><span class="level-item">2.2 LockExeclusive（排他锁）</span></span></a></li><li><a class="level is-mobile" href="#2-3-LockUpgrade（锁升级）"><span class="level-left"><span class="level-item">2.3 LockUpgrade（锁升级）</span></span></a></li><li><a class="level is-mobile" href="#2-4-UnLock（解锁）"><span class="level-left"><span class="level-item">2.4 UnLock（解锁）</span></span></a></li><li><a class="level is-mobile" href="#2-5-并发执行器"><span class="level-left"><span class="level-item">2.5 并发执行器</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-总结"><span class="level-left"><span class="level-item">3 总结</span></span></a></li><li><a class="level is-mobile" href="#参考"><span class="level-left"><span class="level-item">参考</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a><p class="is-size-7"><span>&copy; 2022 w1nd</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>  <a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener"></a><br><span id="busuanzi_container_site_uv">共<span id="busuanzi_value_site_uv">0</span>个访客</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><script src="/js/night.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
