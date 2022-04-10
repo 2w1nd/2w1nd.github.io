@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>CMU15445：Index Concurrency Control - 浅风w1ndの博客</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="w1nd&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="w1nd&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="pratice makes perfect"><meta property="og:type" content="blog"><meta property="og:title" content="w1nd"><meta property="og:url" content="https://2w1nd.github.io/note/CMU15445/CMU15445%EF%BC%9AIndex-Concurrency-Control.html"><meta property="og:site_name" content="w1ndcode"><meta property="og:description" content="pratice makes perfect"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://2w1nd.github.io/img/og_image.png"><meta property="article:published_time" content="2022-03-27T06:10:52.000Z"><meta property="article:modified_time" content="2022-03-31T13:25:58.750Z"><meta property="article:author" content="w1nd"><meta property="article:tag" content="CMU15445"><meta property="article:tag" content="课件"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://2w1nd.github.io/note/CMU15445/CMU15445%EF%BC%9AIndex-Concurrency-Control.html"},"headline":"CMU15445：Index Concurrency Control","image":["https://2w1nd.github.io/img/og_image.png"],"datePublished":"2022-03-27T06:10:52.000Z","dateModified":"2022-03-31T13:25:58.750Z","author":{"@type":"Person","name":"w1nd"},"publisher":{"@type":"Organization","name":"浅风w1ndの博客","logo":{"@type":"ImageObject","url":"https://2w1nd.github.io/img/og_image.png"}},"description":"有关索引并发控制的分析说明"}</script><link rel="canonical" href="https://2w1nd.github.io/note/CMU15445/CMU15445%EF%BC%9AIndex-Concurrency-Control.html"><link rel="icon" href="/img/avatar.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" defer></script><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><meta name="generator" content="Hexo 6.0.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">存档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-lightbulb" id="night-icon"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><h1 class="title is-3 is-size-4-mobile">CMU15445：Index Concurrency Control</h1><div class="content"><h2 id="1-索引并发控制"><a href="#1-索引并发控制" class="headerlink" title="1 索引并发控制"></a>1 索引并发控制</h2><p>​    并发控制协议是DBMS用来确保对共享对象进行并发操作的 “正确 “结果的方法。</p>
+<p>​    协议的正确性标准可能会有所不同：</p>
+<ul>
+<li><strong>逻辑正确性</strong>：这意味着线程能够读取它应该期望读取的值，例如一个线程应该读回它之前写入的值</li>
+<li><strong>物理正确性</strong>：这意味着对象的内部表示是合理的，例如数据结构中没有指针会导致线程读取无效的内存位置。</li>
+</ul>
+<p>​    索引的逻辑内容是我们这堂课唯一关心的事情。它们与其他数据库元素不太一样，因此我们可以区别对待它们</p>
+<h2 id="2-Locks-vs-Latches"><a href="#2-Locks-vs-Latches" class="headerlink" title="2 Locks vs. Latches"></a>2 Locks vs. Latches</h2><p>​    在讨论DBMS如何保护其内部元素时，lock和latch之间有一个重要的区别。</p>
+<h3 id="Locks"><a href="#Locks" class="headerlink" title="Locks"></a>Locks</h3><p>​    <code>Lock</code>是一种更高级别的逻辑原语，用于保护数据库（例如元组、表、数据库）的内容免受其他事务的影响。事务将在其整个持续时间内保持锁定。数据库系统可以向用户公开在查询运行时持有的锁。锁需要能够回滚更改。</p>
+<h3 id="Latch"><a href="#Latch" class="headerlink" title="Latch"></a>Latch</h3><p>​    <code>Latch</code>是用于其他线程的 <strong>DBMS 内部数据结构</strong>（例如，数据结构、内存区域）的关键部分的低级保护原语。Latch仅在操作期间保持。锁存器不需要能够回滚更改。Latch有两种模式：</p>
+<ul>
+<li><code>read</code>：允许多个线程同时读取同一个项目。一个线程可以获得<code>read Latch</code>，即使另一个线程也已经获得了它</li>
+<li><code>Write</code>：只允许一个线程访问该项目。如果另一个线程在任何模式下持有一个<code>write latch</code>，一个线程就不能获得该<code>latch</code>。一个持有写锁存器的线程也会阻止其他线程获取读锁存器。</li>
+</ul>
+<h2 id="3-Latch实现"><a href="#3-Latch实现" class="headerlink" title="3 Latch实现"></a>3 Latch实现</h2><p>​    用于实现锁存器的基本原理是通过现代CPU提供的<strong>原子比较和交换</strong>（CAS）指令。有了它，线程可以检查内存位置的内容，看看它是否有特定的值。如果是这样，那么CPU将用一个新的值来交换旧的值。否则，该内存位置将保持不被修改。</p>
+<p>​    在DBMS中实现<code>Latch</code>有几种方法。每种方法在工程复杂性和运行时性能方面都有不同的权衡。这些测试和设置步骤是以原子方式进行的（也就是说，在测试和设置步骤之间没有其他线程可以更新值。</p>
+<h3 id="3-1-Blocking-OS-Mutex"><a href="#3-1-Blocking-OS-Mutex" class="headerlink" title="3.1 Blocking OS Mutex"></a>3.1 Blocking OS Mutex</h3><p>​    <code>Latch</code>的一种可能实现是操作系统内置的互斥体基础设施。 Linux 提供了 <code>futex</code>（快速用户空间互斥锁），它由 (1) **用户空间中的自旋<code>Latch</code>**和 (2) <strong>操作系统级互斥锁</strong>组成。如果 DBMS 可以获取用户空间锁存器，则设置锁存器。尽管它包含两个内部锁存器，但它对 DBMS 显示为单个锁存器。如果 DBMS 无法获取用户空间锁存器，那么它会进入内核并尝试获取更昂贵的互斥锁。如果 DBMS 未能获取第二个互斥锁，则线程通知操作系统它在互斥锁上被阻塞，然后取消调度。</p>
+<p>​    操作系统互斥锁在 DBMS 内部通常是一个坏主意，因为它由操作系统管理并且开销很大</p>
+<ul>
+<li>示例：<code>std::mutex</code></li>
+<li>优点：使用简单，无需在 DBMS 中进行额外编码</li>
+<li>缺点：由于操作系统调度，成本高且不可扩展（每次锁定/解锁调用大约 25 ns）</li>
+</ul>
+<h3 id="3-2-Test-and-Set-Spin-自旋-Latch-TAS"><a href="#3-2-Test-and-Set-Spin-自旋-Latch-TAS" class="headerlink" title="3.2 Test-and-Set Spin(自旋) Latch (TAS)"></a>3.2 Test-and-Set Spin(自旋) Latch (TAS)</h3><p>​    自旋<code>Latch</code>是操作系统互斥锁的更有效替代方案，因为它由 DBMS 控制。自旋锁存器本质上是内存中线程尝试更新的位置（例如，将布尔值设置为 true）。一个线程执行CAS，试图更新内存位置。DBMS可以控制如果它不能得到锁存器会发生什么。它可以选择再次尝试（例如，使用一个while循环）或者允许操作系统取消调度。因此，这种方法给了DBMS更多的控制权，而不是操作系统的mutex，在这种情况下，如果无法获得锁存器，就会把控制权交给操作系统</p>
+<ul>
+<li>示例：<code>std::atomic&lt;T&gt;</code></li>
+<li>优点：latch/unlatch 操作效率高（单条指令锁定/解锁）</li>
+<li>缺点：不可扩展也不对缓存友好，因为多线程，CAS指令将在不同线程中执行多次。这些浪费的指令会在高竞争环境中堆积起来；尽管线程没有做有用的工作，但它们对操作系统来说看起来很忙。这会导致缓存一致性问题，因为线程正在轮询其他 CPU 上的缓存行</li>
+</ul>
+<h3 id="3-3-Reader-Writer-Latches"><a href="#3-3-Reader-Writer-Latches" class="headerlink" title="3.3 Reader-Writer Latches"></a>3.3 Reader-Writer Latches</h3><p>​    <code>Mutexes</code>和<code>Spin Latches</code>不区分读/写（即，它们不支持不同的模式）。DBMS需要一种允许并发读取的方法，所以如果应用程序有大量的读取，它将有更好的性能，因为读者可以共享资源，而不是等待。</p>
+<p>​    <code>Reader-Writer Latch </code>允许将锁存器保持在读取或写入模式。它跟踪有多少线程持有锁存器并在每种模式下等待获取锁存器。读写器锁存器使用前两种锁存器实现之一作为原语，并具有处理读写器队列的附加逻辑，这是每种模式下对锁存器的队列请求。不同的 DBMS 可以有不同的策略来处理队列。</p>
+<ul>
+<li>优点：允许并发读</li>
+<li>缺点：DBMS 必须管理读/写队列以避免饥饿。由于额外的元数据，存储开销比自旋锁存器更大。</li>
+</ul>
+<h2 id="4-Hash-Table-Latching"><a href="#4-Hash-Table-Latching" class="headerlink" title="4 Hash Table Latching"></a>4 Hash Table Latching</h2><p>​    由于线程访问数据结构的方式有限，因此在静态哈希表中支持并发访问很容易。例如，当从槽移动到下一个（即自上而下）时，所有线程都以相同的方向移动。线程每次也只访问一个页面/插槽。因此，在这种情况下，死锁是不可能的，因为没有两个线程可以争夺对方持有的锁存器。当我们需要调整表的大小时，我们可以直接在整个表上取一个全局锁存器来执行操作。</p>
+<p>​    动态散列方案（例如<code>extendible</code>）中的<code>Latching</code>是一个更复杂的方案，因为有更多共享状态要更新，但一般方法是相同的。</p>
+<p>​    有两种方法来支持哈希表的<code>Latch</code>，它们在<code>Latch</code>的粒度上有所不同：</p>
+<ul>
+<li><code>Page Latches</code>：每个页面都有自己的读写器<code>Latch</code>，用于保护其全部内容。线程在访问页面之前获取读或写<code>Latch</code>。这会降低并行性，因为一次可能只有一个线程可以访问一个页面，但是访问一个页面中的多个插槽对于单个线程来说会很快，因为它只需要获取一个<code>Latch</code></li>
+<li><code>Slot Latches</code>：每个<code>Slot</code>都有自己的<code>Latch</code>。这增加了并行性，因为两个线程可以访问同一页面上的不同槽。但它增加了访问表的存储和计算开销，因为线程必须为它们访问的每个槽获取一个<code>Latch</code>，每个槽必须为<code>Latch</code>存储数据。DBMS可以使用单模式<code>Latch</code>（即旋转锁存器）来减少元数据和计算开销，其代价是一些并行性</li>
+</ul>
+<p>​    也可以使用比较和交换 (<code>CAS</code>) 指令直接创建无锁存线性探测哈希表。可以通过尝试将一个特殊的“空”值与我们希望插入的元组进行比较和交换来实现在插槽中的插入。如果失败，我们可以探测下一个<code>Slot</code>，继续直到它成功。</p>
+<h2 id="5-B-Tree-Latching"><a href="#5-B-Tree-Latching" class="headerlink" title="5 B+Tree Latching"></a>5 B+Tree Latching</h2><p>​    <code>B+Tree Latching</code>的挑战在于防止以下两个问题：</p>
+<ul>
+<li>试图同时修改节点内容的线程。</li>
+<li>一个线程遍历树，而另一个线程拆分/合并结点</li>
+</ul>
+<p>​    <code>Latch Crabbing/Coupling</code>是一种允许多个线程同时访问/修改 B+Tree 的协议。基本思路如下</p>
+<ol>
+<li>获取父级的<code>latch</code></li>
+<li>为孩子获取<code>latch</code></li>
+<li>如果认为“safe”，则为父级释放<code>latch</code>。 “safe”节点是不会拆分（插入时未满）或更新时合并（删除时超过一半）的节点</li>
+</ol>
+<p><strong>基本的<code>Latch</code>协议</strong>：</p>
+<ul>
+<li>搜索：从根开始往下，反复获取孩子的<code>Latch</code>，然后解锁父母</li>
+<li>插入/删除：从根开始往下走，根据需要获取 X 个<code>Latch</code>。一旦孩子被锁住，检查它是否安全。如果孩子是安全的，释放所有祖先的<code>Latch</code></li>
+</ul>
+<p>​    请注意，读<code>Latch</code>不需要担心“安全”条件。 “安全”的概念还取决于操作是插入还是删除。一个完整的节点对于删除是“安全的”，因为不需要合并，但对于插入来说不是“安全”的，因为我们可能需要拆分节点。</p>
+<p>​    从正确性的角度来看，释放锁存器的顺序并不重要。然而，从性能的角度来看，最好是释放树中较高的<code>Latch</code>，因为它们阻止了对较大部分叶节点的访问。</p>
+<p><strong>改进的 Latch Crabbing 协议</strong>：</p>
+<p>​    基本<code>Latch Crabbing</code>算法的问题是，每次插入/删除操作时，事务总是在根上获得一个独占<code>Latch</code>。这限制了并行性。相反，我们可以假设必须调整大小（即分割/合并节点）的情况很少，因此事务可以获得共享<code>Latch</code>，直到叶子节点。每个事务都会假设通往目标叶子节点的路径是安全的，并使用<code>READ latches</code>和<code>crabbing</code>来达到它并进行验证。如果叶子节点不安全，那么我们就放弃，并执行之前的算法，即我们获取WRITE锁存器。</p>
+<ul>
+<li>搜索：与以前相同的算法</li>
+<li>插入/删除：将 READ 锁存器设置为搜索，转到叶子，并在叶子上设置 WRITE 锁存器。如果叶子不安全，则释放所有先前的锁存器，并使用先前的插入/删除协议重新启动事务</li>
+</ul>
+<p><strong>叶节点扫描</strong></p>
+<p>​    这些协议中的线程以 “自上而下 “的方式获取<code>Latch</code>。这意味着一个线程只能从其当前节点以下的节点获取<code>Latch</code>。如果想要的<code>Latch</code>不可用，线程必须等待，直到它变得可用。鉴于此，不可能出现死锁。</p>
+<p>​    叶节点扫描很容易出现死锁，因为现在我们有线程试图同时在两个不同的方向（即从左到右和从右到左）获取锁。索引锁存器不支持死锁检测或避免。</p>
+<p>​    因此，程序员处理这个问题的唯一方法是通过编码纪律。叶子节点兄弟姐妹的锁存器获取协议必须支持 “无等待 “模式。也就是说，<code>B+ tree</code>代码必须应对锁存器获取失败的问题。这意味着，如果一个线程试图获取叶子节点上的锁存器，但该锁存器不可用，那么它将立即中止其操作（释放其持有的任何锁存器），然后重新启动操作。</p>
+<p>​    </p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>CMU15445：Index Concurrency Control</p><p><a href="https://2w1nd.github.io/note/CMU15445/CMU15445：Index-Concurrency-Control.html">https://2w1nd.github.io/note/CMU15445/CMU15445：Index-Concurrency-Control.html</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>w1nd</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-03-27</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-03-31</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/"></a><a class="link-muted mr-2" rel="tag" href="/"></a></div><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_telegram"></a><a class="a2a_button_whatsapp"></a><a class="a2a_button_reddit"></a></div><script src="https://static.addtoany.com/menu/page.js" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="/img/zhifubao.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="/img/wechat.jpg" alt="微信"></span></a></div></div></div><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css"><script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script><script>var gitalk = new Gitalk({
+            id: "7ad92a276834325c169f29b3e4939535",
+            repo: "2w1nd.github.io",
+            owner: "2w1nd",
+            clientID: "86f226e9ed3278ed531f",
+            clientSecret: "650a04c534ecc65811ab5d3c679243fecd804b1a",
+            admin: ["2w1nd"],
+            createIssueManually: false,
+            distractionFreeMode: false,
+            perPage: 15,
+            pagerDirection: "last",
+            
+            
+            enableHotKey: true,
+            language: "zh-CN",
+        })
+        gitalk.render('comment-container')</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="/img/avatar.png" alt="浅风"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">浅风</p><p class="is-size-6 is-block">pratice makes perfect</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>JiangXi</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">61</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">13</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">36</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/2w1nd" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1-索引并发控制"><span class="level-left"><span class="level-item">1 索引并发控制</span></span></a></li><li><a class="level is-mobile" href="#2-Locks-vs-Latches"><span class="level-left"><span class="level-item">2 Locks vs. Latches</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#Locks"><span class="level-left"><span class="level-item">Locks</span></span></a></li><li><a class="level is-mobile" href="#Latch"><span class="level-left"><span class="level-item">Latch</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-Latch实现"><span class="level-left"><span class="level-item">3 Latch实现</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#3-1-Blocking-OS-Mutex"><span class="level-left"><span class="level-item">3.1 Blocking OS Mutex</span></span></a></li><li><a class="level is-mobile" href="#3-2-Test-and-Set-Spin-自旋-Latch-TAS"><span class="level-left"><span class="level-item">3.2 Test-and-Set Spin(自旋) Latch (TAS)</span></span></a></li><li><a class="level is-mobile" href="#3-3-Reader-Writer-Latches"><span class="level-left"><span class="level-item">3.3 Reader-Writer Latches</span></span></a></li></ul></li><li><a class="level is-mobile" href="#4-Hash-Table-Latching"><span class="level-left"><span class="level-item">4 Hash Table Latching</span></span></a></li><li><a class="level is-mobile" href="#5-B-Tree-Latching"><span class="level-left"><span class="level-item">5 B+Tree Latching</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a><p class="is-size-7"><span>&copy; 2022 w1nd</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>  <a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener"></a><br><span id="busuanzi_container_site_uv">共<span id="busuanzi_value_site_uv">0</span>个访客</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><script src="/js/night.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>

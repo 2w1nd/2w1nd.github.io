@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>执行计划与调优 - 浅风w1ndの博客</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="w1nd&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="w1nd&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="pratice makes perfect"><meta property="og:type" content="blog"><meta property="og:title" content="w1nd"><meta property="og:url" content="https://2w1nd.github.io/note/CMU15445/CMU15545%EF%BC%9A%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E4%B8%8E%E8%B0%83%E4%BC%98.html"><meta property="og:site_name" content="w1ndcode"><meta property="og:description" content="pratice makes perfect"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401195930527.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200052221.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200348481.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200502755.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200620309.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200732631.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200837847.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200910390.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201547015.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201602962.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201620173.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201854024.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201927456.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401202034936.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401202206362.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401202304595.png"><meta property="article:published_time" content="2022-04-01T11:55:36.000Z"><meta property="article:modified_time" content="2022-04-01T12:23:11.357Z"><meta property="article:author" content="w1nd"><meta property="article:tag" content="CMU15445"><meta property="article:tag" content="课件"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401195930527.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://2w1nd.github.io/note/CMU15445/CMU15545%EF%BC%9A%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E4%B8%8E%E8%B0%83%E4%BC%98.html"},"headline":"执行计划与调优","image":["https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401195930527.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200052221.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200348481.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200502755.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200620309.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200732631.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200837847.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200910390.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201547015.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201602962.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201620173.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201854024.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201927456.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401202034936.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401202206362.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401202304595.png"],"datePublished":"2022-04-01T11:55:36.000Z","dateModified":"2022-04-01T12:23:11.357Z","author":{"@type":"Person","name":"w1nd"},"publisher":{"@type":"Organization","name":"浅风w1ndの博客","logo":{"@type":"ImageObject","url":"https://2w1nd.github.io/img/og_image.png"}},"description":"关于数据库 执行计划与调优的基本介绍"}</script><link rel="canonical" href="https://2w1nd.github.io/note/CMU15445/CMU15545%EF%BC%9A%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%E4%B8%8E%E8%B0%83%E4%BC%98.html"><link rel="icon" href="/img/avatar.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" defer></script><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><meta name="generator" content="Hexo 6.0.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">存档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-lightbulb" id="night-icon"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><h1 class="title is-3 is-size-4-mobile">执行计划与调优</h1><div class="content"><h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h2><p>​    因为 SQL 是<strong>声明性</strong>的，所以查询只告诉 DBMS 要计算什么，而不是如何计算它。因此，DBMS 需要将 SQL 语句转换为可执行的查询计划。但是在查询计划中执行每个运算符有不同的方法（例如，连接算法），并且这些计划之间的性能会有所不同。 DBMS 优化器的工作是为任何给定查询选择最佳计划。</p>
+<p>​    询优化器的第一个实现是 IBM System R，设计于 1970 年代。在此之前，人们不相信 DBMS 可以比人类更好地构建查询计划。 System R 优化器的许多概念和设计决策至今仍在使用。</p>
+<p>​    查询优化有两种高级策略</p>
+<p>​    第一种方法是使用静态规则，或<strong>启发式方法</strong>。启发式方法将查询的部分内容与已知的模式相匹配，以组成一个计划。这些规则改变了查询，以消除低效率。尽管这些规则可能需要查阅目录以了解数据的结构，但它们从来不需要检查数据本身。</p>
+<p>​    另一种方法是使用<strong>基于成本的搜索</strong>来读取数据并估计执行等效计划的成本。成本模型选择成本最低的计划</p>
+<p>​    查询优化是构建DBMS最困难的部分。一些系统已经尝试应用机器学习来提高优化器的准确性和效率，但目前没有一个主要的DBMS部署了基于这种技术的优化器。</p>
+<p><strong>Logical vs. Physical Plans</strong></p>
+<p>​    优化器生成一个逻辑代数表达式到最佳等价物理代数表达式的映射。<strong>逻辑计划大致等同于查询中的关系代数表达</strong>。</p>
+<p>​    物理运算符使用查询计划中不同运算符的访问路径定义特定的执行策略。<strong>物理计划可能取决于所处理数据的物理格式</strong>（即排序、压缩）。</p>
+<p>​    从逻辑计划到物理计划并不总是存在一对一的映射关系。</p>
+<h2 id="2-关系代数等价"><a href="#2-关系代数等价" class="headerlink" title="2 关系代数等价"></a>2 关系代数等价</h2><p>​    许多查询优化依赖于关系代数的高级属性在等效表达式中保留的基本概念。如果<strong>两个关系代数表达式生成相同的元组集</strong>，则它们是等价的。</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401195930527.png" alt="1"></p>
+<p>​    图 1：架构概述——应用程序连接到数据库系统并发送 SQL 查询，该查询可能被重写为不同的格式。 SQL 字符串被解析为构成语法树的标记。绑定器通过查询系统目录将语法树中的命名对象转换为内部标识符。 binder 发出一个逻辑计划，可以将其馈送到树重写器以获取其他模式信息。将逻辑计划提供给优化器，优化器选择最有效的程序来执行计划。    </p>
+</blockquote>
+<p>​    这种转换逻辑计划的基础关系代数表示的技术被称为<strong>查询重写</strong>。关系代数等价的一个例子是谓词推倒，即在序列的不同位置应用一个谓词以避免不必要的工作。图2显示了一个谓词推倒的例子</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200052221.png" alt="image-20220401200052221"></p>
+<p>图 2：谓词下推： - 不是在连接之后执行过滤器，而是可以更早地应用过滤器，以便将更少的元素传递到过滤器中</p>
+</blockquote>
+<h2 id="3-逻辑查询优化"><a href="#3-逻辑查询优化" class="headerlink" title="3 逻辑查询优化"></a>3 逻辑查询优化</h2><p>​    一些选择优化包括：</p>
+<ul>
+<li>尽早执行过滤器（谓词下推）</li>
+<li>对谓词进行重新排序，以便DBMS首先应用最具选择性的那一个。</li>
+<li>分解一个复杂的谓词并将其下推（拆分连接谓词）</li>
+</ul>
+<p><strong>谓词下推</strong>的示例显示在Figure2</p>
+<p>​    一些投影优化包括：</p>
+<ul>
+<li>尽早执行投影以创建更小的元组并减少中间结果（投影下推）</li>
+<li>投影出除请求或需要的属性之外的所有属性</li>
+</ul>
+<p><strong>投影下推</strong>的示例如图所示Figure3</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200348481.png" alt="image-20220401200348481"></p>
+<p>图 3：投影下推——由于查询只询问学生姓名和 ID，DBMS 可以在应用连接之前删除除这两个之外的所有列</p>
+</blockquote>
+<p>​    DBMS可以使用的另一个优化是<strong>移除不可能或不必要的谓词</strong>。在这种优化中，DBMS省去了对谓词的评估，这些谓词的结果在一个元组中不会改变。绕过这些谓词可以降低计算成本。图4显示了两个不必要的谓词的例子</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200502755.png" alt="image-20220401200502755"></p>
+<p>图 4：不必要的谓词——第一个查询中的谓词总是错误的，可以忽略。前一个查询可以重写为后一个查询以产生相同的结果但节省计算量</p>
+</blockquote>
+<p>​    一个类似的优化是<strong>合并谓词</strong>。这种优化的一个例子显示在Figure5</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200620309.png" alt="image-20220401200620309"></p>
+<p>图5：合并谓词–查询1中的WHERE谓词是多余的，因为它要搜索的是1到150之间的任何数值。查询2显示了更简洁的方式来表达查询1中的请求</p>
+</blockquote>
+<p>​    <strong>JOIN 操作的顺序</strong>是查询性能的关键决定因素。详尽枚举所有可能的连接顺序是低效的，因此连接排序优化需要一个成本模型。但是，我们仍然可以通过启发式优化方法消除不必要的连接。图 6 显示了连接消除的示例。</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200732631.png" alt="image-20220401200732631"></p>
+<p>​    图 6：联接消除——查询 1 中的联接是浪费的，因为 A 中的每个元组都必须存在于 A 中。查询 1 可以改为查询 2</p>
+</blockquote>
+<p>​    DBMS 还可以在不参考成本模型的情况下<strong>优化嵌套子查询</strong>。这种优化有两种不同的方法：</p>
+<ul>
+<li>通过去相关和/或展平查询来重新编写查询。这方面的一个例子是我Figure7</li>
+<li>分解嵌套查询并将结果存储到临时表中。这方面的一个例子显示在Figure8</li>
+</ul>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200837847.png" alt="image-20220401200837847"></p>
+<p>​    图 7：子查询优化 - 重写 通过将子查询重写为 JOIN，可以将前一个查询重写为后一个查询。以这种方式删除嵌套级别有效地扁平化查询</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401200910390.png" alt="image-20220401200910390"></p>
+<p>​    图 8：子查询优化 - 分解 - 对于具有子查询的复杂查询，DBMS 优化器可能会将原始查询分解为块，并专注于一次优化每个单独的块。在此示例中，优化器通过将嵌套查询拉出到自己的查询中来分解具有嵌套聚合的查询，然后使用此结果来实现原始查询的逻辑</p>
+</blockquote>
+<hr>
+<h2 id="4-成本估算"><a href="#4-成本估算" class="headerlink" title="4 成本估算"></a>4 成本估算</h2><p>​    DBMS 使用成本模型来估计执行计划的成本。这些模型评估查询的等效计划，以帮助 DBMS 选择最优化的计划。</p>
+<p>​    查询的成本取决于几个基础指标，包括：</p>
+<ul>
+<li>CPU：成本小，但难以估计</li>
+<li>磁盘 I/O：块传输的数量</li>
+<li>内存：使用的 DRAM 数量</li>
+<li>网络：发送的消息数</li>
+</ul>
+<p>​    对查询的所有有效计划进行详尽的枚举对于优化器来说执行起来太慢了。仅对于可交换和关联的连接，每个 n 路连接有 $4^n$ 种不同的排序。优化器必须限制他们的搜索空间才能有效地工作。</p>
+<p>​    为了估算查询成本，DBMS 在其内部目录中维护有关表、属性和索引的内部统计信息。不同的系统以不同的方式维护这些统计数据。大多数系统试图通过维护一个内部统计表来避免动态计算。然后可以在后台更新这些内部表。</p>
+<p>​    对于每个关系 R，DBMS 维护以下信息：</p>
+<ul>
+<li>$N_R$: R中的元组数</li>
+<li>$V (A, R)$: 属性 A 的不同值的数量</li>
+</ul>
+<p>​    使用上面列出的信息，优化器可以推导出选择基数 $SC(A, R)$ 统计量。选择基数是在给定 $N_R /V (A,R)$ 的情况下具有属性 A 值的平均记录数。请注意，这是假设数据的一致性。这个假设通常是不正确的，但它简化了优化过程</p>
+<p><strong>选择统计</strong></p>
+<p>​    选择基数可用于确定将为给定输入选择的元组数。</p>
+<p>​    唯一键上的相等谓词很容易估计（参见图 1）。更复杂的谓词显示在Figure2</p>
+<p>​    谓词 P 的选择性 (sel) 是符合条件的元组的分数。用于计算选择性的公式取决于谓词的类型。复杂谓词的选择性很难准确估计，这可能会给某些系统带来问题。Figure 3 显示了选择性计算的示例。</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201547015.png" alt="image-20220401201547015"></p>
+<p>​    图 1：简单谓词示例 - 在此示例中，确定要使用的索引很容易，因为查询包含唯一键上的相等谓词</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201602962.png" alt="image-20220401201602962"></p>
+<p>​    图 2：复杂谓词示例——更复杂的谓词，例如范围或连词，更难估计，因为谓词的选择基数必须以非平凡的方式组合</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201620173.png" alt="image-20220401201620173"></p>
+<p>​    图 3：否定查询示例的选择性——否定查询的选择性是通过从 1 中减去肯定查询的选择性来计算的。在示例中，答案是 $4/5$，这是准确的</p>
+</blockquote>
+<p>​    观察谓词的选择性等于该谓词的概率。这允许在许多选择性计算中应用概率规则。这在处理复杂谓词时特别有用。例如，如果我们假设一个连词中涉及的多个谓词是独立的，我们可以将连词的总选择性计算为各个谓词的选择性的乘积。</p>
+<p><strong>选择性计算假设</strong></p>
+<p>​    在计算谓词的选择基数时，使用了以下三个假设</p>
+<ul>
+<li>统一数据：数值分布（除了重磅）是一样的</li>
+<li>独立谓词：属性上的谓词是独立的</li>
+<li>包含原则：连接键的域重叠，使得内部关系中的每个键也将存在于外部表中</li>
+</ul>
+<p>​    实际数据通常不能满足这些假设。例如，相关属性打破了谓词独立性的假设</p>
+<h2 id="5-直方图"><a href="#5-直方图" class="headerlink" title="5 直方图"></a>5 直方图</h2><p>​    真实数据通常是有偏差的，很难做出假设。然而，存储数据集的每一个值都是昂贵的。通过将数据存储在直方图中以将值组合在一起来减少使用的内存量的一种方法。图 4 显示了一个带有桶的图形示例。</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201854024.png" alt="image-20220401201854024"></p>
+<p>图 4：等宽直方图：第一个图显示了整个数据集的原始频率计数。第二个图是等宽直方图，将相邻键的计数组合在一起以减少存储开销</p>
+</blockquote>
+<p>另一种方法是使用等深直方图，该直方图会改变桶的宽度，以便每个桶的出现总数大致相同。一个例子显示在Figure5</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401201927456.png" alt="image-20220401201927456"></p>
+<p>​    图 5：等深直方图——为了确保每个桶的计数大致相同，直方图会改变每个桶的范围。</p>
+</blockquote>
+<p>代替直方图，一些系统可能使用草图来生成关于数据集的近似统计</p>
+<h2 id="6-抽样"><a href="#6-抽样" class="headerlink" title="6 抽样"></a>6 抽样</h2><p>​        DBMS 可以使用采样将谓词应用于具有相似分布的较小的表副本（参见图 6）。只要基础表的更改量超过某个阈值（例如，元组的 10%），DBMS 就会更新样本</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401202034936.png" alt="image-20220401202034936"></p>
+<p>图 6：抽样——DBMS 可以从原始表的子集中推导出谓词的选择性，而不是使用表中的十亿个值来估计选择性。</p>
+</blockquote>
+<h2 id="7-计划枚举"><a href="#7-计划枚举" class="headerlink" title="7 计划枚举"></a>7 计划枚举</h2><p>​    在执行基于规则的重写之后，DBMS 将枚举不同的查询计划并估计它们的成本。然后在用尽所有计划或超时后为查询选择最佳计划。</p>
+<p><strong>单关系查询计划</strong></p>
+<p>​    对于单关系查询计划，最大的障碍是选择最佳访问方法（即顺序扫描、二进制搜索、索引扫描等）。大多数新的数据库系统只是使用启发式而不是复杂的成本模型来选择访问方法。</p>
+<p>​    对于 OLTP 查询，这尤其容易，因为它们是可搜索的（Search Argument Able），这意味着存在可以为查询选择的最佳索引。这也可以通过简单的启发式方法来实现。</p>
+<p><strong>多关系查询计划</strong></p>
+<p>​    随着连接数的增加，替代计划的数量也在迅速增长。为了处理这个问题，我们需要对搜索空间进行限制。IBM System R做出的基本决定是只考虑左深连接树（见图7）。这是因为左深连接树更适合于管道模型，因为DBMS不需要将连接运算符的输出具体化。如果DBMS的优化器只考虑左深树，那么它将减少搜索过程所使用的内存量，并有可能减少搜索时间。大多数现代DBMS在优化过程中不做这种限制</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401202206362.png" alt="image-20220401202206362"></p>
+<p>图 7：System R 优化器——IBM System R 中第一个基于成本的查询优化器只考虑了左深连接树</p>
+</blockquote>
+<p>​    要制定查询计划，DBMS 必须首先枚举排序，然后是每个运算符的计划，然后是每个表的访问路径。有关示例，请参见图 8。动态规划可用于减少成本估算的次数。</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401202304595.png" alt="image-20220401202304595"></p>
+<p>图 8：候选计划示例——第一步是枚举所有关系排序。可以修剪任何具有交叉产品或非左深度连接的排序。第二步，枚举所有连接算法选择（例如嵌套循环连接、哈希连接、排序合并连接）。第三步，枚举访问方法以找到最便宜的路径。</p>
+</blockquote>
+</div><div class="article-licensing box"><div class="licensing-title"><p>执行计划与调优</p><p><a href="https://2w1nd.github.io/note/CMU15445/CMU15545：执行计划与调优.html">https://2w1nd.github.io/note/CMU15445/CMU15545：执行计划与调优.html</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>w1nd</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-04-01</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-04-01</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/"></a><a class="link-muted mr-2" rel="tag" href="/"></a></div><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_telegram"></a><a class="a2a_button_whatsapp"></a><a class="a2a_button_reddit"></a></div><script src="https://static.addtoany.com/menu/page.js" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="/img/zhifubao.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="/img/wechat.jpg" alt="微信"></span></a></div></div></div><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css"><script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script><script>var gitalk = new Gitalk({
+            id: "c1a4b623c9e3f2377cbf9e8fe08b78db",
+            repo: "2w1nd.github.io",
+            owner: "2w1nd",
+            clientID: "86f226e9ed3278ed531f",
+            clientSecret: "650a04c534ecc65811ab5d3c679243fecd804b1a",
+            admin: ["2w1nd"],
+            createIssueManually: false,
+            distractionFreeMode: false,
+            perPage: 15,
+            pagerDirection: "last",
+            
+            
+            enableHotKey: true,
+            language: "zh-CN",
+        })
+        gitalk.render('comment-container')</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="/img/avatar.png" alt="浅风"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">浅风</p><p class="is-size-6 is-block">pratice makes perfect</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>JiangXi</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">61</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">13</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">36</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/2w1nd" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1-前言"><span class="level-left"><span class="level-item">1 前言</span></span></a></li><li><a class="level is-mobile" href="#2-关系代数等价"><span class="level-left"><span class="level-item">2 关系代数等价</span></span></a></li><li><a class="level is-mobile" href="#3-逻辑查询优化"><span class="level-left"><span class="level-item">3 逻辑查询优化</span></span></a></li><li><a class="level is-mobile" href="#4-成本估算"><span class="level-left"><span class="level-item">4 成本估算</span></span></a></li><li><a class="level is-mobile" href="#5-直方图"><span class="level-left"><span class="level-item">5 直方图</span></span></a></li><li><a class="level is-mobile" href="#6-抽样"><span class="level-left"><span class="level-item">6 抽样</span></span></a></li><li><a class="level is-mobile" href="#7-计划枚举"><span class="level-left"><span class="level-item">7 计划枚举</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a><p class="is-size-7"><span>&copy; 2022 w1nd</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>  <a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener"></a><br><span id="busuanzi_container_site_uv">共<span id="busuanzi_value_site_uv">0</span>个访客</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><script src="/js/night.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>

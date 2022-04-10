@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>CMU15445：并发控制理论 - 浅风w1ndの博客</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="w1nd&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="w1nd&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="pratice makes perfect"><meta property="og:type" content="blog"><meta property="og:title" content="w1nd"><meta property="og:url" content="https://2w1nd.github.io/note/CMU15445/CMU15445%EF%BC%9A%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%E7%90%86%E8%AE%BA.html"><meta property="og:site_name" content="w1ndcode"><meta property="og:description" content="pratice makes perfect"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404151205739.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404151501022.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404151708212.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152402996.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152426761.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152702158.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152721036.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404153346233.png"><meta property="article:published_time" content="2022-04-04T06:09:17.000Z"><meta property="article:modified_time" content="2022-04-04T08:46:45.716Z"><meta property="article:author" content="w1nd"><meta property="article:tag" content="CMU15445"><meta property="article:tag" content="课件"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404151205739.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://2w1nd.github.io/note/CMU15445/CMU15445%EF%BC%9A%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%E7%90%86%E8%AE%BA.html"},"headline":"CMU15445：并发控制理论","image":["https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404151205739.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404151501022.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404151708212.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152402996.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152426761.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152702158.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152721036.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404153346233.png"],"datePublished":"2022-04-04T06:09:17.000Z","dateModified":"2022-04-04T08:46:45.716Z","author":{"@type":"Person","name":"w1nd"},"publisher":{"@type":"Organization","name":"浅风w1ndの博客","logo":{"@type":"ImageObject","url":"https://2w1nd.github.io/img/og_image.png"}},"description":"有关并发控制理论,两阶段锁的说明"}</script><link rel="canonical" href="https://2w1nd.github.io/note/CMU15445/CMU15445%EF%BC%9A%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%E7%90%86%E8%AE%BA.html"><link rel="icon" href="/img/avatar.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" defer></script><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><meta name="generator" content="Hexo 6.0.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">存档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-lightbulb" id="night-icon"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><h1 class="title is-3 is-size-4-mobile">CMU15445：并发控制理论</h1><div class="content"><h2 id="并发控制理论"><a href="#并发控制理论" class="headerlink" title="并发控制理论"></a><strong>并发控制理论</strong></h2><h2 id="1-事务"><a href="#1-事务" class="headerlink" title="1 事务"></a>1 事务</h2><p>​    事务是在共享数据库上执行一系列一个或多个操作（例如 SQL 查询）以执行某些更高级别的功能。它们是 DBMS 中变化的基本单位。不允许部分事务（即事务必须是原子的）。示例：将 100 美元从林的银行账户转到他的发起人的账户:</p>
+<ol>
+<li>检查林是否有 100 美元。 </li>
+<li>从他的账户中扣除 100 美元。 </li>
+<li>将 100 美元添加到他的发起人的账户中</li>
+</ol>
+<p>​    要么所有步骤都需要完成，要么都不应该完成。</p>
+<p><strong>稻草人系统</strong></p>
+<p>​    处理事务的一个简单系统是使用<strong>单个工作者（例如一个线程）一次执行一个事务</strong>。因此，一次只能有一个事务在运行。为了执行事务，DBMS复制整个数据库文件，并在这个新文件中进行事务修改。如果交易成功，那么新文件就成为当前的数据库文件。如果交易失败，DBMS就会丢弃这个新文件，并且交易的变化都没有被保存。这种方法很慢，因为它不允许并发事务，并且需要为每个事务复制整个数据库文件。</p>
+<p>​    一个（可能）更好的方法是允许独立事务的并发执行，同时保持正确性和公平性（因为所有事务都被同等优先级处理，并且不会因为从不被执行而“饿死”）。但是在 DBMS 中执行并发事务具有挑战性。很难确保正确性（例如，如果 Lin 只有 100 美元并试图一次支付两个发起人，谁应该得到报酬？）同时还要快速执行交易（我们的稻草人示例保证顺序正确性，但以并行性为代价）。</p>
+<p>​    操作的任意交错会导致：</p>
+<ul>
+<li>临时不一致：不可避免，但不是问题</li>
+<li>永久不一致：不可接受，导致数据的正确性和完整性出现问题</li>
+</ul>
+<p>​    事务的范围仅在数据库内部。它无法对外部世界进行更改，因为它无法回滚。例如，如果事务导致发送电子邮件，则如果事务被中止，则 DBMS 无法回滚</p>
+<h2 id="2-定义"><a href="#2-定义" class="headerlink" title="2 定义"></a>2 定义</h2><p>​    从形式上看，数据库可以表示为一组命名的数据对象（A, B, C, …）。这些对象可以是属性、图元、页、表，甚至是数据库。我们将讨论的算法适用于任何类型的对象，但所有对象必须是同一类型。</p>
+<p>​    事务是对这些对象的一系列读写操作（即R（A），W（B））。为了简化讨论，这个定义假设数据库是一个固定的大小，所以操作只能是读取和更新，而不是插入或删除。</p>
+<p>​    事务的边界是由客户定义的。在SQL中，一个事务以BEGIN命令开始。事务的结果是COMMIT或ABORT。对于COMMIT来说，事务的所有修改都会被保存到数据库中，或者DBMS会忽略这一点而终止。</p>
+<p>​    对于 ABORT，所有事务的更改都被撤消，就像事务从未发生过一样。中止可能是自己造成的，也可能是由 DBMS 引起的。</p>
+<p>​    用于确保数据库正确性的标准由缩写词 ACID 给出。</p>
+<ul>
+<li>原子性：原子性确保事务中的所有操作都发生或不发生。</li>
+<li>一致性：如果每个事务都是一致的，并且在事务开始时数据库是一致的，那么当事务完成时数据库是保证一致的</li>
+<li>隔离：隔离是指当一个事务执行时，应该有与其他事务隔离的错觉。</li>
+<li>持久性：如果事务提交，那么它对数据库的影响应该是持久的。</li>
+</ul>
+<h3 id="2-1-ACID-Atomicity"><a href="#2-1-ACID-Atomicity" class="headerlink" title="2.1 ACID: Atomicity"></a>2.1 ACID: Atomicity</h3><p>​    DBMS 保证事务是原子的。事务要么执行其所有操作，要么不执行任何操作。有两种方法可以解决这个问题：</p>
+<p><strong>方法 #1：记录</strong></p>
+<p>​    DBMS 记录所有操作，以便它可以撤消中止事务的操作。它在内存和磁盘上维护撤消记录。出于审计和效率的原因，几乎所有现代系统都使用日志记录</p>
+<p><strong>方法 #2：影子分页</strong></p>
+<p>​    DBMS 生成由事务修改的页面的副本，事务对这些副本进行更改。只有当事务提交时页面才可见。这种方法在运行时通常比基于日志的 DBMS 慢。但是，一个好处是，如果您只是单线程，则不需要日志记录，因此当事务修改数据库时写入磁盘的次数更少。这也使恢复变得简单，因为您需要做的就是从未提交的事务中删除所有页面。但是，一般来说，更好的运行时性能优于更好的恢复性能，因此在实践中很少使用</p>
+<h3 id="2-2-ACID-Consistency"><a href="#2-2-ACID-Consistency" class="headerlink" title="2.2 ACID: Consistency"></a>2.2 ACID: Consistency</h3><p>​    在高层次上，一致性意味着数据库所代表的“世界”在逻辑上是正确的。应用程序询问数据的所有问题（即查询）都将返回逻辑正确的结果。一致性有两个概念：</p>
+<ul>
+<li>数据库一致性：数据库准确地表示它正在建模的现实世界实体并遵循完整性约束。 （例如，一个人的年龄不能不是负数）。此外，未来的事务应该看到过去在数据库内部提交的事务的影响</li>
+<li>事务一致性：如果数据库在事务开始之前是一致的，那么之后也是一致的。确保事务一致性是应用程序的责任。</li>
+</ul>
+<h3 id="2-3-ACID-Isolation"><a href="#2-3-ACID-Isolation" class="headerlink" title="2.3 ACID: Isolation"></a>2.3 ACID: Isolation</h3><p>​    DBMS 为事务提供了它们在系统中单独运行的错觉。他们看不到并发事务的影响。这相当于一个交易以串行顺序（即一次一个）执行的系统。但是为了获得更好的性能，DBMS 必须在保持隔离假象的同时交错并发事务的操作.。</p>
+<p><strong>并发控制</strong></p>
+<p>​    并发控制协议是 DBMS 如何在运行时确定来自多个事务的操作的正确交错。</p>
+<p>​    并发控制协议有两类：</p>
+<ol>
+<li>悲观的：DBMS 假设事务会发生冲突，因此它不会让问题出现在首位。</li>
+<li>乐观：DBMS 假设事务之间的冲突很少发生，因此它选择在事务提交后发生冲突时进行处理</li>
+</ol>
+<p>​    DBMS 执行操作的顺序称为执行计划。并发控制协议的目标是生成等效于某些串行执行的执行计划：</p>
+<ul>
+<li>串行调度：不交错不同事务的动作的调度</li>
+<li>等效调度：对于任何数据库状态，如果执行第一个调度的效果与执行第二个调度的效果相同，则这两个调度是等效的</li>
+<li>可序列化计划：可序列化计划是等效于任何串行执行事务的计划。不同的串行执行可以产生不同的结果，但都被认为是“正确的”</li>
+</ul>
+<p>​    如果两个操作是针对不同事务的，它们是在同一个对象上执行的，并且至少有一个操作是写入，那么就会发生两个操作之间的冲突。冲突的三种变化：</p>
+<ul>
+<li>读写冲突（“不可重复读”）：一个事务在多次读取同一个对象时无法获得相同的值</li>
+<li>写-读冲突（“脏读”）：一个事务在该事务提交其更改之前看到不同事务的写效果</li>
+<li>写-写冲突（“丢失更新”）：一个事务覆盖另一个并发事务的未提交数据</li>
+</ul>
+<p>​    可序列化有两种类型：（1）冲突和（2）视图。这两种定义都不允许人们认为可序列化的所有计划。在实践中，DBMS 支持冲突可串行化，因为它可以有效地执行。</p>
+<p><strong>冲突可序列化</strong></p>
+<p>​    如果两个调度涉及相同事务的相同操作并且每对冲突的操作在两个调度中以相同的方式排序，则它们是冲突等价的。一个调度 S 是冲突可序列化的，如果它是一个等价于某个串行调度的冲突.</p>
+<p>​    可以通过交换非冲突操作直到形成串行调度来验证调度是否可冲突串行化。对于有许多事务的时间表，这变得太昂贵了。验证时间表的更好方法是使用依赖图（优先图）。</p>
+<p>​    在依赖图中，每个事务都是图中的一个节点。存在从节点 Ti 到 Tj 的有向边，当且仅当来自 Ti 的操作 Oi 与来自 Tj 的操作 Oj 冲突且 Oi 出现在节点中的 Oj 之前日程。然后，如果依赖图是非循环的，则调度是冲突可序列化的</p>
+<p><strong>视图可序列化</strong></p>
+<p>​    视图可序列化性是一个较弱的可序列化概念，它允许所有可冲突序列化和“盲写”的调度（即在不先读取值的情况下执行写入）。因此，它允许比冲突可串行化更多的调度，但难以有效执行。这是因为 DBMS 不知道应用程序将如何“解释”值</p>
+<h3 id="2-4-ACID-Durability"><a href="#2-4-ACID-Durability" class="headerlink" title="2.4 ACID: Durability"></a>2.4 ACID: Durability</h3><p>​    已提交事务的所有更改在崩溃或重启后必须是持久的（即持久的）。 DBMS 可以使用日志记录或影子分页来确保所有更改都是持久的</p>
+<hr>
+<h2 id="两阶段锁"><a href="#两阶段锁" class="headerlink" title="两阶段锁"></a><strong>两阶段锁</strong></h2><h2 id="1-事务锁"><a href="#1-事务锁" class="headerlink" title="1 事务锁"></a>1 事务锁</h2><p>​    DBMS 使用锁为可序列化的事务动态生成执行计划，而无需提前知道每个事务的读/写设置。当有多个读取器和写入器时，这些锁在并发访问期间保护数据库对象。 DBMS 包含一个集中的锁管理器，它决定事务是否可以获取锁。它还提供了系统内部正在发生的事情的全局视图。</p>
+<p>​    有两种基本类型的锁：</p>
+<ul>
+<li>共享锁（S-LOCK）：允许多个事务同时读取同一个对象的共享锁。如果一个事务持有共享锁，那么另一个事务也可以获得相同的共享锁。</li>
+<li>排他锁 (X-LOCK)：排他锁允许事务修改对象。此锁可防止其他事务在对象上获取任何其他锁（S-LOCK 或 X-LOCK）。一次只有一个事务可以持有排他锁。</li>
+</ul>
+<p>​    事务必须向锁管理器请求锁（或升级）。锁管理器根据其他事务当前持有的锁来授予或阻止请求。当事务不再需要释放对象时，它们必须释放锁。锁管理器使用有关哪些事务持有哪些锁以及哪些事务正在等待获取锁的信息更新其内部锁表。</p>
+<p>​    DBMS 的锁表不需要是持久的，因为当 DBMS 崩溃时任何处于活动状态（即仍在运行）的事务都会自动中止。</p>
+<h2 id="2-两阶段锁"><a href="#2-两阶段锁" class="headerlink" title="2 两阶段锁"></a>2 两阶段锁</h2><p>​    两阶段锁定 (2PL) 是一种悲观并发控制协议，它使用锁来确定是否允许事务动态访问数据库中的对象。该协议不需要提前知道事务将执行的所有查询。</p>
+<p>​    阶段 #1 – 增长：在增长阶段，每个事务都向 DBMS 的锁管理器请求它需要的锁。锁管理器授予/拒绝这些锁请求。</p>
+<p>​    阶段#2——收缩：事务在释放第一个锁后立即进入收缩阶段。在收缩阶段，事务只允许释放锁。他们不允许获得新的。</p>
+<p>​    就其本身而言，2PL 足以保证冲突可串行化。它生成优先级图是非循环的调度。但它很容易受到级联中止的影响，即当一个事务中止，现在另一个事务必须回滚时，这会导致工作浪费。</p>
+<p>​    还有一些潜在的计划是可序列化的，但 2PL 不允许（锁定会限制并发）。</p>
+<p><strong>强严格的两阶段锁定</strong>    </p>
+<p>​    如果一个事务写入的任何值在第一个事务提交之前永远不会被另一个事务读取或覆盖，那么调度就是严格的。 Strong Strict 2PL（也称为 Rigorous 2PL）是 2PL 的变体，其中事务仅在提交时才释放锁。</p>
+<p>​    这种方法的优点是 DBMS 不会导致级联中止。 DBMS 还可以通过恢复已修改元组的原始值来逆转中止事务的更改。但是，Strict 2PL 会生成更谨慎/悲观的调度来限制并发。</p>
+<h2 id="3-死锁处理"><a href="#3-死锁处理" class="headerlink" title="3 死锁处理"></a>3 死锁处理</h2><p>​    死锁是一个事务循环等待彼此释放锁。在 2PL 中有两种处理死锁的方法：检测和预防。</p>
+<p><strong>方法一：死锁检测</strong></p>
+<p>​    为了检测死锁，DBMS创建了一个waits-for图，其中事务是节点，如果事务Ti在等待事务Tj释放锁，则存在一条从Ti到Tj的有向边。系统将定期检查waits-for图中的周期（通常是用一个后台线程），然后决定如何打破它。在构建图时不需要锁，因为如果DBMS在一次传递中错过了一个死锁，它将在随后的传递中找到它</p>
+<p>​    当 DBMS 检测到死锁时，它将选择一个“受害者”事务来中止以打破循环。受害者事务将根据应用程序调用它的方式重新启动或中止。</p>
+<p>​    DBMS 在选择牺牲品来打破死锁时可以考虑多个事务属性：</p>
+<ol>
+<li>按年龄（最新或最旧的时间戳）</li>
+<li>按进度（执行的最少/最多查询）。</li>
+<li>按已锁定的项目数</li>
+<li>通过 # 需要回滚的事务。</li>
+<li>过去重新启动事务的次数（以避免饥饿）。</li>
+</ol>
+<p>​    没有一种选择比其他选择更好。许多系统使用这些因素的组合。</p>
+<p>​    在选择要中止的受害者事务后，DBMS 还可以决定回滚事务更改的程度。它可以回滚整个事务，也可以只回滚足够的查询来打破死锁。</p>
+<p><strong>方法二：死锁预防</strong></p>
+<p>​    死锁预防 2PL 不是让事务尝试获取它们需要的任何锁，然后再处理死锁，而是在事务发生之前阻止事务导致死锁。当一个事务试图获取另一个事务持有的锁（这可能导致死锁）时，DBMS 会杀死其中一个。为了实现这一点，事务根据时间戳分配优先级（较旧的事务具有更高的优先级）。这些方案保证没有死锁，因为在等待锁时只允许一种类型的方向。当事务重新启动时，DBMS 会重用相同的时间戳。</p>
+<p>​    死锁预防下有两种方式杀死事务：</p>
+<p>​    Wait-Die（“Old Waits for Young”）：如果请求事务的优先级高于持有事务，则等待。否则，它将中止。</p>
+<p>​    Wound-Wait（“Young Waits for Old”）：如果请求事务的优先级高于持有事务，则持有事务中止并释放锁。否则，请求事务等待</p>
+<h2 id="4-锁定粒度"><a href="#4-锁定粒度" class="headerlink" title="4 锁定粒度"></a>4 锁定粒度</h2><p>​    如果一个事务想要更新十亿个元组，它必须向 DBMS 的锁管理器请求十亿个锁。这会很慢，因为事务在获取/释放锁时必须在锁管理器的内部锁表数据结构中获取锁存器。</p>
+<p>​    为了避免这种开销，DBMS 可以使用锁层次结构，允许事务在系统中采用更粗粒度的锁。例如，它可以在具有十亿个元组的表上获取单个锁，而不是十亿个单独的锁。当事务获取此层次结构中对象的锁时，它会隐式获取其所有子对象的锁。</p>
+<p>​    意图锁允许更高级别的节点以共享模式或独占模式锁定，而无需检查所有后代节点。如果节点处于意向模式，则显式锁定在树中的较低级别完成。</p>
+<ul>
+<li>Intention-Shared (IS)：表示使用共享锁在较低级别的显式锁定</li>
+<li>Intention-Exclusive (IX)：表示在较低级别的显式锁定，具有排他或共享锁</li>
+<li>Shared+Intention-Exclusive (SIX)：以该节点为根的子树在共享模式下显式锁定，并且显式锁定在较低级别使用独占模式锁定完成。 </li>
+</ul>
+<hr>
+<h2 id="时间戳排序并发控制"><a href="#时间戳排序并发控制" class="headerlink" title="时间戳排序并发控制"></a><strong>时间戳排序并发控制</strong></h2><h2 id="1-时间戳排序并发控制"><a href="#1-时间戳排序并发控制" class="headerlink" title="1 时间戳排序并发控制"></a>1 时间戳排序并发控制</h2><p>​    时间戳排序 (T/O) 是一种乐观类并发控制协议，其中 DBMS 假定事务冲突很少见。 DBMS 不要求事务在被允许读取/写入数据库对象之前获取锁，而是使用时间戳来确定事务的可串行化顺序。</p>
+<p>​    每个事务 Ti 都被分配了一个唯一的固定时间戳 TS(Ti)，它是单调递增的。不同的方案在事务期间的不同时间分配时间戳。一些高级方案甚至为每个事务分配多个时间戳。</p>
+<p>​    如果 TS(Ti) &lt; TS(Tj )，则 DBMS 必须确保执行计划等同于其中 Ti 出现在 Tj 之前的串行计划。</p>
+<p>​    有多种时间戳分配实现策略。 DBMS 可以使用系统时钟作为时间戳，但在夏令时等极端情况下会出现问题。另一种选择是使用逻辑计数器。但是，这存在溢出问题以及跨具有多台机器的分布式系统维护计数器的问题。还有一些混合方法使用两种方法的组合</p>
+<h2 id="2-基本时间戳排序-BASIC-T-O"><a href="#2-基本时间戳排序-BASIC-T-O" class="headerlink" title="2 基本时间戳排序 (BASIC T/O)"></a>2 基本时间戳排序 (BASIC T/O)</h2><p>​    基本时间戳排序协议 (BASIC T/O) 允许在不使用锁的情况下对数据库对象进行读取和写入。相反，每个数据库对象 X 都被标记为最后一个事务的时间戳，该事务成功地对该对象执行读取（表示为 R-TS(X)）或写入（表示为 W-TS(X)）。 DBMS 然后检查每个操作的这些时间戳。如果事务试图以违反时间戳顺序的方式访问对象，则事务将中止并重新启动。基本假设是违规情况很少见，因此这些重新启动也很少见。</p>
+<h3 id="2-1-读取操作"><a href="#2-1-读取操作" class="headerlink" title="2.1 读取操作"></a>2.1 读取操作</h3><p>​    对于读操作，如果TS(Ti)&lt; W-TS(X)，这就违反了Ti相对于X的前一个写入者的时间戳顺序，因此，Ti被中止并以新的时间戳重新启动。DBMS然后更新R-TS(X)为R-TS(X)和TS(Ti)的最大值。它还必须制作一个X的本地副本，以确保对Ti的可重复读取。</p>
+<h3 id="2-2-写操作"><a href="#2-2-写操作" class="headerlink" title="2.2 写操作"></a>2.2 写操作</h3><p>​    对于写操作，如果 TS(Ti) &lt; R-TS(X) 或 TS(Ti) &lt; W-TS(X)，则必须重新启动 Ti。否则，DBMS 允许 Ti 写入 X 并更新 W-TS(X)。同样，它需要制作 X 的本地副本以确保 Ti 的可重复读取。</p>
+<h3 id="2-3-优化：Thomas-Write-规则"><a href="#2-3-优化：Thomas-Write-规则" class="headerlink" title="2.3 优化：Thomas Write 规则"></a>2.3 优化：Thomas Write 规则</h3><p>​    写入的优化是如果 TS(Ti) &lt; W-TS(X)，DBMS 可以改为忽略写入并允许事务继续，而不是中止并重新启动它。这被称为托马斯写规则。请注意，这违反了 Ti 的时间戳顺序，但这没关系，因为没有其他事务会读取 Ti 对对象 X 的写入。</p>
+<p>​    如果基本 T/O 协议不使用 Thomas Write Rule，它会生成一个可冲突序列化的调度。它不能有死锁，因为没有事务等待。但是，如果短事务不断引起冲突，长事务就有可能出现饥饿。</p>
+<p>​    它还允许不可恢复的时间表。如果事务仅在它们读取其更改的所有事务提交后提交，则调度是可恢复的。否则，DBMS 无法保证事务读取的数据会在从崩溃中恢复后恢复。</p>
+<p>潜在问题：</p>
+<ul>
+<li>将数据复制到事务工作区和更新时间戳的高开销</li>
+<li>长时间运行的事务可能会饿死。事务从较新事务中读取某些内容的可能性增加。</li>
+<li>在高并发系统上遭受时间戳分配瓶颈</li>
+</ul>
+<h2 id="3-乐观并发控制-OCC"><a href="#3-乐观并发控制-OCC" class="headerlink" title="3 乐观并发控制 (OCC)"></a>3 乐观并发控制 (OCC)</h2><p>​    乐观并发控制 (OCC) 是另一种乐观并发控制协议，它也使用时间戳来验证事务。当冲突数量较少时，OCC 效果最佳。这是当所有事务都是只读的或者当事务访问不相交的数据子集时。如果数据库很大并且工作量不倾斜，那么冲突的概率很低，OCC 是一个不错的选择。</p>
+<p>​    在 OCC 中，DBMS 为每个事务创建一个私有工作空间。事务的所有修改都应用于此工作区。读取的任何对象都复制到工作区，写入的任何对象都复制到工作区并在那里修改。没有其他事务可以读取其他事务在其私有工作区中所做的更改。</p>
+<p>​    当事务提交时，DBMS 会比较事务的工作区写入集以查看它是否与其他事务冲突。如果没有冲突，则将写入集安装到“全局”数据库中。</p>
+<p>​    OCC 包括三个阶段：</p>
+<ol>
+<li>读取阶段：在这里，DBMS 跟踪事务的读/写集并将其写入存储在私有工作区中。</li>
+<li>验证阶段：当一个事务提交时，DBMS 检查它是否与其他事务冲突</li>
+<li>写入阶段：如果验证成功，DBMS 将私有工作区更改应用到数据库。否则，它将中止并重新启动事务</li>
+</ol>
+<p><strong>验证阶段</strong></p>
+<p>​    DBMS 在交易进入验证阶段时为其分配时间戳。为了确保只允许可序列化的调度，DBMS 将 Ti 与其他事务检查 RW 和 WW 冲突，并确保所有冲突都以一种方式进行（从较旧的事务到较新的事务）。 DBMS 检查提交事务与所有其他正在运行的事务的时间戳顺序。尚未进入验证阶段的交易被分配一个 ∞ 的时间戳。</p>
+<p>​    如果 TS(Ti) &lt; TS(Tj )，则必须满足以下三个条件之一： </p>
+<ol>
+<li>Ti 在 Tj 开始之前完成所有三个阶段</li>
+<li>Ti 在 Tj 开始其写入阶段之前完成，并且 Ti 不会写入 Tj 读取的任何对象。</li>
+<li>Ti 在 Tj 完成其 Read 阶段之前完成其 Read 阶段，并且 Ti 不会写入任何由 Tj 读取或写入的对象。</li>
+</ol>
+<p><strong>潜在问题</strong></p>
+<ul>
+<li>将数据本地复制到事务的私有工作区的高开销。</li>
+<li>验证/写入阶段瓶颈</li>
+<li>中止可能比其他协议更浪费，因为它们只发生在事务已经执行之后。</li>
+<li>遭受时间戳分配瓶颈</li>
+</ul>
+<h2 id="4-隔离级别"><a href="#4-隔离级别" class="headerlink" title="4 隔离级别"></a>4 隔离级别</h2><p>​    可串行化是有用的，因为它允许程序员忽略并发问题，但强制执行它可能允许太少的并行性并限制性能。我们可能希望使用较弱的一致性级别来提高可伸缩性。</p>
+<p>​    隔离级别控制事务暴露于其他并发事务的操作的程度。</p>
+<p>异常情况：</p>
+<ul>
+<li>脏读：读取未提交的数据。</li>
+<li>不可重复读取：重做读取会导致不同的结果</li>
+<li>幻读：插入或删除导致相同范围扫描查询的不同结果</li>
+</ul>
+<p>隔离级别（从最强到最弱）：</p>
+<ol>
+<li>串行化：没有 幻读，所有读取都可重复，并且没有脏读</li>
+<li>可重复阅读：幻影可能会发生。</li>
+<li>提交读：可能会发生幻像和不可重复的读取</li>
+<li>未提交读：所有异常都可能发生</li>
+</ol>
+<p>​    作为 SQL-92 标准的一部分定义的隔离级别只关注可能发生在基于 2PL 的 DBMS 中的异常。有两个额外的隔离级别：</p>
+<ol>
+<li>光标稳定性<ul>
+<li>在可重复读取和已提交读取之间 </li>
+<li>防止丢失更新异常。 </li>
+<li>IBM DB2 中的默认隔离级别</li>
+</ul>
+</li>
+<li>快照隔离<ul>
+<li>保证在事务中进行的所有读取都会看到事务开始时存在的数据库的一致快照。 </li>
+<li> 仅当事务的写入与自该快照以来所做的任何并发更新不冲突时，事务才会提交。 </li>
+<li>容易写偏斜异常</li>
+</ul>
+</li>
+</ol>
+<h2 id="多版本并发控制"><a href="#多版本并发控制" class="headerlink" title="多版本并发控制"></a><strong>多版本并发控制</strong></h2><h2 id="1-多版本并发控制"><a href="#1-多版本并发控制" class="headerlink" title="1 多版本并发控制"></a>1 多版本并发控制</h2><p>​    多版本并发控制（MVCC）是一个比并发控制协议更大的概念。它涉及 DBMS 设计和实现的所有方面。 MVCC 是 DBMS 中使用最广泛的方案。它现在几乎用于过去 10 年中实施的所有新 DBMS。甚至一些不支持多语句事务的系统（例如 NoSQL）也使用它。</p>
+<p>​    使用 MVCC，DBMS 在数据库中维护单个逻辑对象的多个物理版本。当事务写入对象时，DBMS 会创建该对象的新版本。当一个事务读取一个对象时，它会读取事务开始时存在的最新版本。</p>
+<p>​    MVCC 的基本概念/好处是编写器不会阻塞编写器，而读取器不会阻塞读取器。这意味着一个事务可以修改一个对象，而其他事务读取旧版本。</p>
+<p>​    使用 MVCC 的一个优点是只读事务可以读取数据库的一致快照，而无需使用任何类型的锁。此外，多版本 DBMS 可以轻松支持时间旅行查询，这些查询是基于其他时间点的数据库状态的查询（例如，对 3 小时前的数据库执行查询）。</p>
+<p>​    有四个重要的 MVCC 设计决策：</p>
+<ul>
+<li>并发控制协议 </li>
+<li>版本存储 </li>
+<li>垃圾收集 </li>
+<li>索引管理</li>
+</ul>
+<p>​    并发协议的选择介于前几课讨论的方法之间（两阶段锁定、时间戳排序、乐观并发控制）</p>
+<h2 id="2-版本存储"><a href="#2-版本存储" class="headerlink" title="2 版本存储"></a>2 版本存储</h2><p>​    这就是 DBMS 如何存储逻辑对象的不同物理版本以及事务如何找到对它们可见的最新版本.</p>
+<p>​    DBMS 使用元组的指针字段为每个逻辑元组创建一个版本链，它本质上是一个按时间戳排序的版本链表。这允许 DBMS 找到在运行时对特定事务可见的版本。索引始终指向链的“头部”，根据实现，它是最新的或最旧的版本。线程遍历链，直到找到正确的版本。不同的存储方案确定每个版本的存储位置/内容。</p>
+<p><strong>方法 #1：仅附加存储</strong></p>
+<p>​    一个逻辑元组的所有物理版本都存储在同一个表空间中。版本在表中混合在一起，每次更新只是将元组的新版本附加到表中并更新版本链。链可以按从旧到新 (O2N) 排序，这需要在查找时进行链遍历，也可以按最新到旧 (N2O) 排序，这需要为每个新版本更新索引指针。</p>
+<p><strong>方法#2：时间旅行存储</strong></p>
+<p>​    DBMS 维护一个单独的表，称为时间旅行表，它存储旧版本的元组。每次更新时，DBMS 都会将旧版本的元组复制到时间旅行表中，并用新数据覆盖主表中的元组。主表中的元组指针指向时间旅行表中的过去版本。</p>
+<p><strong>方法 #3：增量存储</strong></p>
+<p>​    与时间旅行存储类似，但不是整个过去的元组，DBMS 只存储增量，或者在所谓的增量存储段中存储元组之间的变化。然后事务可以通过迭代增量来重新创建旧版本。这导致写入速度比时间旅行存储快，但读取速度较慢。</p>
+<h2 id="3-垃圾收集"><a href="#3-垃圾收集" class="headerlink" title="3 垃圾收集"></a>3 垃圾收集</h2><p>​    DBMS 需要随着时间的推移从数据库中删除可回收的物理版本。如果没有活动事务可以“看到”该版本，或者如果它是由被中止的事务创建的，则该版本是可回收的。</p>
+<p><strong>方法 #1：元组级 GC</strong></p>
+<p>​    使用元组级垃圾收集，DBMS 通过直接检查元组来查找旧版本。有两种方法可以实现这一点：</p>
+<ul>
+<li><strong>背景吸尘</strong>：单独的线程定期扫描表并寻找可回收的版本。这适用于任何版本的存储方案。一个简单的优化是维护一个“脏页位图”，它跟踪自上次扫描以来哪些页面已被修改。这允许线程跳过未更改的页面。</li>
+<li><strong>协作清理</strong>：工作线程在遍历版本链时识别可回收版本。这仅适用于 O2N 链。</li>
+</ul>
+<p><strong>方法 #2：事务级 GC</strong></p>
+<p>​    在事务级垃圾收集下，每个事务负责跟踪自己的旧版本，因此 DBMS 不必扫描元组。每个事务都维护自己的读/写集。当事务完成时，垃圾收集器可以使用它来识别要回收的元组。 DBMS 确定由已完成事务创建的所有版本何时不再可见。</p>
+<h2 id="4-索引管理"><a href="#4-索引管理" class="headerlink" title="4 索引管理"></a>4 索引管理</h2><p>​    所有主键 (pkey) 索引始终指向版本链头。 DBMS 必须多久更新一次 pkey 索引取决于系统是否在更新元组时创建新版本。如果事务更新了 pkey 属性，则将其视为 DELETE 后跟 INSERT。</p>
+<p>​    管理二级索引更加复杂。有两种处理方法：</p>
+<p><strong>方法 #1：逻辑指针</strong></p>
+<p>​    DBMS 对每个元组使用一个不变的标识符。这需要一个额外的间接层，将逻辑 id 映射到元组的物理位置。然后，对元组的更新可以只更新间接层中的映射</p>
+<p><strong>方法#2：物理指针</strong></p>
+<p>​    DBMS 使用版本链头的物理地址。这需要在更新版本链头时更新每个索引。 </p>
+<h2 id="日志记录方案"><a href="#日志记录方案" class="headerlink" title="日志记录方案"></a><strong>日志记录方案</strong></h2><h2 id="1-崩溃恢复"><a href="#1-崩溃恢复" class="headerlink" title="1 崩溃恢复"></a>1 崩溃恢复</h2><p>​    恢复算法是在发生故障时确保数据库一致性、事务原子性和持久性的技术。当崩溃发生时，内存中所有尚未提交到磁盘的数据都有丢失的风险。恢复算法可防止崩溃后的信息丢失。</p>
+<p>​    每个恢复算法都有两个部分：</p>
+<ul>
+<li>正常事务处理期间的操作，以确保 DBMS 可以从故障中恢复</li>
+<li>将数据库恢复到确保原子性、一致性和持久性的状态失败后的操作。</li>
+</ul>
+<p>​    恢复算法中使用的关键原语是 UNDO 和 REDO。并非所有算法都使用这两种原语</p>
+<ul>
+<li>UNDO：消除不完整或中止事务影响的过程</li>
+<li>REDO：恢复已提交事务的效果以实现持久性的过程</li>
+</ul>
+<h2 id="2-存储类型"><a href="#2-存储类型" class="headerlink" title="2 存储类型"></a>2 存储类型</h2><ul>
+<li><p>易失性存储</p>
+<p>  ​    断电或程序退出后数据不会保留。 – 示例：DRAM、SRAM</p>
+</li>
+<li><p>非易失性存储</p>
+<p>  ​    断电或程序存在后数据仍然存在。 – 示例：HDD、SDD</p>
+</li>
+<li><p>稳定存储</p>
+<p>  ​    一种不存在的非易失性存储形式，可经受所有可能的故障情况。 – 使用多个存储设备进行近似</p>
+</li>
+</ul>
+<h2 id="3-故障分类"><a href="#3-故障分类" class="headerlink" title="3 故障分类"></a>3 故障分类</h2><p>​    由于 DBMS 根据底层存储设备分为不同的组件，因此 DBMS 需要处理许多不同类型的故障。其中一些故障是可恢复的，而另一些则不可恢复。</p>
+<p><strong>类型 #1：交易失败</strong></p>
+<p>​    当事务发生错误并且必须中止时，就会发生事务失败。可能导致事务失败的两种错误是逻辑错误和内部状态错误。</p>
+<ul>
+<li>逻辑错误：由于某些内部错误条件（例如，完整性、违反约束），事务无法完成。</li>
+<li>内部状态错误。DBMS必须由于错误状况（例如，死锁）而终止一个正在进行的事务。</li>
+</ul>
+<p><strong>类型 #2：系统故障</strong></p>
+<p>​    系统故障是硬件或软件中的意外故障，也必须在崩溃恢复协议中加以考虑。</p>
+<ul>
+<li>软件故障：DBMS 实现存在问题（例如，未捕获的被零除异常）并且系统必须停止</li>
+<li>硬件故障：托管 DBMS 的计算机崩溃（例如，电源插头被拔出）。我们假设非易失性存储内容不会因系统崩溃而损坏</li>
+</ul>
+<p><strong>类型 #3：存储介质故障</strong></p>
+<p>​    存储介质故障是物理存储机器损坏时发生的不可修复的故障。当存储介质出现故障时，必须从存档版本恢复 DBMS</p>
+<ul>
+<li>不可修复的硬件故障：磁头崩溃或类似的磁盘故障会破坏全部或部分非易失性存储。假设破坏是可检测的。</li>
+</ul>
+<h2 id="4-缓冲池管理策略"><a href="#4-缓冲池管理策略" class="headerlink" title="4 缓冲池管理策略"></a>4 缓冲池管理策略</h2><p>​    DBMS 需要确保以下保证：</p>
+<ul>
+<li>一旦 DBMS 告诉某人它已提交，任何事务的更改都是持久的。 </li>
+<li>如果事务中止，没有部分更改是持久的</li>
+</ul>
+<p>​    窃取策略指示 DBMS 是否允许未提交的事务覆盖非易失性存储中对象的最新提交值（事务是否可以将未提交的更改写入磁盘）</p>
+<ul>
+<li>STEAL：允许 </li>
+<li>NO-STEAL：不允许。</li>
+</ul>
+<p>​    强制策略规定 DBMS 是否要求在允许提交事务之前将事务所做的所有更新都反映在非易失性存储上</p>
+<ul>
+<li>FORCE：需要 </li>
+<li>NO-FORCE：不需要</li>
+</ul>
+<p>​    强制写入更容易恢复，因为所有更改都被保留，但会导致运行时性能不佳</p>
+<p>​    最容易实施的缓冲池管理策略称为 NO-STEAL + FORCE。在 NO-STEAL + FORCE 策略中，DBMS 永远不必撤消中止事务的更改，因为更改没有写入磁盘。它也永远不必重做已提交事务的更改，因为所有更改都保证在提交时写入磁盘。 NO-STEAL + FORCE 的示例显示在Figure1</p>
+<p>​    NO STEAL + FORCE 的一个限制是事务需要修改的所有数据都必须适合内存。否则，该事务将无法执行，因为在事务提交之前不允许 DBMS 将脏页写入磁盘</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404151205739.png" alt="image-20220404151205739"></p>
+<p>图 1：NO-STEAL + FORCE 示例 – DBMS 正在使用 NO-STEAL + FORCE 缓冲策略。事务的所有更改仅在事务提交时才写入磁盘。一旦计划从第 1 步开始，T1 和 T2 的更改就会写入缓冲池。由于 FORCE 策略，当 T2 在步骤 #2 提交时，必须将其所有更改写入磁盘。为此，DBMS 在磁盘中制作内存副本，仅应用来自 T2 的更改，然后将其写回磁盘。这是因为 NO-STEAL 会阻止将 T1 中未提交的更改写入磁盘。在第 3 步，DBMS 回滚 T1 是微不足道的，因为磁盘上没有来自 T1 的脏更改</p>
+</blockquote>
+<h2 id="5-影子分页"><a href="#5-影子分页" class="headerlink" title="5 影子分页"></a>5 影子分页</h2><p>​    DBMS 维护数据库的两个独立副本： </p>
+<ul>
+<li>master：仅包含来自已提交 txns 的更改。 </li>
+<li>shadow：具有未提交事务更改的临时数据库</li>
+</ul>
+<p>​    更新只在影子副本中进行。当一个事务提交时，影子被原子化地切换为新的主站。这是一个NO-STEAL+FORCE系统的例子。一个影子分页的高层例子显示在Figure2</p>
+<p><strong>实现</strong></p>
+<p>​    DBMS将数据库页面组织成一个树状结构，根部是一个单一的磁盘页面。该树有两个副本，主副本和影子副本。根部总是指向当前的主副本。当一个事务执行时，它只对影子副本进行修改。</p>
+<p>​    当一个事务想要提交时，DBMS必须安装其更新。要做到这一点，它只需要覆盖根，使其指向数据库的影子副本，从而交换主和影子。在覆盖根目录之前，没有一个事务的更新是磁盘驻留数据库的一部分。覆盖根目录后，所有的事务更新都是驻盘数据库的一部分。</p>
+<p><strong>恢复</strong></p>
+<ul>
+<li><p>撤消：删除阴影页面。不理会 master 和 DB 根指针</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404151501022.png" alt="image-20220404151501022"></p>
+<p>图2：影子分页 - 数据库根指向一个主页表，主页表指向磁盘上的页面。当一个更新事务发生时，会创建一个影子页表，指向与主页相同的页面。对磁盘上的临时空间进行修改，影子表被更新。提交时，数据库根指针被重定向到影子表，成为新的主表。</p>
+</blockquote>
+</li>
+<li><p>重做：根本不需要。</p>
+</li>
+</ul>
+<p><strong>缺点</strong></p>
+<p>​    影子分页的一个缺点是复制整个页表的成本很高。在现实中，只有树中导致更新的叶子节点的路径需要被复制，而不是整个树。此外，影子分页的提交开销也很高。提交时需要刷新每一个更新的页、页表和根。这导致了数据的碎片化，也需要垃圾收集。另一个问题是，这一次只支持一个写手事务或批量的事务。</p>
+<h2 id="6-日志文件"><a href="#6-日志文件" class="headerlink" title="6 日志文件"></a>6 日志文件</h2><p>​    当一个事务修改了一个页面时，DBMS在覆盖主版本之前将原始页面复制到一个单独的日志文件。在重新启动后，如果日志文件存在，那么DBMS就会恢复它，以撤销来自未提交的事务的修改。</p>
+<h2 id="7-预写式日志记录"><a href="#7-预写式日志记录" class="headerlink" title="7 预写式日志记录"></a>7 预写式日志记录</h2><p>​    使用预写日志记录，DBMS 在对磁盘页面进行更改之前将对数据库所做的所有更改记录在日志文件中（在稳定存储上）。该日志包含足够的信息来执行必要的撤消和重做操作以在崩溃后恢复数据库。 DBMS 必须先将与对数据库对象所做的更改相对应的日志文件记录写入磁盘，然后才能将该对象刷新到磁盘。 WAL 的一个例子如图 3 所示。WAL 是一个 STEAL + NO-FORCE 系统的例子。</p>
+<p>​    在影子分页中，DBMS 需要对磁盘上的随机非连续页面执行写入操作。预写日志记录允许 DBMS 将随机写入转换为顺序写入以优化性能。因此，几乎每个 DBMS 都使用预写日志 (WAL)，因为它具有最快的运行时间表现。但是 DBMS 使用 WAL 的恢复时间比影子分页慢，因为它必须重放日志。</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404151708212.png" alt="image-20220404151708212"></p>
+<p>图 3：预写日志——当事务开始时，所有更改都记录在内存中的 WAL 缓冲区中，然后再写入缓冲池。当提交时，WAL 缓冲区被刷新到磁盘。一旦 WAL 缓冲区安全地在磁盘上，就可以写入事务结果。</p>
+</blockquote>
+<p><strong>实现</strong></p>
+<p>​    DBMS 首先将事务的所有日志记录暂存到易失性存储中。然后，在允许在非易失性存储中覆盖页面本身之前，将所有与更新页面相关的日志记录写入非易失性存储。在所有日志记录都写入稳定存储之前，不会认为事务已提交。</p>
+<p>​    当事务开始时，为每个事务写入一个&lt;BEGIN&gt;记录到日志中，以标记它的起始点。</p>
+<p>​    当事务完成时，将 &lt;COMMIT&gt; 记录写入日志并确保在向应用程序返回确认之前刷新所有日志记录。</p>
+<p>​    每个日志条目都包含有关对单个对象的更改的信息：</p>
+<ul>
+<li>交易标识。 </li>
+<li>对象ID。 </li>
+<li>值之前（用于UNDO）。 </li>
+<li>后值（用于重做）。</li>
+</ul>
+<p>​    DBMS 必须先将事务的所有日志条目刷新到磁盘，然后才能告诉外界事务已成功提交。系统可以使用“组提交”优化将多个日志刷新批处理在一起以分摊开销。 DBMS 可以随时将脏页写入磁盘，只要在刷新相应的日志记录后即可</p>
+<h2 id="8-日志记录方案"><a href="#8-日志记录方案" class="headerlink" title="8 日志记录方案"></a>8 日志记录方案</h2><p>​    日志记录的内容可能因实现而异</p>
+<p><strong>物理日志：</strong></p>
+<ul>
+<li>记录对数据库中特定位置所做的字节级更改。 ——示例：记录在页面中的位置</li>
+<li>逻辑日志：<ul>
+<li>记录事务执行的高级操作。 </li>
+<li>不一定限于单页。 </li>
+<li>与物理日志相比，每条日志记录需要写入的数据更少，因为每条记录可以更新多个页面上的多个元组。但是，当非确定性并发控制方案中存在并发事务时，很难通过逻辑日志实现恢复。此外，恢复需要更长的时间，因为您必须重新执行每个事务。 </li>
+<li>示例：事务调用的 UPDATE、DELETE 和 INSERT 查询</li>
+</ul>
+</li>
+<li>生理记录：<ul>
+<li>日志记录针对单个页面但不指定页面的数据组织的混合方法。也就是说，根据页面中的槽号识别元组，而不需要准确指定更改在页面中的位置。因此，DBMS 可以在将日志记录写入磁盘后重新组织页面。 </li>
+<li>DBMS 中最常用的方法。</li>
+</ul>
+</li>
+</ul>
+<h2 id="数据库崩溃恢复"><a href="#数据库崩溃恢复" class="headerlink" title="数据库崩溃恢复"></a><strong>数据库崩溃恢复</strong></h2><h2 id="1-崩溃恢复-1"><a href="#1-崩溃恢复-1" class="headerlink" title="1 崩溃恢复"></a>1 崩溃恢复</h2><p>​    DBMS 依靠其恢复算法来确保数据库的一致性、事务原子性和持久性，尽管发生故障。每个恢复算法由两部分组成：</p>
+<ul>
+<li>正常事务处理期间的操作，以确保 DBMS 可以从故障中恢复</li>
+<li>将数据库恢复到确保事务的原子性、一致性和持久性的状态失败后的操作</li>
+</ul>
+<p>​    恢复和隔离利用语义的算法 (ARIES) 是 IBM 研究部门在 1990 年代初期为 DB2 系统开发的恢复算法。</p>
+<p>​    ARIES 恢复协议中有三个关键概念</p>
+<ul>
+<li>预写日志记录：在将数据库更改写入磁盘之前，任何更改都会记录在稳定存储上的日志中（STEAL + NO-FORCE）。</li>
+<li>重做期间重复历史记录：重新启动时，回溯操作并将数据库恢复到崩溃前的确切状态</li>
+<li>在撤消期间记录更改：将撤消操作记录到日志中，以确保在重复失败的情况下不会重复操作</li>
+</ul>
+<h2 id="2-WAL记录"><a href="#2-WAL记录" class="headerlink" title="2 WAL记录"></a>2 WAL记录</h2><p>​    写入式日志记录扩展了DBMS的日志记录格式，包括一个全球唯一的日志序列号（LSN）。图1显示了带有LSN的日志记录是如何写入的高层次图示。</p>
+<p>​    所有的日志记录都有一个LSN。每当一个事务修改了页面中的记录，页面LSN就会被更新。每次DBMS把WAL缓冲区写到磁盘上时，内存中的flushedLSN就会被更新。</p>
+<p>​    系统中的各种组件都会跟踪与它们有关的LSNs。这些LSN的表格在图2中显示。</p>
+<p>​    每个数据页都包含一个pageLSN，它是该页最近一次更新的LSN。DBMS还记录了到目前为止刷新的最大LSN（flushedLSN）。在DBMS将第i页写入磁盘之前，它必须至少将日志冲洗到pageLSNi≤flushedLSN的位置。</p>
+<h2 id="3-正常执行"><a href="#3-正常执行" class="headerlink" title="3 正常执行"></a>3 正常执行</h2><p>​    每个事务都会调用一系列读取和写入，然后是提交或中止。恢复算法必须具备的正是这一系列事件。</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152402996.png" alt="image-20220404152402996"></p>
+<p>图 1：写入日志记录——每个 WAL 都有一个 LSN 计数器，每一步都会增加。该页面还保留了一个 pageLSN 和一个 recLSN，其中存储了使该页面变脏的第一条日志记录。 flushedLSN 是指向最后写入磁盘的 LSN 的指针。 MasterRecord 指向最后一个成功通过的检查点。</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152426761.png" alt="image-20220404152426761"></p>
+<p>图 2：LSN 类型——系统的不同部分还维护着存储相关信息的不同类型的 LSN。</p>
+</blockquote>
+<p><strong>事务提交</strong></p>
+<p>​    当一个事务要提交时，DBMS首先将COMMIT记录写到内存中的日志缓冲区。然后DBMS将所有的日志记录（包括事务的COMMIT记录）刷到磁盘上。请注意，这些日志刷新是连续的、同步的写到磁盘上。每个日志页可以有多条日志记录。图3显示了一个事务提交的示意图。</p>
+<p>​    一旦COMMIT记录被安全地存储在磁盘上，DBMS就会向应用程序返回一个确认函，表明该事务已经提交。稍后，DBMS会写一个特殊的TXN-END记录到日志中。这表明该事务在系统中已经完全结束，不再有任何日志记录。这些TXN-END记录是用于内部记账的，不需要立即刷新。</p>
+<p><strong>事务中止</strong></p>
+<p>​    中止事务是仅适用于一个事务的 ARIES 撤消操作的一种特殊情况。</p>
+<p>​    日志记录中添加了一个名为 prevLSN 的附加字段。这对应于事务的先前 LSN。 DBMS 使用这些 prevLSN 值来维护每个事务的链表，以便更轻松地遍历日志以查找其记录。</p>
+<p>​    还引入了一种称为补偿日志记录 (CLR) 的新型记录。 CLR 描述了为撤销前一个更新记录的操作而采取的行动。它有更新日志记录的所有字段，加上undoNext指针（即下一个被撤销的LSN）。DBMS像其他记录一样将CLR添加到日志中，但它们永远不需要被撤销。</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152702158.png" alt="image-20220404152702158"></p>
+<p>图3：事务提交 - 在事务提交后（015），日志被刷出，刷出的LSN被修改为指向最后生成的日志记录。在以后的某个时间点，会写一个事务结束的消息，在日志中表示这个事务不会再出现。</p>
+</blockquote>
+<p>​    要中止事务，DBMS 首先将 ABORT 记录附加到内存中的日志缓冲区。然后它以相反的顺序撤消事务的更新，以从数据库中删除它们的影响。对于每个撤消的更新，DBMS 在日志中创建 CLR 条目并恢复旧值。在所有中止事务的更新都被反转后，DBMS 然后写入一条 TXN-END 日志记录。此图显示在Figure4</p>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404152721036.png" alt="image-20220404152721036"></p>
+<p>图4：事务中止 - DBMS为事务创建的每条日志记录维护一个LSN和prevLSN。当事务中止时，所有以前的变化都被逆转。在被逆转的变化的日志条目进入磁盘后，DBMS将TXN-END记录附加到中止事务的日志上。</p>
+</blockquote>
+<h2 id="4-检查点"><a href="#4-检查点" class="headerlink" title="4 检查点"></a>4 检查点</h2><p>​    DBMS 定期获取检查点，将缓冲池中的脏页写入磁盘。这用于最小化恢复时必须重播的日志量。下面讨论的前两个阻塞检查点方法在检查点 执行 期间暂停事务。这种暂停是必要的，以确保 DBMS 在检查点期间不会错过对页面的更新。然后，提出了一种更好的方法，允许事务在检查点期间继续执行，但需要 DBMS 记录附加信息以确定它可能错过的更新。</p>
+<p><strong>阻塞检查点</strong></p>
+<p>​    DBMS 在设置检查点时会暂停事务和查询的执行，以确保将数据库的一致快照写入磁盘。这与上一课讨论的方法相同：</p>
+<ul>
+<li>停止任何新事务的开始。 </li>
+<li>等到所有活动事务完成执行。 </li>
+<li>将脏页刷新到磁盘</li>
+</ul>
+<p><strong>更好的阻塞检查点</strong></p>
+<p>​    与之前的检查点方案类似，只是 DBMS 不必等待活动事务完成执行。 DBMS 现在记录检查点开始时的内部系统状态。</p>
+<ul>
+<li>停止任何新事务的开始。 </li>
+<li>在 DBMS 执行检查点时暂停事务</li>
+</ul>
+<p>​    活动事务表 (ATT)：ATT 表示在 DBMS 中活动运行的事务的状态。在 DBMS 完成该事务的提交/中止过程后，将删除事务的条目。对于每个交易条目，ATT 包含以下信息：</p>
+<ul>
+<li>transactionId：唯一事务标识符 </li>
+<li>status：事务的当前“模式”（Running、Committing、Undo Candidate）。 </li>
+<li>lastLSN：事务写入的最新 LSN</li>
+</ul>
+<p>​    请注意，ATT 包含没有 TXN-END 日志记录的每个事务。这包括正在提交或中止的事务</p>
+<p>​    脏页表 (DPT)：DPT 包含有关缓冲池中由未提交事务修改的页面的信息。每个脏页有一个条目包含 recLSN（即，首先导致页面变脏的日志记录的 LSN）。</p>
+<p>​    DPT 包含缓冲池中的所有脏页。如果更改是由正在运行、已提交或已中止的事务引起的，则无关紧要。</p>
+<p>​    总的来说，ATT 和 DPT 用于帮助 DBMS 通过 ARIES 恢复协议恢复崩溃前的数据库状态。</p>
+<p><strong>模糊检查点</strong></p>
+<p>​    模糊检查点是 DBMS 允许其他事务继续运行的地方。这就是 ARIES 在其协议中使用的内容。    </p>
+<p>​    DBMS 使用额外的日志记录来跟踪检查点边界：</p>
+<ul>
+<li>&lt;CHECKPOINT-BEGIN&gt;：表示检查点的开始。此时，DBMS 拍摄当前 ATT 和 DPT 的快照，它们在 &lt;CHECKPOINT-END&gt; 记录中引用。</li>
+<li>&lt;CHECKPOINT-END&gt;：检查点完成时。它包含 ATT + DPT，在写入 &lt;CHECKPOINT-BEGIN&gt; 日志记录时捕获</li>
+</ul>
+<h2 id="5-ARIES-恢复"><a href="#5-ARIES-恢复" class="headerlink" title="5 ARIES 恢复"></a>5 ARIES 恢复</h2><p>​    ARIES 协议由三个阶段组成。在崩溃后启动时，DBMS 将执行以下阶段，如图所示Figure5：</p>
+<ol>
+<li>分析：读取 WAL 以识别崩溃时缓冲池中的脏页和活动事务。在分析阶段结束时，ATT 会告诉 DBMS 在崩溃时哪些事务处于活动状态。 DPT 告诉 DBMS 哪些脏页可能没有进入磁盘。 </li>
+<li>重做：从日志中的适当点开始重复所有操作。 </li>
+<li>撤消：撤消崩溃前未提交的事务的动作</li>
+</ol>
+<blockquote>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220404153346233.png" alt="image-20220404153346233"></p>
+<p>图 5：ARIES 恢复：DBMS 通过检查从通过 MasterRecord 找到的最后一个 BEGIN-CHECKPOINT 开始的日志来启动恢复过程。然后它通过向前扫描时间以构建 ATT 和 DPT 来开始分析阶段。在重做阶段，算法跳转到最小的recLSN，这是可能修改了未写入磁盘的页面的最旧的日志记录。然后 DBMS 从最小的 recLSN 应用所有更改。撤消阶段从崩溃时处于活动状态的事务的最旧日志记录开始，并撤消该点之前的所有更改</p>
+</blockquote>
+<p><strong>分析阶段</strong></p>
+<p>从通过数据库的 MasterRecord LSN 找到的最后一个检查点开始</p>
+<ol>
+<li>从检查点向前扫描日志。 </li>
+<li>如果 DBMS 找到一条 TXN-END 记录，则从 ATT 中删除其事务。 </li>
+<li>所有其他记录，将事务添加到ATT，状态为UNDO，并在提交时将事务状态更改为COMMIT。 </li>
+<li>对于UPDATE日志记录，如果页面P不在DPT中，则将P添加到DPT，并将P的recLSN设置为日志记录的LSN。</li>
+</ol>
+<p><strong>重做阶段</strong></p>
+<p>​    此阶段的目标是 DBMS 重复历史以重建其状态直到崩溃的那一刻。它将重新应用所有更新（甚至是中止的事务）并重做 CLR。 </p>
+<p>​    DBMS 从 DPT 中包含最小 recLSN 的日志记录开始向前扫描。对于具有给定 LSN 的每个更新日志记录或 CLR，DBMS 会重新应用更新，除非：</p>
+<ul>
+<li><p>受影响的页面不在DPT中</p>
+</li>
+<li><p>受影响的页面在DPT中，但该记录的LSN小于DPT中页面的RecLSN</p>
+</li>
+<li><p>受影响的页面LSN（在磁盘上）≥LSN。</p>
+</li>
+</ul>
+<p>​    为了重做一个动作，DBMS 重新应用日志记录中的更改，然后将受影响页面的 pageLSN 设置为该日志记录的 LSN</p>
+<p>​    在重做阶段结束时，为所有状态为 COMMIT 的事务写入 TXN-END 日志记录，并将它们从 ATT 中删除。</p>
+<p><strong>撤消阶段</strong></p>
+<p>​    在最后一个阶段，DBMS逆转了所有在崩溃时处于活动状态的事务。这些是在分析阶段之后的ATT中具有UNDO状态的所有事务。</p>
+<p>​    DBMS使用最后的LSN以反向的LSN顺序处理事务，以加快遍历的速度。当它反转一个事务的更新时，DBMS为每个修改写一个CLR条目到日志中。</p>
+<p>​    一旦最后一个事务被成功中止，DBMS就会冲出日志，然后就可以开始处理新的事务了。15-445/645 数据库系统 第6页，共6页</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>CMU15445：并发控制理论</p><p><a href="https://2w1nd.github.io/note/CMU15445/CMU15445：并发控制理论.html">https://2w1nd.github.io/note/CMU15445/CMU15445：并发控制理论.html</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>w1nd</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-04-04</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-04-04</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/"></a><a class="link-muted mr-2" rel="tag" href="/"></a></div><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_telegram"></a><a class="a2a_button_whatsapp"></a><a class="a2a_button_reddit"></a></div><script src="https://static.addtoany.com/menu/page.js" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="/img/zhifubao.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="/img/wechat.jpg" alt="微信"></span></a></div></div></div><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css"><script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script><script>var gitalk = new Gitalk({
+            id: "631dfeb4a8cb47257ad0e50757036fae",
+            repo: "2w1nd.github.io",
+            owner: "2w1nd",
+            clientID: "86f226e9ed3278ed531f",
+            clientSecret: "650a04c534ecc65811ab5d3c679243fecd804b1a",
+            admin: ["2w1nd"],
+            createIssueManually: false,
+            distractionFreeMode: false,
+            perPage: 15,
+            pagerDirection: "last",
+            
+            
+            enableHotKey: true,
+            language: "zh-CN",
+        })
+        gitalk.render('comment-container')</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="/img/avatar.png" alt="浅风"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">浅风</p><p class="is-size-6 is-block">pratice makes perfect</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>JiangXi</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">61</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">13</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">36</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/2w1nd" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#并发控制理论"><span class="level-left"><span class="level-item">并发控制理论</span></span></a></li><li><a class="level is-mobile" href="#1-事务"><span class="level-left"><span class="level-item">1 事务</span></span></a></li><li><a class="level is-mobile" href="#2-定义"><span class="level-left"><span class="level-item">2 定义</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-ACID-Atomicity"><span class="level-left"><span class="level-item">2.1 ACID: Atomicity</span></span></a></li><li><a class="level is-mobile" href="#2-2-ACID-Consistency"><span class="level-left"><span class="level-item">2.2 ACID: Consistency</span></span></a></li><li><a class="level is-mobile" href="#2-3-ACID-Isolation"><span class="level-left"><span class="level-item">2.3 ACID: Isolation</span></span></a></li><li><a class="level is-mobile" href="#2-4-ACID-Durability"><span class="level-left"><span class="level-item">2.4 ACID: Durability</span></span></a></li></ul></li><li><a class="level is-mobile" href="#两阶段锁"><span class="level-left"><span class="level-item">两阶段锁</span></span></a></li><li><a class="level is-mobile" href="#1-事务锁"><span class="level-left"><span class="level-item">1 事务锁</span></span></a></li><li><a class="level is-mobile" href="#2-两阶段锁"><span class="level-left"><span class="level-item">2 两阶段锁</span></span></a></li><li><a class="level is-mobile" href="#3-死锁处理"><span class="level-left"><span class="level-item">3 死锁处理</span></span></a></li><li><a class="level is-mobile" href="#4-锁定粒度"><span class="level-left"><span class="level-item">4 锁定粒度</span></span></a></li><li><a class="level is-mobile" href="#时间戳排序并发控制"><span class="level-left"><span class="level-item">时间戳排序并发控制</span></span></a></li><li><a class="level is-mobile" href="#1-时间戳排序并发控制"><span class="level-left"><span class="level-item">1 时间戳排序并发控制</span></span></a></li><li><a class="level is-mobile" href="#2-基本时间戳排序-BASIC-T-O"><span class="level-left"><span class="level-item">2 基本时间戳排序 (BASIC T/O)</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-读取操作"><span class="level-left"><span class="level-item">2.1 读取操作</span></span></a></li><li><a class="level is-mobile" href="#2-2-写操作"><span class="level-left"><span class="level-item">2.2 写操作</span></span></a></li><li><a class="level is-mobile" href="#2-3-优化：Thomas-Write-规则"><span class="level-left"><span class="level-item">2.3 优化：Thomas Write 规则</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-乐观并发控制-OCC"><span class="level-left"><span class="level-item">3 乐观并发控制 (OCC)</span></span></a></li><li><a class="level is-mobile" href="#4-隔离级别"><span class="level-left"><span class="level-item">4 隔离级别</span></span></a></li><li><a class="level is-mobile" href="#多版本并发控制"><span class="level-left"><span class="level-item">多版本并发控制</span></span></a></li><li><a class="level is-mobile" href="#1-多版本并发控制"><span class="level-left"><span class="level-item">1 多版本并发控制</span></span></a></li><li><a class="level is-mobile" href="#2-版本存储"><span class="level-left"><span class="level-item">2 版本存储</span></span></a></li><li><a class="level is-mobile" href="#3-垃圾收集"><span class="level-left"><span class="level-item">3 垃圾收集</span></span></a></li><li><a class="level is-mobile" href="#4-索引管理"><span class="level-left"><span class="level-item">4 索引管理</span></span></a></li><li><a class="level is-mobile" href="#日志记录方案"><span class="level-left"><span class="level-item">日志记录方案</span></span></a></li><li><a class="level is-mobile" href="#1-崩溃恢复"><span class="level-left"><span class="level-item">1 崩溃恢复</span></span></a></li><li><a class="level is-mobile" href="#2-存储类型"><span class="level-left"><span class="level-item">2 存储类型</span></span></a></li><li><a class="level is-mobile" href="#3-故障分类"><span class="level-left"><span class="level-item">3 故障分类</span></span></a></li><li><a class="level is-mobile" href="#4-缓冲池管理策略"><span class="level-left"><span class="level-item">4 缓冲池管理策略</span></span></a></li><li><a class="level is-mobile" href="#5-影子分页"><span class="level-left"><span class="level-item">5 影子分页</span></span></a></li><li><a class="level is-mobile" href="#6-日志文件"><span class="level-left"><span class="level-item">6 日志文件</span></span></a></li><li><a class="level is-mobile" href="#7-预写式日志记录"><span class="level-left"><span class="level-item">7 预写式日志记录</span></span></a></li><li><a class="level is-mobile" href="#8-日志记录方案"><span class="level-left"><span class="level-item">8 日志记录方案</span></span></a></li><li><a class="level is-mobile" href="#数据库崩溃恢复"><span class="level-left"><span class="level-item">数据库崩溃恢复</span></span></a></li><li><a class="level is-mobile" href="#1-崩溃恢复-1"><span class="level-left"><span class="level-item">1 崩溃恢复</span></span></a></li><li><a class="level is-mobile" href="#2-WAL记录"><span class="level-left"><span class="level-item">2 WAL记录</span></span></a></li><li><a class="level is-mobile" href="#3-正常执行"><span class="level-left"><span class="level-item">3 正常执行</span></span></a></li><li><a class="level is-mobile" href="#4-检查点"><span class="level-left"><span class="level-item">4 检查点</span></span></a></li><li><a class="level is-mobile" href="#5-ARIES-恢复"><span class="level-left"><span class="level-item">5 ARIES 恢复</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a><p class="is-size-7"><span>&copy; 2022 w1nd</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>  <a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener"></a><br><span id="busuanzi_container_site_uv">共<span id="busuanzi_value_site_uv">0</span>个访客</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><script src="/js/night.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
