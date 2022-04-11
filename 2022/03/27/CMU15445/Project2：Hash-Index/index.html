@@ -1,5 +1,271 @@
-<!doctype html>
-<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Project2：Hash Index - 浅风w1ndの博客</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="w1nd&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="w1nd&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="pratice makes perfect"><meta property="og:type" content="blog"><meta property="og:title" content="w1nd"><meta property="og:url" content="https://2w1nd.github.io/2022/03/27/CMU15445/Project2%EF%BC%9AHash-Index/"><meta property="og:site_name" content="w1ndcode"><meta property="og:description" content="pratice makes perfect"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220331144214428.png"><meta property="article:published_time" content="2022-03-27T11:07:10.000Z"><meta property="article:modified_time" content="2022-04-05T12:40:19.038Z"><meta property="article:author" content="w1nd"><meta property="article:tag" content="CMU15445"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220331144214428.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://2w1nd.github.io/2022/03/27/CMU15445/Project2%EF%BC%9AHash-Index/"},"headline":"Project2：Hash Index","image":["https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220331144214428.png"],"datePublished":"2022-03-27T11:07:10.000Z","dateModified":"2022-04-05T12:40:19.038Z","author":{"@type":"Person","name":"w1nd"},"publisher":{"@type":"Organization","name":"浅风w1ndの博客","logo":{"@type":"ImageObject","url":"https://2w1nd.github.io/img/og_image.png"}},"description":"有关可扩展哈希表索引的实现"}</script><link rel="canonical" href="https://2w1nd.github.io/2022/03/27/CMU15445/Project2%EF%BC%9AHash-Index/"><link rel="icon" href="/img/avatar.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" defer></script><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><meta name="generator" content="Hexo 6.0.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">存档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-lightbulb" id="night-icon"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-03-27T11:07:10.000Z" title="2022-3-27 19:07:10">2022-03-27</time>发表</span><span class="level-item"><time dateTime="2022-04-05T12:40:19.038Z" title="2022-4-5 20:40:19">2022-04-05</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Lab/">Lab</a></span><span class="level-item">26 分钟读完 (大约3829个字)</span><span class="level-item" id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv">0</span>次访问</span></div></div><h1 class="title is-3 is-size-4-mobile">Project2：Hash Index</h1><div class="content"><h2 id="1-基本介绍"><a href="#1-基本介绍" class="headerlink" title="1 基本介绍"></a>1 基本介绍</h2><p>​    本Project将要设计一个以可扩展哈希索引实现的哈希表。</p>
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="w1nd">
+  <meta name="keywords" content="IT BLOG">
+  
+    <meta name="description" content="有关可扩展哈希表索引的实现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Project2：Hash Index">
+<meta property="og:url" content="https://2w1nd.github.io/2022/03/27/CMU15445/Project2%EF%BC%9AHash-Index/index.html">
+<meta property="og:site_name" content="浅风w1ndの博客">
+<meta property="og:description" content="有关可扩展哈希表索引的实现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220331144214428.png">
+<meta property="article:published_time" content="2022-03-27T11:07:10.000Z">
+<meta property="article:modified_time" content="2022-04-05T12:40:19.038Z">
+<meta property="article:author" content="w1nd">
+<meta property="article:tag" content="CMU15445">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220331144214428.png">
+  
+  
+  <title>Project2：Hash Index - 浅风w1ndの博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"2w1nd.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Project2：Hash Index"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-03-27 19:07" pubdate>
+          2022年3月27日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          58 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Project2：Hash Index</h1>
+            
+            <div class="markdown-body">
+              
+              <h2 id="1-基本介绍"><a href="#1-基本介绍" class="headerlink" title="1 基本介绍"></a>1 基本介绍</h2><p>​    本Project将要设计一个以可扩展哈希索引实现的哈希表。</p>
 <h2 id="2-实验内容"><a href="#2-实验内容" class="headerlink" title="2 实验内容"></a>2 实验内容</h2><h3 id="2-1-Page-layouts"><a href="#2-1-Page-layouts" class="headerlink" title="2.1 Page layouts"></a>2.1 Page layouts</h3><p>​    哈希表是要通过DBMS的<code>BufferPoolManager</code>来访问。这意味着不能分配内存来存储信息。所有的东西都必须存储在磁盘页中，这样它们就可以从<code>DiskManager</code>中读/写。如果你创建了一个哈希表，把它的页面写到磁盘上，然后重新启动DBMS，应该能够在重新启动后从磁盘加载回哈希表。</p>
 <p>​    为了支持在页面之上读/写哈希表桶，你将实现两个<code>Page</code>类来存储哈希表的数据。这是要教你如何从<code>BufferPoolManager</code>中分配内存作为页。</p>
 <p><strong>Hash Table Directory Page</strong></p>
@@ -72,7 +338,7 @@
 <h3 id="2-2-Hash-Table-Implementation"><a href="#2-2-Hash-Table-Implementation" class="headerlink" title="2.2 Hash Table Implementation"></a>2.2 Hash Table Implementation</h3><p>​    实现一个使用可扩展散列方案的散列表。它需要支持插入（<code>Insert</code>）、点搜索（<code>GetValue</code>）和删除（<code>Remove</code>）。有许多帮助函数实现或记录了可扩展哈希表的<code>.h</code>文件和 <code>cpp </code>文件。唯一严格的 API 要求是遵守 <code>Insert</code>、<code>GetValue</code>和<code>Remove</code>。您还必须保留原样的 VerifyIntegrity 函数。请随意设计和实现您认为合适的附加功能。`</p>
 <p>​    您的哈希表必须同时支持唯一键和非唯一键。不允许相同键的重复值。这意味着 <code>(key_0, value_0)</code> 和 <code>(key_0, value_1)</code>可以存在于同一个哈希表中，但不能存在 <code>(key_0, value_0) </code>和 <code>(key_0, value_0)</code>。 Insert 方法仅在尝试插入现有的键值对时才返回 false。</p>
 <p>​    您的哈希表实现必须隐藏键/值类型和相关比较器的详细信息，如下所示：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> KeyType, <span class="keyword">typename</span> ValueType, <span class="keyword">typename</span> KeyComparator&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExtendibleHashTable</span> &#123;</span></span><br><span class="line">   <span class="comment">// ---</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> KeyType, <span class="hljs-keyword">typename</span> ValueType, <span class="hljs-keyword">typename</span> KeyComparator&gt;<br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ExtendibleHashTable</span> &#123;</span><br>   <span class="hljs-comment">// ---</span><br>&#125;;<br></code></pre></td></tr></table></figure>
 
 <p>​    这些类已经为您实现：</p>
 <table>
@@ -130,7 +396,7 @@
 <p>事务指针</p>
 <p>​    您可以在需要时简单地将 nullptr 作为事务指针参数传递。这个 <code>Transaction</code> 对象来自 <code>src/include/concurrency/transaction.h</code>。它提供了方法来存储您在遍历哈希表时获取闩锁的页面。您无需执行此操作即可通过测试。</p>
 <h2 id="3-实验思路"><a href="#3-实验思路" class="headerlink" title="3 实验思路"></a>3 实验思路</h2><h3 id="task1"><a href="#task1" class="headerlink" title="task1"></a>task1</h3><p>​    该部分主要是实现<code>Hash Directory Page</code>和<code>Hash Bucket Page</code>，也就是下图左右两部分</p>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220331144214428.png" alt="image-20220331144214428"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220331144214428.png" srcset="/img/loading.gif" lazyload alt="image-20220331144214428"></p>
 <p>（由于经常将<code>directory</code>中的<code>bucket</code>和其指向的<code>bucket</code>弄混，故将<code>directory</code>中的称为<code>slot</code>，其指向的称为<code>bucket</code>）</p>
 <p>​    <strong>hash directory page要实现的主要方法如下：</strong></p>
 <p><code>GetGlobalDepthMask</code>：获得全局高度的mask</p>
@@ -143,11 +409,11 @@
 <p><code>Remove</code>：一样的，遍历到<code>key``value</code>相同位将<code>readable</code>设置即可</p>
 <h4 id="occupied和readable的作用"><a href="#occupied和readable的作用" class="headerlink" title="occupied和readable的作用"></a>occupied和readable的作用</h4><p>值得注意的是，该部分<code>occupied_</code>和<code>readable_</code>均为<code>char</code>数组，也就是说需要同个位运算来确定某个位是否可读或曾被占用。</p>
 <h4 id="零长度数组"><a href="#零长度数组" class="headerlink" title="零长度数组"></a>零长度数组</h4><p>​    在<code>HashTableBucketPage</code>中，保存键值对的数组是这么定义的</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MappingType array_[<span class="number">0</span>];</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">MappingType array_[<span class="hljs-number">0</span>];<br></code></pre></td></tr></table></figure>
 
 <p>这是一个Zero-length array（零长度数组）。它位于结构体/类的最后，本身不占用空间。在声明结构体的时候分配内存，去除掉其他元素的部分就是零长度数组可以访问的部分。</p>
 <p>而类的实例化是不能定义大小的。但是，我们的类比较特殊，它的实际意义是一个页面，而页面的大小是固定的。从测试代码可以看到该类实例化是这样的：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> bucket_page = <span class="keyword">reinterpret_cast</span>&lt;HashTableBucketPage&lt;<span class="keyword">int</span>, <span class="keyword">int</span>, IntComparator&gt; *&gt;(</span><br><span class="line">    bpm-&gt;<span class="built_in">NewPage</span>(&amp;bucket_page_id, <span class="literal">nullptr</span>)-&gt;<span class="built_in">GetData</span>());</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">auto</span> bucket_page = <span class="hljs-keyword">reinterpret_cast</span>&lt;HashTableBucketPage&lt;<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, IntComparator&gt; *&gt;(<br>    bpm-&gt;<span class="hljs-built_in">NewPage</span>(&amp;bucket_page_id, <span class="hljs-literal">nullptr</span>)-&gt;<span class="hljs-built_in">GetData</span>());<br></code></pre></td></tr></table></figure>
 
 <p>​    定义了一个页面，页面的<code>data</code>部分是全零的字节。使用<code>reinterpret_cast</code>，将这块空白解释为我们的对象。由于类中的成员函数是在代码段的，这块空白实际上被解释为类中的成员函数，内存分配与结构体类似。本题中已经根据页面大小为我们算好了<code>BUCKET_ARRAY_SIZE</code>，所以可以放心地取用这个零成员数组了。</p>
 <h3 id="Task2"><a href="#Task2" class="headerlink" title="Task2"></a>Task2</h3><p>​    该部分就是设计<code>Extendible Hash Table</code>了，这一块还是挺难的，难点在于<code>split</code>和<code>merge</code>方法的实现，另外，在设计时还要考虑并发性。</p>
@@ -159,14 +425,14 @@
 <p>​    下面来讲讲各个函数的实现思路：</p>
 <h4 id="初始化函数"><a href="#初始化函数" class="headerlink" title="初始化函数"></a>初始化函数</h4><p>​    这一块刚开始觉得好像没有什么需要初始化的，但要注意的是，我们需要初始化<code>directory_page</code>的<code>id</code>以及对应的高度才可以进行后续的操作，另外还可以初始化两个<code>bucket</code></p>
 <h4 id="辅助性函数"><a href="#辅助性函数" class="headerlink" title="辅助性函数"></a>辅助性函数</h4><p><strong>找到对应的<code>bucket index</code></strong></p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过HASH 值 &amp; mask 得到对应的 bucket index</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="keyword">uint32_t</span> <span class="title">HASH_TABLE_TYPE::KeyToDirectoryIndex</span><span class="params">(KeyType key, HashTableDirectoryPage *dir_page)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Hash</span>(key) &amp; dir_page-&gt;<span class="built_in">GetGlobalDepthMask</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 通过HASH 值 &amp; mask 得到对应的 bucket index</span><br><span class="hljs-function"><span class="hljs-keyword">inline</span> <span class="hljs-keyword">uint32_t</span> <span class="hljs-title">HASH_TABLE_TYPE::KeyToDirectoryIndex</span><span class="hljs-params">(KeyType key, HashTableDirectoryPage *dir_page)</span> </span>&#123;<br>  <span class="hljs-keyword">return</span> <span class="hljs-built_in">Hash</span>(key) &amp; dir_page-&gt;<span class="hljs-built_in">GetGlobalDepthMask</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <p><strong>根据<code>bucket_page_id</code>得到相应的页指针和<code>bucket_page</code></strong></p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::pair&lt;Page *, HASH_TABLE_BUCKET_TYPE *&gt; <span class="title">HASH_TABLE_TYPE::FetchBucketPage</span><span class="params">(<span class="keyword">page_id_t</span> bucket_page_id)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> bucket_page = buffer_pool_manager_-&gt;<span class="built_in">FetchPage</span>(bucket_page_id);</span><br><span class="line">  <span class="keyword">auto</span> bucket_page_data = <span class="keyword">reinterpret_cast</span>&lt;HASH_TABLE_BUCKET_TYPE *&gt;(bucket_page-&gt;<span class="built_in">GetData</span>());</span><br><span class="line">  <span class="keyword">return</span> std::pair&lt;Page *, HASH_TABLE_BUCKET_TYPE *&gt;(bucket_page, bucket_page_data);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">std::pair&lt;Page *, HASH_TABLE_BUCKET_TYPE *&gt; <span class="hljs-title">HASH_TABLE_TYPE::FetchBucketPage</span><span class="hljs-params">(<span class="hljs-keyword">page_id_t</span> bucket_page_id)</span> </span>&#123;<br>  <span class="hljs-keyword">auto</span> bucket_page = buffer_pool_manager_-&gt;<span class="hljs-built_in">FetchPage</span>(bucket_page_id);<br>  <span class="hljs-keyword">auto</span> bucket_page_data = <span class="hljs-keyword">reinterpret_cast</span>&lt;HASH_TABLE_BUCKET_TYPE *&gt;(bucket_page-&gt;<span class="hljs-built_in">GetData</span>());<br>  <span class="hljs-keyword">return</span> std::pair&lt;Page *, HASH_TABLE_BUCKET_TYPE *&gt;(bucket_page, bucket_page_data);<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <h4 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h4><p>​    没什么好说，直接通过key找到对应bucket_page，在调用之前写好的<code>GetValue</code>即可</p>
 <h4 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h4><p>​    首先获取一些数据结构，以下是经常使用的三个变量</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> dir_page_data = <span class="built_in">FetchDirectoryPage</span>();</span><br><span class="line"><span class="keyword">auto</span> bucket_page_id = <span class="built_in">KeyToPageId</span>(key, dir_page_data);</span><br><span class="line"><span class="keyword">auto</span> [bucket_page, bucket_page_data] = <span class="built_in">FetchBucketPage</span>(bucket_page_id);</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">auto</span> dir_page_data = <span class="hljs-built_in">FetchDirectoryPage</span>();<br><span class="hljs-keyword">auto</span> bucket_page_id = <span class="hljs-built_in">KeyToPageId</span>(key, dir_page_data);<br><span class="hljs-keyword">auto</span> [bucket_page, bucket_page_data] = <span class="hljs-built_in">FetchBucketPage</span>(bucket_page_id);<br></code></pre></td></tr></table></figure>
 
 <p>​    如果判断对应的<code>page_data</code>没满，直接插入即可，否则，执行<code>SplitInsert</code></p>
 <p>​    进入循环，首先获取常用变量<code>old_global_depth</code>，<code>bucket_idx</code>，<code>bucket_page_id</code>，<code>[bucket_page, bucket_page_data]</code>。</p>
@@ -189,86 +455,406 @@
 </li>
 </ol>
 </blockquote>
-</div><div class="article-licensing box"><div class="licensing-title"><p>Project2：Hash Index</p><p><a href="https://2w1nd.github.io/2022/03/27/CMU15445/Project2：Hash-Index/">https://2w1nd.github.io/2022/03/27/CMU15445/Project2：Hash-Index/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>w1nd</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-03-27</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-04-05</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/CMU15445/">CMU15445</a></div><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_telegram"></a><a class="a2a_button_whatsapp"></a><a class="a2a_button_reddit"></a></div><script src="https://static.addtoany.com/menu/page.js" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="/img/zhifubao.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="/img/wechat.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2022/03/29/%E6%9D%82%E7%83%A9/4399%E9%9D%A2%E7%BB%8F/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">4399面经</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/03/23/CMU15445/Project0%EF%BC%9AC-Primer/"><span class="level-item">Project0：C++ Primer</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css"><script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script><script>var gitalk = new Gitalk({
-            id: "c623d774143c8a57eb1be15f3b9f12ef",
-            repo: "2w1nd.github.io",
-            owner: "2w1nd",
-            clientID: "86f226e9ed3278ed531f",
-            clientSecret: "650a04c534ecc65811ab5d3c679243fecd804b1a",
-            admin: ["2w1nd"],
-            createIssueManually: false,
-            distractionFreeMode: false,
-            perPage: 15,
-            pagerDirection: "last",
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Lab/" class="category-chain-item">Lab</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/CMU15445/">#CMU15445</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Project2：Hash Index</div>
+      <div>https://2w1nd.github.io/2022/03/27/CMU15445/Project2：Hash-Index/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>w1nd</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年3月27日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
             
             
-            enableHotKey: true,
-            language: "zh-CN",
-        })
-        gitalk.render('comment-container')</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1-基本介绍"><span class="level-left"><span class="level-item">1 基本介绍</span></span></a></li><li><a class="level is-mobile" href="#2-实验内容"><span class="level-left"><span class="level-item">2 实验内容</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-Page-layouts"><span class="level-left"><span class="level-item">2.1 Page layouts</span></span></a></li><li><a class="level is-mobile" href="#2-2-Hash-Table-Implementation"><span class="level-left"><span class="level-item">2.2 Hash Table Implementation</span></span></a></li><li><a class="level is-mobile" href="#2-3-Concurrency-Control"><span class="level-left"><span class="level-item">2.3 Concurrency Control</span></span></a></li><li><a class="level is-mobile" href="#Requirements-And-Hints"><span class="level-left"><span class="level-item">Requirements And Hints</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-实验思路"><span class="level-left"><span class="level-item">3 实验思路</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#task1"><span class="level-left"><span class="level-item">task1</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#occupied和readable的作用"><span class="level-left"><span class="level-item">occupied和readable的作用</span></span></a></li><li><a class="level is-mobile" href="#零长度数组"><span class="level-left"><span class="level-item">零长度数组</span></span></a></li></ul></li><li><a class="level is-mobile" href="#Task2"><span class="level-left"><span class="level-item">Task2</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#初始化函数"><span class="level-left"><span class="level-item">初始化函数</span></span></a></li><li><a class="level is-mobile" href="#辅助性函数"><span class="level-left"><span class="level-item">辅助性函数</span></span></a></li><li><a class="level is-mobile" href="#查找"><span class="level-left"><span class="level-item">查找</span></span></a></li><li><a class="level is-mobile" href="#插入"><span class="level-left"><span class="level-item">插入</span></span></a></li><li><a class="level is-mobile" href="#删除"><span class="level-left"><span class="level-item">删除</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="#4-自问自答"><span class="level-left"><span class="level-item">4 自问自答</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a><p class="is-size-7"><span>&copy; 2022 w1nd</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>  <a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener"></a><br><span id="busuanzi_container_site_uv">共<span id="busuanzi_value_site_uv">0</span>个访客</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
-            article: {
-                highlight: {
-                    clipboard: true,
-                    fold: 'unfolded'
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/03/29/%E6%9D%82%E7%83%A9/4399%E9%9D%A2%E7%BB%8F/" title="4399面经">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">4399面经</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/03/23/CMU15445/Project0%EF%BC%9AC-Primer/" title="Project0：C++ Primer">
+                        <span class="hidden-mobile">Project0：C++ Primer</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
                 }
+              }
             }
-        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
-      window.cookieconsent.initialise({
-        type: "info",
-        theme: "edgeless",
-        static: false,
-        position: "bottom-left",
-        content: {
-          message: "此网站使用Cookie来改善您的体验。",
-          dismiss: "知道了！",
-          allow: "允许使用Cookie",
-          deny: "拒绝",
-          link: "了解更多",
-          policy: "Cookie政策",
-          href: "https://www.cookiesandyou.com/",
-        },
-        palette: {
-          popup: {
-            background: "#edeff5",
-            text: "#838391"
-          },
-          button: {
-            background: "#4b81e8"
-          },
-        },
-      });
-    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
-            if (typeof $.fn.lightGallery === 'function') {
-                $('.article').lightGallery({ selector: '.gallery-item' });
-            }
-            if (typeof $.fn.justifiedGallery === 'function') {
-                if ($('.justified-gallery > p > .gallery-item').length) {
-                    $('.justified-gallery > p > .gallery-item').unwrap();
-                }
-                $('.justified-gallery').justifiedGallery();
-            }
-        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
-            'HTML-CSS': {
-                matchFontHeight: false
-            },
-            SVG: {
-                matchFontHeight: false
-            },
-            CommonHTML: {
-                matchFontHeight: false
-            },
-            tex2jax: {
-                inlineMath: [
-                    ['$','$'],
-                    ['\\(','\\)']
-                ]
-            }
-        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
-            outdatedBrowser({
-                bgColor: '#f25648',
-                color: '#ffffff',
-                lowerThan: 'object-fit' // display on IE11 or below
-            });
-        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><script src="/js/night.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
-            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
-        });</script></body></html>
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

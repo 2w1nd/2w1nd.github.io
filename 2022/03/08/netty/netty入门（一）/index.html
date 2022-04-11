@@ -1,17 +1,298 @@
-<!doctype html>
-<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>netty入门（一） - 浅风w1ndの博客</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="w1nd&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="w1nd&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="pratice makes perfect"><meta property="og:type" content="blog"><meta property="og:title" content="w1nd"><meta property="og:url" content="https://2w1nd.github.io/2022/03/08/netty/netty%E5%85%A5%E9%97%A8%EF%BC%88%E4%B8%80%EF%BC%89/"><meta property="og:site_name" content="w1ndcode"><meta property="og:description" content="pratice makes perfect"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308145826539.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308150917448.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308154606048.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220311162653121.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220311162753122.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202014206.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202157914.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202644179.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312204213881.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312205127301.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312205336373.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313094636075.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313100553600.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313101836852.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313102730186.png"><meta property="article:published_time" content="2022-03-08T06:16:20.000Z"><meta property="article:modified_time" content="2022-03-26T10:38:53.104Z"><meta property="article:author" content="w1nd"><meta property="article:tag" content="网络模型"><meta property="article:tag" content="I/O"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308145826539.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://2w1nd.github.io/2022/03/08/netty/netty%E5%85%A5%E9%97%A8%EF%BC%88%E4%B8%80%EF%BC%89/"},"headline":"netty入门（一）","image":["https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308145826539.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308150917448.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308154606048.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220311162653121.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220311162753122.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202014206.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202157914.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202644179.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312204213881.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312205127301.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312205336373.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313094636075.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313100553600.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313101836852.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313102730186.png"],"datePublished":"2022-03-08T06:16:20.000Z","dateModified":"2022-03-26T10:38:53.104Z","author":{"@type":"Person","name":"w1nd"},"publisher":{"@type":"Organization","name":"浅风w1ndの博客","logo":{"@type":"ImageObject","url":"https://2w1nd.github.io/img/og_image.png"}},"description":"netty入门文章"}</script><link rel="canonical" href="https://2w1nd.github.io/2022/03/08/netty/netty%E5%85%A5%E9%97%A8%EF%BC%88%E4%B8%80%EF%BC%89/"><link rel="icon" href="/img/avatar.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" defer></script><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><meta name="generator" content="Hexo 6.0.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">存档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-lightbulb" id="night-icon"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-03-08T06:16:20.000Z" title="2022-3-8 14:16:20">2022-03-08</time>发表</span><span class="level-item"><time dateTime="2022-03-26T10:38:53.104Z" title="2022-3-26 18:38:53">2022-03-26</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%A1%86%E6%9E%B6/">框架</a></span><span class="level-item">34 分钟读完 (大约5112个字)</span><span class="level-item" id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv">0</span>次访问</span></div></div><h1 class="title is-3 is-size-4-mobile">netty入门（一）</h1><div class="content"><h2 id="1-Netty是什么"><a href="#1-Netty是什么" class="headerlink" title="1 Netty是什么"></a>1 Netty是什么</h2><p>​    Netty是一个<strong>异步</strong>的，<strong>基于事件驱动</strong>的网络应用框架，用于快速开发高性能，高可靠的网络I/O程序。并且Netty主要针对TCP协议下，面对Client端的高并发应用，或者Peer-to-Peer场景下的大量数据持续传输的应用。</p>
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="w1nd">
+  <meta name="keywords" content="IT BLOG">
+  
+    <meta name="description" content="netty入门文章">
+<meta property="og:type" content="article">
+<meta property="og:title" content="netty入门（一）">
+<meta property="og:url" content="https://2w1nd.github.io/2022/03/08/netty/netty%E5%85%A5%E9%97%A8%EF%BC%88%E4%B8%80%EF%BC%89/index.html">
+<meta property="og:site_name" content="浅风w1ndの博客">
+<meta property="og:description" content="netty入门文章">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308145826539.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308150917448.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308154606048.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220311162653121.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220311162753122.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202014206.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202157914.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202644179.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312204213881.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312205127301.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312205336373.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313094636075.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313100553600.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313101836852.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313102730186.png">
+<meta property="article:published_time" content="2022-03-08T06:16:20.000Z">
+<meta property="article:modified_time" content="2022-03-26T10:38:53.104Z">
+<meta property="article:author" content="w1nd">
+<meta property="article:tag" content="网络模型">
+<meta property="article:tag" content="I&#x2F;O">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308145826539.png">
+  
+  
+  <title>netty入门（一） - 浅风w1ndの博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"2w1nd.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="netty入门（一）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-03-08 14:16" pubdate>
+          2022年3月8日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          53 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">netty入门（一）</h1>
+            
+            <div class="markdown-body">
+              
+              <h2 id="1-Netty是什么"><a href="#1-Netty是什么" class="headerlink" title="1 Netty是什么"></a>1 Netty是什么</h2><p>​    Netty是一个<strong>异步</strong>的，<strong>基于事件驱动</strong>的网络应用框架，用于快速开发高性能，高可靠的网络I/O程序。并且Netty主要针对TCP协议下，面对Client端的高并发应用，或者Peer-to-Peer场景下的大量数据持续传输的应用。</p>
 <p>​    Netty本质上是一个NIO框架，使用于服务器通讯相关的多种应用场景。</p>
 <p><strong>思考，NIO是一个同步非阻塞模型，而又说Netty是异步的，这不是会矛盾吗</strong></p>
 <p>​    首先，我们要知道，这两者是没有关系的，Netty所说的异步是指异步事件驱动，用户使用Channel进行IO操作，会立即返回。但是IO操作的任务是提交给Netty的NIO底层去进行处理的。打个比方，你给客服打电话请求注销手机卡，但客服可能不会马上帮你注销，会给你一个回复说注销后会发短信通知你（回调函数），接着，这个请求就交由底层相关注销手机卡的人员进行处理，处理完后再告诉客服，客服再发短信。</p>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308145826539.png" alt="image-20220308145826539"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308145826539.png" srcset="/img/loading.gif" lazyload alt="image-20220308145826539"></p>
 <h2 id="2-IO模型"><a href="#2-IO模型" class="headerlink" title="2 IO模型"></a>2 IO模型</h2><p>​    IO模型的简单理解：就是用什么样的通道进行数据的发送和接收</p>
 <p>​    Java支持3种网络编程模型I/O模式：BIO，NIO，AIO</p>
 <ol>
 <li><p>BIO：<strong>同步阻塞</strong>，服务实现模式为一个连接对应一个线程，即客户端有连接请求时服务端就需要启动一个线程进行处理，如果这个连接不做任何事情就会造成性能开销。</p>
-<p> <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308150917448.png" alt="image-20220308150917448"></p>
+<p> <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308150917448.png" srcset="/img/loading.gif" lazyload alt="image-20220308150917448"></p>
 </li>
 <li><p>NIO：<strong>同步非阻塞</strong>，服务器实现模式为一个线程处理多个请求(连接)，即客户端发送的连接请求都会注册到多路复用器上，多路复用器轮询到连接有I/O请求就进行处理。</p>
-<p> <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308154606048.png" alt="image-20220308154606048"></p>
+<p> <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220308154606048.png" srcset="/img/loading.gif" lazyload alt="image-20220308154606048"></p>
 </li>
 <li><p>AIO：<strong>异步非阻塞</strong>，AlO引入异步通道的概念，采用了Proactor模式，简化了程序编写，有效的请求才启动线程，它的特点是先由操作系统完成后才通知服务端程序启动线程去处理，一般适用于连接数较多且连接时间较长的应用。</p>
 </li>
@@ -57,10 +338,10 @@
 <h2 id="3-NIO基本介绍"><a href="#3-NIO基本介绍" class="headerlink" title="3 NIO基本介绍"></a>3 NIO基本介绍</h2><h3 id="3-1-Buffer"><a href="#3-1-Buffer" class="headerlink" title="3.1 Buffer"></a>3.1 Buffer</h3><p>​    缓冲区本质是一个可以读写数据的内存块，可以理解是一个<strong>容器对象</strong>。</p>
 <ol>
 <li><p>在NIO中，Buffer是一个顶层父类，它是一个抽象类</p>
-<p> <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220311162653121.png" alt="image-20220311162653121"></p>
+<p> <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220311162653121.png" srcset="/img/loading.gif" lazyload alt="image-20220311162653121"></p>
 </li>
 <li><p>Buffer类定义了所有的缓冲区都具有的四个属性提供关于其所包含的数据元素的信息</p>
-<p> <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220311162753122.png" alt="image-20220311162753122"></p>
+<p> <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220311162753122.png" srcset="/img/loading.gif" lazyload alt="image-20220311162753122"></p>
 </li>
 </ol>
 <h3 id="3-2-Channel"><a href="#3-2-Channel" class="headerlink" title="3.2 Channel"></a>3.2 Channel</h3><p><strong>基本介绍</strong></p>
@@ -83,12 +364,12 @@
 </ol>
 <h2 id="4-零拷贝"><a href="#4-零拷贝" class="headerlink" title="4 零拷贝"></a>4 零拷贝</h2><h3 id="4-1-基本介绍"><a href="#4-1-基本介绍" class="headerlink" title="4.1 基本介绍"></a>4.1 基本介绍</h3><p>​    零拷贝是指没有CPU拷贝的技术。</p>
 <h3 id="4-2-传统IO数据读写"><a href="#4-2-传统IO数据读写" class="headerlink" title="4.2 传统IO数据读写"></a>4.2 传统IO数据读写</h3><p>​    在没有DMA技术时，数据的传输过程需要CPU的全程参与，这是很消耗性能的</p>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202014206.png" alt="image-20220312202014206"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202014206.png" srcset="/img/loading.gif" lazyload alt="image-20220312202014206"></p>
 <p>​    什么是DMA（直接内存访问）技术呢？<strong>在进⾏</strong> <strong>I/O</strong> <strong>设备和内存的数据传输的时候，数据搬运的⼯作全部交给DMA控制器，⽽CPU不再参与任何与数据搬运相关的事情，这样CPU就可以去处理别的事务</strong>。</p>
 <p>​    加入该技术，就有了下图</p>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202157914.png" alt="image-20220312202157914"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202157914.png" srcset="/img/loading.gif" lazyload alt="image-20220312202157914"></p>
 <p>​        继续分析该读写方式有多糟糕</p>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202644179.png" alt="image-20220312202644179"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312202644179.png" srcset="/img/loading.gif" lazyload alt="image-20220312202644179"></p>
 <p>​    从上图可以看出，期间发生了<strong>4次用户态与内核态的上下文切换</strong>，以及<strong>4次数据拷贝</strong></p>
 <p>​    由此<code>read</code>和<code>write</code>是系统调用，每次都会发生2次上下文切换</p>
 <p>​    而4次数据拷贝是</p>
@@ -99,22 +380,22 @@
 <li>第四次拷⻉，把<strong>内核的 socket 缓冲区⾥的数据，拷⻉到⽹卡的缓冲区</strong>⾥，这个过程⼜是由 DMA 搬运的。</li>
 </ul>
 <h3 id="4-3-mmap优化"><a href="#4-3-mmap优化" class="headerlink" title="4.3 mmap优化"></a>4.3 mmap优化</h3><p>​    mmap() 系统调⽤函数会直接把内核缓冲区⾥的数据<strong>映射</strong>到⽤户空间，这样，操作系统内核与⽤户空间就不需要再进⾏任何的数据拷⻉操作。</p>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312204213881.png" alt="image-20220312204213881"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312204213881.png" srcset="/img/loading.gif" lazyload alt="image-20220312204213881"></p>
 <p>​    这里当用户态调用<code>write</code>时，操作系统会将内核缓冲区的数据拷贝到socket缓冲区中，这发生在内核态，从而减少一次数据拷贝的过程</p>
 <p>​    但这仍然需要<strong>4次上下文切换</strong>，<strong>3次数据拷贝</strong></p>
 <h3 id="4-4-sendFile优化"><a href="#4-4-sendFile优化" class="headerlink" title="4.4 sendFile优化"></a>4.4 sendFile优化</h3><p>​    在 Linux 内核版本 2.1 中，提供了⼀个专⻔发送⽂件的系统调⽤函数 <code>sendfile() </code>。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">	参数说明：</span></span><br><span class="line"><span class="comment">	1. 目的端文件描述符</span></span><br><span class="line"><span class="comment">	2. 源端文件描述符</span></span><br><span class="line"><span class="comment">	3. 源端偏移量</span></span><br><span class="line"><span class="comment">	4. 复制数据的长度</span></span><br><span class="line"><span class="comment">	@return 实际复制数据的长度</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">ssize_t</span> <span class="title">sendfile</span><span class="params">(<span class="keyword">int</span> out_fd, <span class="keyword">int</span> in_fd, <span class="keyword">off_t</span> *offset, <span class="keyword">size_t</span> count)</span></span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/socket.h&gt;</span></span><br><span class="hljs-comment">/*</span><br><span class="hljs-comment">	参数说明：</span><br><span class="hljs-comment">	1. 目的端文件描述符</span><br><span class="hljs-comment">	2. 源端文件描述符</span><br><span class="hljs-comment">	3. 源端偏移量</span><br><span class="hljs-comment">	4. 复制数据的长度</span><br><span class="hljs-comment">	@return 实际复制数据的长度</span><br><span class="hljs-comment">*/</span><br><span class="hljs-function"><span class="hljs-keyword">ssize_t</span> <span class="hljs-title">sendfile</span><span class="hljs-params">(<span class="hljs-keyword">int</span> out_fd, <span class="hljs-keyword">int</span> in_fd, <span class="hljs-keyword">off_t</span> *offset, <span class="hljs-keyword">size_t</span> count)</span></span>;<br></code></pre></td></tr></table></figure>
 
 <p>​    该系统调用的好处有二：</p>
 <ul>
 <li>可以替代前⾯的 read() 和 write() 这两个系统调⽤，这样就可以减少⼀次系统调⽤，也就减少了 2 次上下⽂切换的开销。</li>
 <li>可以直接把内核缓冲区⾥的数据拷⻉到 socket 缓冲区⾥，不再拷⻉到⽤户态，这样就只有 2 次上下⽂切换，和 3 次数据拷⻉。</li>
 </ul>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312205127301.png" alt="image-20220312205127301"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312205127301.png" srcset="/img/loading.gif" lazyload alt="image-20220312205127301"></p>
 <p>​    但这还不是真正零拷贝，可以发现图中②还有个CPU拷贝</p>
 <p>​    只有当网卡支持<strong>SG-DMA</strong>技术时，才可以实现真正的零拷贝</p>
 <p>​    使用SG-DMA技术如下图</p>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312205336373.png" alt="image-20220312205336373"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220312205336373.png" srcset="/img/loading.gif" lazyload alt="image-20220312205336373"></p>
 <ul>
 <li>第⼀步，通过 DMA 将磁盘上的数据拷⻉到内核缓冲区⾥；</li>
 <li>第⼆步，缓冲区描述符和数据⻓度传到 socket 缓冲区，这样⽹卡的 SG-DMA 控制器就可以<strong>直接将内核缓存中的数据拷⻉到⽹卡的缓冲区</strong>⾥，此过程不需要将数据从操作系统内核缓冲区拷⻉到 socket缓冲区中，这样就减少了⼀次数据拷⻉；</li>
@@ -126,7 +407,7 @@
 <li>如果有事件发⽣，内核会返回产⽣了事件的连接，线程就会从阻塞状态返回，然后在⽤户态中再处理这些连接对应的业务即可。</li>
 </ul>
 <p>​    但由于传统的IO多路复用编写程序十分繁琐，开发效率不高，由此衍生除了<code>Reactor</code>模式。</p>
-<h3 id="5-2-传统阻塞I-O服务模型"><a href="#5-2-传统阻塞I-O服务模型" class="headerlink" title="5.2 传统阻塞I/O服务模型"></a>5.2 传统阻塞I/O服务模型</h3><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313094636075.png" alt="image-20220313094636075"></p>
+<h3 id="5-2-传统阻塞I-O服务模型"><a href="#5-2-传统阻塞I-O服务模型" class="headerlink" title="5.2 传统阻塞I/O服务模型"></a>5.2 传统阻塞I/O服务模型</h3><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313094636075.png" srcset="/img/loading.gif" lazyload alt="image-20220313094636075"></p>
 <p>​    可以看出来，这就是种阻塞IO，每个连接都需要独立的线程去进行处理，当并发数很大时，就会创建大量线程，占用很大系统资源。而且当连接创建后，如果当前线程暂时没有数据可读，该线程会阻塞在<code>read</code>操作，造成线程资源浪费。</p>
 <h3 id="5-3-Reactor模式"><a href="#5-3-Reactor模式" class="headerlink" title="5.3 Reactor模式"></a>5.3 Reactor模式</h3><p>​    <code>Reactor</code>模式指的是<strong>对事件反应</strong>，也就是<strong>来了一个事件，Reactor就有相应的反应/响应</strong>。即即 <strong>I/O</strong> <strong>多路复⽤监听事件，收到事件后，根据事件类型分配（Dispatch）给某个进程/线程</strong>。</p>
 <p><code>Reactor</code>模式主要由<strong>Reactor</strong>和<strong>处理资源池</strong>这两个核⼼部分组成，它俩负责的事情如下：</p>
@@ -156,7 +437,7 @@
 </ul>
 <p>​    由于，多<code>Reactor</code>单进程 / 线程实现⽅案相⽐单<code>Reactor</code>单进程 / 线程⽅案，不仅复杂⽽且也没有性能优势，因此实际中并没有应⽤。</p>
 <h4 id="5-3-1-单Reactor单进程-线程"><a href="#5-3-1-单Reactor单进程-线程" class="headerlink" title="5.3.1 单Reactor单进程/线程"></a>5.3.1 单Reactor单进程/线程</h4><p>​    下面介绍单进程的情况，在c实现中，一般都是这种，因为 C 语编写完的程序，运⾏后就是⼀个独⽴的进程，不需要在进程中再创建线程。而Java 程序是跑在 Java 虚拟机这个进程上⾯的，虚拟机中有很多线程，我们写的 Java 程序只是其中的⼀个线程⽽已。</p>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313100553600.png" alt="image-20220313100553600"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313100553600.png" srcset="/img/loading.gif" lazyload alt="image-20220313100553600"></p>
 <p>可以看到进程⾥有 <strong>Reactor</strong>、<strong>Acceptor</strong>、<strong>Handler</strong>这三个对象：</p>
 <ul>
 <li><p>Reactor 对象的作⽤是监听和分发事件；</p>
@@ -182,7 +463,7 @@
 <li>第⼆个缺点，Handler 对象在业务处理时，整个进程是⽆法处理其他连接的事件的，<strong>如果业务处理耗</strong></li>
 </ul>
 <p>​    所以单 Reactor 单进程的⽅案<strong>不适⽤计算机密集型的场景，只适⽤于业务处理⾮常快速的场景</strong></p>
-<h4 id="5-3-2-单Reactor多线程-进程"><a href="#5-3-2-单Reactor多线程-进程" class="headerlink" title="5.3.2 单Reactor多线程/进程"></a>5.3.2 单Reactor多线程/进程</h4><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313101836852.png" alt="image-20220313101836852"></p>
+<h4 id="5-3-2-单Reactor多线程-进程"><a href="#5-3-2-单Reactor多线程-进程" class="headerlink" title="5.3.2 单Reactor多线程/进程"></a>5.3.2 单Reactor多线程/进程</h4><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313101836852.png" srcset="/img/loading.gif" lazyload alt="image-20220313101836852"></p>
 <p>详细说⼀下这个⽅案：</p>
 <ul>
 <li><code>Reactor</code> 对象通过<code>select</code>（IO 多路复⽤接⼝） 监听事件，收到事件后通过<code>dispatch</code>进⾏分发，具体分发给<code>Acceptor</code>对象还是 <code>Handler </code>对象，还要看收到的事件类型；</li>
@@ -204,7 +485,7 @@
 <li>涉及共享数据的竞争</li>
 <li>因为⼀个Reactor对象承担所有事件的监听和响应，⽽且只在主线程中运⾏，在⾯对瞬间⾼并发的场景时，容易成为性能的瓶颈的地⽅。 </li>
 </ul>
-<h4 id="5-3-3-多Reactor多进程-线程"><a href="#5-3-3-多Reactor多进程-线程" class="headerlink" title="5.3.3 多Reactor多进程/线程"></a>5.3.3 多Reactor多进程/线程</h4><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313102730186.png" alt="image-20220313102730186"></p>
+<h4 id="5-3-3-多Reactor多进程-线程"><a href="#5-3-3-多Reactor多进程-线程" class="headerlink" title="5.3.3 多Reactor多进程/线程"></a>5.3.3 多Reactor多进程/线程</h4><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220313102730186.png" srcset="/img/loading.gif" lazyload alt="image-20220313102730186"></p>
 <p>⽅案详细说明如下：</p>
 <ul>
 <li><p>主线程中的 <code>MainReactor</code>对象通过 <code>select</code>监控连接建⽴事件，收到事件后通过 <code>Acceptor</code>对象中的<code>accept</code>获取连接，将新的连接分配给某个⼦线程；</p>
@@ -237,86 +518,408 @@
 </ul>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://blog.nowcoder.net/n/47ea22f3650043f8ac3ce1e7fd3ad61f">【网络编程】Netty采用的NIO为什么是同步非阻塞的？_牛客博客 (nowcoder.net)</a></p>
 <p>《图解系统》——小林coding</p>
-</div><div class="article-licensing box"><div class="licensing-title"><p>netty入门（一）</p><p><a href="https://2w1nd.github.io/2022/03/08/netty/netty入门（一）/">https://2w1nd.github.io/2022/03/08/netty/netty入门（一）/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>w1nd</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-03-08</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-03-26</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B/">网络模型</a><a class="link-muted mr-2" rel="tag" href="/tags/I-O/">I/O</a></div><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_telegram"></a><a class="a2a_button_whatsapp"></a><a class="a2a_button_reddit"></a></div><script src="https://static.addtoany.com/menu/page.js" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="/img/zhifubao.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="/img/wechat.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2022/03/09/Java/JDK8%E6%96%B0%E7%89%B9%E6%80%A7/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">JDK8新特性</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/03/06/%E6%A1%86%E6%9E%B6/RPC/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%9C%A8RPC%E4%B8%AD%E7%9A%84%E8%BF%90%E7%94%A8/"><span class="level-item">动态代理在RPC中的运用</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css"><script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script><script>var gitalk = new Gitalk({
-            id: "544d08f0b580ed6bb83501263be95926",
-            repo: "2w1nd.github.io",
-            owner: "2w1nd",
-            clientID: "86f226e9ed3278ed531f",
-            clientSecret: "650a04c534ecc65811ab5d3c679243fecd804b1a",
-            admin: ["2w1nd"],
-            createIssueManually: false,
-            distractionFreeMode: false,
-            perPage: 15,
-            pagerDirection: "last",
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%A1%86%E6%9E%B6/" class="category-chain-item">框架</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B/">#网络模型</a>
+      
+        <a href="/tags/I-O/">#I/O</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>netty入门（一）</div>
+      <div>https://2w1nd.github.io/2022/03/08/netty/netty入门（一）/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>w1nd</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年3月8日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
             
             
-            enableHotKey: true,
-            language: "zh-CN",
-        })
-        gitalk.render('comment-container')</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1-Netty是什么"><span class="level-left"><span class="level-item">1 Netty是什么</span></span></a></li><li><a class="level is-mobile" href="#2-IO模型"><span class="level-left"><span class="level-item">2 IO模型</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#BIO"><span class="level-left"><span class="level-item">BIO</span></span></a></li><li><a class="level is-mobile" href="#NIO"><span class="level-left"><span class="level-item">NIO</span></span></a></li><li><a class="level is-mobile" href="#BIO-VS-NIO"><span class="level-left"><span class="level-item">BIO VS NIO</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-NIO基本介绍"><span class="level-left"><span class="level-item">3 NIO基本介绍</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#3-1-Buffer"><span class="level-left"><span class="level-item">3.1 Buffer</span></span></a></li><li><a class="level is-mobile" href="#3-2-Channel"><span class="level-left"><span class="level-item">3.2 Channel</span></span></a></li><li><a class="level is-mobile" href="#3-3-Selector"><span class="level-left"><span class="level-item">3.3 Selector</span></span></a></li></ul></li><li><a class="level is-mobile" href="#4-零拷贝"><span class="level-left"><span class="level-item">4 零拷贝</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#4-1-基本介绍"><span class="level-left"><span class="level-item">4.1 基本介绍</span></span></a></li><li><a class="level is-mobile" href="#4-2-传统IO数据读写"><span class="level-left"><span class="level-item">4.2 传统IO数据读写</span></span></a></li><li><a class="level is-mobile" href="#4-3-mmap优化"><span class="level-left"><span class="level-item">4.3 mmap优化</span></span></a></li><li><a class="level is-mobile" href="#4-4-sendFile优化"><span class="level-left"><span class="level-item">4.4 sendFile优化</span></span></a></li></ul></li><li><a class="level is-mobile" href="#5-线程模型"><span class="level-left"><span class="level-item">5 线程模型</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#5-1-基本介绍"><span class="level-left"><span class="level-item">5.1 基本介绍</span></span></a></li><li><a class="level is-mobile" href="#5-2-传统阻塞I-O服务模型"><span class="level-left"><span class="level-item">5.2 传统阻塞I/O服务模型</span></span></a></li><li><a class="level is-mobile" href="#5-3-Reactor模式"><span class="level-left"><span class="level-item">5.3 Reactor模式</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#5-3-1-单Reactor单进程-线程"><span class="level-left"><span class="level-item">5.3.1 单Reactor单进程/线程</span></span></a></li><li><a class="level is-mobile" href="#5-3-2-单Reactor多线程-进程"><span class="level-left"><span class="level-item">5.3.2 单Reactor多线程/进程</span></span></a></li><li><a class="level is-mobile" href="#5-3-3-多Reactor多进程-线程"><span class="level-left"><span class="level-item">5.3.3 多Reactor多进程/线程</span></span></a></li><li><a class="level is-mobile" href="#总结"><span class="level-left"><span class="level-item">总结</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="#参考"><span class="level-left"><span class="level-item">参考</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a><p class="is-size-7"><span>&copy; 2022 w1nd</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>  <a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener"></a><br><span id="busuanzi_container_site_uv">共<span id="busuanzi_value_site_uv">0</span>个访客</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
-            article: {
-                highlight: {
-                    clipboard: true,
-                    fold: 'unfolded'
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/03/09/Java/JDK8%E6%96%B0%E7%89%B9%E6%80%A7/" title="JDK8新特性">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">JDK8新特性</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/03/06/%E6%A1%86%E6%9E%B6/RPC/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%9C%A8RPC%E4%B8%AD%E7%9A%84%E8%BF%90%E7%94%A8/" title="动态代理在RPC中的运用">
+                        <span class="hidden-mobile">动态代理在RPC中的运用</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
                 }
+              }
             }
-        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
-      window.cookieconsent.initialise({
-        type: "info",
-        theme: "edgeless",
-        static: false,
-        position: "bottom-left",
-        content: {
-          message: "此网站使用Cookie来改善您的体验。",
-          dismiss: "知道了！",
-          allow: "允许使用Cookie",
-          deny: "拒绝",
-          link: "了解更多",
-          policy: "Cookie政策",
-          href: "https://www.cookiesandyou.com/",
-        },
-        palette: {
-          popup: {
-            background: "#edeff5",
-            text: "#838391"
-          },
-          button: {
-            background: "#4b81e8"
-          },
-        },
-      });
-    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
-            if (typeof $.fn.lightGallery === 'function') {
-                $('.article').lightGallery({ selector: '.gallery-item' });
-            }
-            if (typeof $.fn.justifiedGallery === 'function') {
-                if ($('.justified-gallery > p > .gallery-item').length) {
-                    $('.justified-gallery > p > .gallery-item').unwrap();
-                }
-                $('.justified-gallery').justifiedGallery();
-            }
-        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
-            'HTML-CSS': {
-                matchFontHeight: false
-            },
-            SVG: {
-                matchFontHeight: false
-            },
-            CommonHTML: {
-                matchFontHeight: false
-            },
-            tex2jax: {
-                inlineMath: [
-                    ['$','$'],
-                    ['\\(','\\)']
-                ]
-            }
-        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
-            outdatedBrowser({
-                bgColor: '#f25648',
-                color: '#ffffff',
-                lowerThan: 'object-fit' // display on IE11 or below
-            });
-        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><script src="/js/night.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
-            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
-        });</script></body></html>
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

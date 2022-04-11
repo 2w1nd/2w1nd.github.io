@@ -1,5 +1,274 @@
-<!doctype html>
-<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Project3：Query Execution - 浅风w1ndの博客</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="w1nd&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="w1nd&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="pratice makes perfect"><meta property="og:type" content="blog"><meta property="og:title" content="w1nd"><meta property="og:url" content="https://2w1nd.github.io/2022/04/01/CMU15445/Project3%EF%BC%9AQuery-Execution/"><meta property="og:site_name" content="w1ndcode"><meta property="og:description" content="pratice makes perfect"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403165806880.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220402113526733.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220402141339718.png"><meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403160141549.png"><meta property="article:published_time" content="2022-04-01T13:13:19.000Z"><meta property="article:modified_time" content="2022-04-06T14:18:00.317Z"><meta property="article:author" content="w1nd"><meta property="article:tag" content="CMU15445"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403165806880.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://2w1nd.github.io/2022/04/01/CMU15445/Project3%EF%BC%9AQuery-Execution/"},"headline":"Project3：Query Execution","image":["https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403165806880.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220402113526733.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220402141339718.png","https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403160141549.png"],"datePublished":"2022-04-01T13:13:19.000Z","dateModified":"2022-04-06T14:18:00.317Z","author":{"@type":"Person","name":"w1nd"},"publisher":{"@type":"Organization","name":"浅风w1ndの博客","logo":{"@type":"ImageObject","url":"https://2w1nd.github.io/img/og_image.png"}},"description":"有关查询执行器的实现"}</script><link rel="canonical" href="https://2w1nd.github.io/2022/04/01/CMU15445/Project3%EF%BC%9AQuery-Execution/"><link rel="icon" href="/img/avatar.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" defer></script><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><meta name="generator" content="Hexo 6.0.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">存档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-lightbulb" id="night-icon"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-04-01T13:13:19.000Z" title="2022-4-1 21:13:19">2022-04-01</time>发表</span><span class="level-item"><time dateTime="2022-04-06T14:18:00.317Z" title="2022-4-6 22:18:00">2022-04-06</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Lab/">Lab</a></span><span class="level-item">27 分钟读完 (大约3976个字)</span><span class="level-item" id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv">0</span>次访问</span></div></div><h1 class="title is-3 is-size-4-mobile">Project3：Query Execution</h1><div class="content"><h2 id="0-前言-amp-要求"><a href="#0-前言-amp-要求" class="headerlink" title="0 前言 &amp; 要求"></a>0 前言 &amp; 要求</h2><p>​    该部分是让我们实现一个执行器，从而实现以下操作：</p>
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="w1nd">
+  <meta name="keywords" content="IT BLOG">
+  
+    <meta name="description" content="有关查询执行器的实现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Project3：Query Execution">
+<meta property="og:url" content="https://2w1nd.github.io/2022/04/01/CMU15445/Project3%EF%BC%9AQuery-Execution/index.html">
+<meta property="og:site_name" content="浅风w1ndの博客">
+<meta property="og:description" content="有关查询执行器的实现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403165806880.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220402113526733.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220402141339718.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403160141549.png">
+<meta property="article:published_time" content="2022-04-01T13:13:19.000Z">
+<meta property="article:modified_time" content="2022-04-06T14:18:00.317Z">
+<meta property="article:author" content="w1nd">
+<meta property="article:tag" content="CMU15445">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403165806880.png">
+  
+  
+  <title>Project3：Query Execution - 浅风w1ndの博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"2w1nd.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Project3：Query Execution"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-04-01 21:13" pubdate>
+          2022年4月1日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          10k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          87 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Project3：Query Execution</h1>
+            
+            <div class="markdown-body">
+              
+              <h2 id="0-前言-amp-要求"><a href="#0-前言-amp-要求" class="headerlink" title="0 前言 &amp; 要求"></a>0 前言 &amp; 要求</h2><p>​    该部分是让我们实现一个执行器，从而实现以下操作：</p>
 <ul>
 <li><strong>Access Methods:</strong> Sequential Scans, Index Scans (with your B+Tree from <a target="_blank" rel="noopener" href="https://15445.courses.cs.cmu.edu/fall2020/project2">Project #2</a>)</li>
 <li><strong>Modifications:</strong> Inserts, Updates, Deletes</li>
@@ -8,67 +277,67 @@
 <p>​    所有的执行器采用火山模型，也就是<strong>所有的 executor 向外暴露一个 Next 接口</strong>，ExecutorEngine 通过调用 Next 接口得到一条 tuple。</p>
 <p>​    一共有九个执行器。对于每种查询计划运算符类型，都有一个相应的执行器对象来实现Init和Next方法。Init方法初始化操作符的内部状态（如检索要扫表的对应表）。Next方法提供迭代器的接口，该接口在每次调用时返回一个记录和对应的RID（也可能是执行器已经结束的标志）。</p>
 <p>​    对应的头文件如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">src/include/execution/executors/seq_scan_executor.h</span><br><span class="line">src/include/execution/executors/insert_executor.h</span><br><span class="line">src/include/execution/executors/update_executor.h</span><br><span class="line">src/include/execution/executors/delete_executor.h</span><br><span class="line">src/include/execution/executors/nested_loop_join_executor.h</span><br><span class="line">src/include/execution/executors/hash_join_executor.h</span><br><span class="line">src/include/execution/executors/aggregation_executor.h</span><br><span class="line">src/include/execution/executors/limit_executor.h</span><br><span class="line">src/include/execution/executors/distinct_executor.h</span><br></pre></td></tr></table></figure>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs awk">src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/executors/</span>seq_scan_executor.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/executors/i</span>nsert_executor.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/executors/u</span>pdate_executor.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/executors/</span>delete_executor.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/executors/</span>nested_loop_join_executor.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/executors/</span>hash_join_executor.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/executors/</span>aggregation_executor.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/executors/</span>limit_executor.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/executors/</span>distinct_executor.h<br></code></pre></td></tr></table></figure>
 
 <p>​    每个执行器负责处理单个的Plan Node类型。Plan Node是组成查询计划的各个元素。每个Plan Node可以定义他所代表的操作符的特定信息。如：顺序扫描的Plan Node必须为执行扫描的表定义标识符，而Limit的Plan Node不需要此信息。相应的Plan Node在如下文件定义：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">src/include/execution/plans/seq_scan_plan.h</span><br><span class="line">src/include/execution/plans/insert_plan.h</span><br><span class="line">src/include/execution/plans/update_plan.h</span><br><span class="line">src/include/execution/plans/delete_plan.h</span><br><span class="line">src/include/execution/plans/nested_loop_join_plan.h</span><br><span class="line">src/include/execution/plans/hash_join_plan.h</span><br><span class="line">src/include/execution/plans/aggregation_plan.h</span><br><span class="line">src/include/execution/plans/limit_plan.h</span><br><span class="line">src/include/execution/plans/distinct_plan.h</span><br></pre></td></tr></table></figure>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs awk">src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/plans/</span>seq_scan_plan.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/plans/i</span>nsert_plan.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/plans/u</span>pdate_plan.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/plans/</span>delete_plan.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/plans/</span>nested_loop_join_plan.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/plans/</span>hash_join_plan.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/plans/</span>aggregation_plan.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/plans/</span>limit_plan.h<br>src<span class="hljs-regexp">/include/</span>execution<span class="hljs-regexp">/plans/</span>distinct_plan.h<br></code></pre></td></tr></table></figure>
 
 <h2 id="1-实验分析"><a href="#1-实验分析" class="headerlink" title="1 实验分析"></a>1 实验分析</h2><h3 id="1-1-概念"><a href="#1-1-概念" class="headerlink" title="1.1 概念"></a>1.1 概念</h3><p>​    该实验的难点感觉在于有许多API，类需要自己去研究，不然很难理清执行的逻辑，下面分析一些重要的概念与流程</p>
 <p><strong>ExecutionEngine</strong>：用于执行查询计划，其中只有一个Execute函数。该函数逻辑不难</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">Execute</span><span class="params">(<span class="keyword">const</span> AbstractPlanNode *plan, std::vector&lt;Tuple&gt; *result_set, Transaction *txn,</span></span></span><br><span class="line"><span class="params"><span class="function">             ExecutorContext *exec_ctx)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 创建一个执行器</span></span><br><span class="line">  <span class="keyword">auto</span> executor = ExecutorFactory::<span class="built_in">CreateExecutor</span>(exec_ctx, plan);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 对执行器进行初始化</span></span><br><span class="line">  executor-&gt;<span class="built_in">Init</span>();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 执行查询</span></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    Tuple tuple;</span><br><span class="line">    RID rid;</span><br><span class="line">    <span class="keyword">while</span> (executor-&gt;<span class="built_in">Next</span>(&amp;tuple, &amp;rid)) &#123; <span class="comment">// 循环调用执行的Next函数，并将结果插入result set中</span></span><br><span class="line">      <span class="keyword">if</span> (result_set != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        result_set-&gt;<span class="built_in">push_back</span>(tuple);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="built_in"><span class="keyword">catch</span></span> (Exception &amp;e) &#123;</span><br><span class="line">    <span class="comment">// TODO(student): handle exceptions</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">Execute</span><span class="hljs-params">(<span class="hljs-keyword">const</span> AbstractPlanNode *plan, std::vector&lt;Tuple&gt; *result_set, Transaction *txn,</span></span><br><span class="hljs-params"><span class="hljs-function">             ExecutorContext *exec_ctx)</span> </span>&#123;<br>  <span class="hljs-comment">// 创建一个执行器</span><br>  <span class="hljs-keyword">auto</span> executor = ExecutorFactory::<span class="hljs-built_in">CreateExecutor</span>(exec_ctx, plan);<br><br>  <span class="hljs-comment">// 对执行器进行初始化</span><br>  executor-&gt;<span class="hljs-built_in">Init</span>();<br><br>  <span class="hljs-comment">// 执行查询</span><br>  <span class="hljs-keyword">try</span> &#123;<br>    Tuple tuple;<br>    RID rid;<br>    <span class="hljs-keyword">while</span> (executor-&gt;<span class="hljs-built_in">Next</span>(&amp;tuple, &amp;rid)) &#123; <span class="hljs-comment">// 循环调用执行的Next函数，并将结果插入result set中</span><br>      <span class="hljs-keyword">if</span> (result_set != <span class="hljs-literal">nullptr</span>) &#123;<br>        result_set-&gt;<span class="hljs-built_in">push_back</span>(tuple);<br>      &#125;<br>    &#125;<br>  &#125; <span class="hljs-built_in"><span class="hljs-keyword">catch</span></span> (Exception &amp;e) &#123;<br>    <span class="hljs-comment">// TODO(student): handle exceptions</span><br>  &#125;<br>  <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <p><strong>ExecutorFactory</strong>：根据Node Plan去创建执行器，以下是其创建执行器的代码片段：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::unique_ptr&lt;AbstractExecutor&gt; <span class="title">ExecutorFactory::CreateExecutor</span><span class="params">(ExecutorContext *exec_ctx,</span></span></span><br><span class="line"><span class="params"><span class="function">                                                                  <span class="keyword">const</span> AbstractPlanNode *plan)</span> </span>&#123;</span><br><span class="line">  <span class="built_in"><span class="keyword">switch</span></span> (plan-&gt;<span class="built_in">GetType</span>()) &#123;</span><br><span class="line">    <span class="comment">// Create a new sequential scan executor</span></span><br><span class="line">    <span class="keyword">case</span> PlanType::SeqScan: &#123;</span><br><span class="line">      <span class="keyword">return</span> std::make_unique&lt;SeqScanExecutor&gt;(exec_ctx, <span class="keyword">dynamic_cast</span>&lt;<span class="keyword">const</span> SeqScanPlanNode *&gt;(plan));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Create a new index scan executor</span></span><br><span class="line">    <span class="keyword">case</span> PlanType::IndexScan: &#123;</span><br><span class="line">      <span class="keyword">return</span> std::make_unique&lt;IndexScanExecutor&gt;(exec_ctx, <span class="keyword">dynamic_cast</span>&lt;<span class="keyword">const</span> IndexScanPlanNode *&gt;(plan));</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">std::unique_ptr&lt;AbstractExecutor&gt; <span class="hljs-title">ExecutorFactory::CreateExecutor</span><span class="hljs-params">(ExecutorContext *exec_ctx,</span></span><br><span class="hljs-params"><span class="hljs-function">                                                                  <span class="hljs-keyword">const</span> AbstractPlanNode *plan)</span> </span>&#123;<br>  <span class="hljs-built_in"><span class="hljs-keyword">switch</span></span> (plan-&gt;<span class="hljs-built_in">GetType</span>()) &#123;<br>    <span class="hljs-comment">// Create a new sequential scan executor</span><br>    <span class="hljs-keyword">case</span> PlanType::SeqScan: &#123;<br>      <span class="hljs-keyword">return</span> std::make_unique&lt;SeqScanExecutor&gt;(exec_ctx, <span class="hljs-keyword">dynamic_cast</span>&lt;<span class="hljs-keyword">const</span> SeqScanPlanNode *&gt;(plan));<br>    &#125;<br>    <span class="hljs-comment">// Create a new index scan executor</span><br>    <span class="hljs-keyword">case</span> PlanType::IndexScan: &#123;<br>      <span class="hljs-keyword">return</span> std::make_unique&lt;IndexScanExecutor&gt;(exec_ctx, <span class="hljs-keyword">dynamic_cast</span>&lt;<span class="hljs-keyword">const</span> IndexScanPlanNode *&gt;(plan));<br>    &#125;<br>    ......<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <p><strong>Execution Plan</strong>：Executor Type Specific的创建参数（包含children、predicate、table_oid等）。对应类为<code>AbstractPlanNode</code>，其中主要函数与对象为：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">	此计划节点的输出模式。在火山模型中，每个计划节点都会吐出元组，这告诉您这个计划节点的元组将具有什么模式</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">const</span> Schema *output_schema_;</span><br><span class="line"><span class="comment">/** 此计划节点的子节点 */</span></span><br><span class="line">std::vector&lt;<span class="keyword">const</span> AbstractPlanNode *&gt; children_;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/**</span><br><span class="hljs-comment">	此计划节点的输出模式。在火山模型中，每个计划节点都会吐出元组，这告诉您这个计划节点的元组将具有什么模式</span><br><span class="hljs-comment">*/</span><br><span class="hljs-keyword">const</span> Schema *output_schema_;<br><span class="hljs-comment">/** 此计划节点的子节点 */</span><br>std::vector&lt;<span class="hljs-keyword">const</span> AbstractPlanNode *&gt; children_;<br></code></pre></td></tr></table></figure>
 
 <p><strong>Execution Context</strong>：Executor Type Irrelavent的创建参数（包含各种manager、catalog等）。一般是指<strong>存储运行程序所需的上下文</strong>。以下是其中包含的对象：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** 与此执行程序上下文关联的事务上下文 */</span></span><br><span class="line">Transaction *transaction_;</span><br><span class="line"><span class="comment">/** 与此执行程序上下文关联的数据库目录 */</span></span><br><span class="line">Catalog *catalog_;</span><br><span class="line"><span class="comment">/** 与此执行程序上下文关联的缓冲池管理器 */</span></span><br><span class="line">BufferPoolManager *bpm_;</span><br><span class="line"><span class="comment">/** 与此执行程序上下文关联的事务管理器 */</span></span><br><span class="line">TransactionManager *txn_mgr_;</span><br><span class="line"><span class="comment">/** 与此执行器上下文关联的锁管理器 */</span></span><br><span class="line">LockManager *lock_mgr_;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/** 与此执行程序上下文关联的事务上下文 */</span><br>Transaction *transaction_;<br><span class="hljs-comment">/** 与此执行程序上下文关联的数据库目录 */</span><br>Catalog *catalog_;<br><span class="hljs-comment">/** 与此执行程序上下文关联的缓冲池管理器 */</span><br>BufferPoolManager *bpm_;<br><span class="hljs-comment">/** 与此执行程序上下文关联的事务管理器 */</span><br>TransactionManager *txn_mgr_;<br><span class="hljs-comment">/** 与此执行器上下文关联的锁管理器 */</span><br>LockManager *lock_mgr_;<br></code></pre></td></tr></table></figure>
 
 <p><strong>AbstractPlanNode</strong>：对SQL语句的操作进行拆分，形成一个树，其中的每一个节点就对应一个executor，而AbstractPlanNode类包含执行该节点功能需要的一些材料。该抽象类包括其子节点，以及向上返回的列格式（Schema）。</p>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403165806880.png" alt="image-20220403165806880"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403165806880.png" srcset="/img/loading.gif" lazyload alt="image-20220403165806880"></p>
 <p><strong>Schema</strong>：本质是Column类的集合，即一个表中的所有列。其中包含的对象为：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** 固定长度的列大小，即一个元组使用的字节数。 */</span></span><br><span class="line"><span class="keyword">uint32_t</span> length_;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** schema中的所有列，内嵌和非内嵌的 */</span></span><br><span class="line">std::vector&lt;Column&gt; columns_;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 如果所有列都被内联，则为真，否则为假 */</span></span><br><span class="line"><span class="keyword">bool</span> tuple_is_inlined_;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 所有未内联列的索引 */</span></span><br><span class="line">std::vector&lt;<span class="keyword">uint32_t</span>&gt; uninlined_columns_;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/** 固定长度的列大小，即一个元组使用的字节数。 */</span><br><span class="hljs-keyword">uint32_t</span> length_;<br><br><span class="hljs-comment">/** schema中的所有列，内嵌和非内嵌的 */</span><br>std::vector&lt;Column&gt; columns_;<br><br><span class="hljs-comment">/** 如果所有列都被内联，则为真，否则为假 */</span><br><span class="hljs-keyword">bool</span> tuple_is_inlined_;<br><br><span class="hljs-comment">/** 所有未内联列的索引 */</span><br>std::vector&lt;<span class="hljs-keyword">uint32_t</span>&gt; uninlined_columns_;<br></code></pre></td></tr></table></figure>
 
 <p><strong>Column</strong>：列。包含该column的名字、类型，以及一个Expression（optional），描述该column如何构造。其中包含的主要对象：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** 列名. */</span></span><br><span class="line">std::string column_name_;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 列的长度. */</span></span><br><span class="line">TypeId column_type_;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 对于非内联列，这是指针的大小。否则，固定长度列的大小 */</span></span><br><span class="line"><span class="keyword">uint32_t</span> fixed_length_;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 对于内联列，为 0。否则为可变长度列的长度 */</span></span><br><span class="line"><span class="keyword">uint32_t</span> variable_length_&#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 元组中的列偏移 */</span></span><br><span class="line"><span class="keyword">uint32_t</span> column_offset_&#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 用于创建此列的表达式 **/</span></span><br><span class="line"><span class="keyword">const</span> AbstractExpression *expr_;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/** 列名. */</span><br>std::string column_name_;<br><br><span class="hljs-comment">/** 列的长度. */</span><br>TypeId column_type_;<br><br><span class="hljs-comment">/** 对于非内联列，这是指针的大小。否则，固定长度列的大小 */</span><br><span class="hljs-keyword">uint32_t</span> fixed_length_;<br><br><span class="hljs-comment">/** 对于内联列，为 0。否则为可变长度列的长度 */</span><br><span class="hljs-keyword">uint32_t</span> variable_length_&#123;<span class="hljs-number">0</span>&#125;;<br><br><span class="hljs-comment">/** 元组中的列偏移 */</span><br><span class="hljs-keyword">uint32_t</span> column_offset_&#123;<span class="hljs-number">0</span>&#125;;<br><br><span class="hljs-comment">/** 用于创建此列的表达式 **/</span><br><span class="hljs-keyword">const</span> AbstractExpression *expr_;<br></code></pre></td></tr></table></figure>
 
 <p><strong>Tuple</strong>：行。包含Data和RID。<strong>注意，tuple中不存储schema</strong>；TableHeap中不直接在page中保存tuple，而是保存serialize后的tuple data。以下是其中的对象：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> allocated_&#123;<span class="literal">false</span>&#125;;  <span class="comment">// is allocated?</span></span><br><span class="line">RID rid_&#123;&#125;;              <span class="comment">// 如果指向表堆，则 rid 有效</span></span><br><span class="line"><span class="keyword">uint32_t</span> size_&#123;<span class="number">0</span>&#125;;</span><br><span class="line"><span class="keyword">char</span> *data_&#123;<span class="literal">nullptr</span>&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">bool</span> allocated_&#123;<span class="hljs-literal">false</span>&#125;;  <span class="hljs-comment">// is allocated?</span><br>RID rid_&#123;&#125;;              <span class="hljs-comment">// 如果指向表堆，则 rid 有效</span><br><span class="hljs-keyword">uint32_t</span> size_&#123;<span class="hljs-number">0</span>&#125;;<br><span class="hljs-keyword">char</span> *data_&#123;<span class="hljs-literal">nullptr</span>&#125;;<br></code></pre></td></tr></table></figure>
 
 <p><strong>Value</strong>：表示一个值（Int、Char、Varchar等）。用一个Value vector和一个schema，可以构建一个tuple。</p>
 <p><strong>TableHeap</strong>：磁盘中的一个物理表。其中的主要对象</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BufferPoolManager *buffer_pool_manager_;</span><br><span class="line">LockManager *lock_manager_;</span><br><span class="line">LogManager *log_manager_;</span><br><span class="line"><span class="keyword">page_id_t</span> first_page_id_&#123;&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp">BufferPoolManager *buffer_pool_manager_;<br>LockManager *lock_manager_;<br>LogManager *log_manager_;<br><span class="hljs-keyword">page_id_t</span> first_page_id_&#123;&#125;;<br></code></pre></td></tr></table></figure>
 
 <p><strong>TableIterator</strong>：提供对TableHeap进行顺序遍历的方法，其只存储了当前一条记录。其重载了一些基本符号，有：==, !=, ++, -&gt;, =。存储一个当前Tuple。在取*时返回该tuple；在递增(++)时，取出该tuple中的rid，在table中定位对应的slot。然后逐slot向下遍历，直至找到下一个valid rid。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TableHeap *table_heap_;</span><br><span class="line">Tuple *tuple_;</span><br><span class="line">Transaction *txn_;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp">TableHeap *table_heap_;<br>Tuple *tuple_;<br>Transaction *txn_;<br></code></pre></td></tr></table></figure>
 
 <p><strong>RID</strong>：记录tuple的存储位置。包括page id+slot id。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">page_id_t</span> page_id_&#123;INVALID_PAGE_ID&#125;;</span><br><span class="line"><span class="keyword">uint32_t</span> slot_num_&#123;<span class="number">0</span>&#125;;  <span class="comment">// logical offset from 0, 1...</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">page_id_t</span> page_id_&#123;INVALID_PAGE_ID&#125;;<br><span class="hljs-keyword">uint32_t</span> slot_num_&#123;<span class="hljs-number">0</span>&#125;;  <span class="hljs-comment">// logical offset from 0, 1...</span><br></code></pre></td></tr></table></figure>
 
 <p><strong>Expression</strong>：以树的形式递归地表示一个表达式。Expression共包含Const、Comparison、Column、Aggregation四种类型，分别用于不同的场合。</p>
 <p><strong>Catalog</strong>：描述着数据库内部表和索引的元数据，存储着数据库中 有哪些 table， 每个 table 的 schema 是怎么样的，每个 table 有哪些 index， index 有哪些元数据等等。以下是其中包含的两个主要对象：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">constexpr</span> TableInfo *NULL_TABLE_INFO&#123;<span class="literal">nullptr</span>&#125;;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">constexpr</span> IndexInfo *NULL_INDEX_INFO&#123;<span class="literal">nullptr</span>&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">static</span> <span class="hljs-keyword">constexpr</span> TableInfo *NULL_TABLE_INFO&#123;<span class="hljs-literal">nullptr</span>&#125;;<br><span class="hljs-keyword">static</span> <span class="hljs-keyword">constexpr</span> IndexInfo *NULL_INDEX_INFO&#123;<span class="hljs-literal">nullptr</span>&#125;;<br></code></pre></td></tr></table></figure>
 
 <ul>
 <li><p>TableInfo：维护表的有关数据，其中包含的主要对象：</p>
-  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The table schema */</span></span><br><span class="line">Schema schema_;</span><br><span class="line"><span class="comment">/** The table name */</span></span><br><span class="line"><span class="keyword">const</span> std::string name_;</span><br><span class="line"><span class="comment">/** An owning pointer to the table heap */</span></span><br><span class="line">std::unique_ptr&lt;TableHeap&gt; table_;</span><br><span class="line"><span class="comment">/** The table OID */</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">table_oid_t</span> oid_;</span><br></pre></td></tr></table></figure></li>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/** The table schema */</span><br>Schema schema_;<br><span class="hljs-comment">/** The table name */</span><br><span class="hljs-keyword">const</span> std::string name_;<br><span class="hljs-comment">/** An owning pointer to the table heap */</span><br>std::unique_ptr&lt;TableHeap&gt; table_;<br><span class="hljs-comment">/** The table OID */</span><br><span class="hljs-keyword">const</span> <span class="hljs-keyword">table_oid_t</span> oid_;<br></code></pre></td></tr></table></figure></li>
 <li><p>IndexInfo：维护有关索引的元数据，其中包含的主要对象：</p>
-  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The schema for the index key */</span></span><br><span class="line">Schema key_schema_;</span><br><span class="line"><span class="comment">/** The name of the index */</span></span><br><span class="line">std::string name_;</span><br><span class="line"><span class="comment">/** An owning pointer to the index */</span></span><br><span class="line">std::unique_ptr&lt;Index&gt; index_;</span><br><span class="line"><span class="comment">/** The unique OID for the index */</span></span><br><span class="line"><span class="keyword">index_oid_t</span> index_oid_;</span><br><span class="line"><span class="comment">/** The name of the table on which the index is created */</span></span><br><span class="line">std::string table_name_;</span><br><span class="line"><span class="comment">/** The size of the index key, in bytes */</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">size_t</span> key_size_;</span><br></pre></td></tr></table></figure></li>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/** The schema for the index key */</span><br>Schema key_schema_;<br><span class="hljs-comment">/** The name of the index */</span><br>std::string name_;<br><span class="hljs-comment">/** An owning pointer to the index */</span><br>std::unique_ptr&lt;Index&gt; index_;<br><span class="hljs-comment">/** The unique OID for the index */</span><br><span class="hljs-keyword">index_oid_t</span> index_oid_;<br><span class="hljs-comment">/** The name of the table on which the index is created */</span><br>std::string table_name_;<br><span class="hljs-comment">/** The size of the index key, in bytes */</span><br><span class="hljs-keyword">const</span> <span class="hljs-keyword">size_t</span> key_size_;<br></code></pre></td></tr></table></figure></li>
 </ul>
-<h3 id="1-2-整体逻辑"><a href="#1-2-整体逻辑" class="headerlink" title="1.2 整体逻辑"></a>1.2 整体逻辑</h3><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220402113526733.png" alt="image-20220402113526733"></p>
+<h3 id="1-2-整体逻辑"><a href="#1-2-整体逻辑" class="headerlink" title="1.2 整体逻辑"></a>1.2 整体逻辑</h3><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220402113526733.png" srcset="/img/loading.gif" lazyload alt="image-20220402113526733"></p>
 <ol>
 <li>上层组件与Execution Engine交互。</li>
 <li>在Execution Engine中，首先调用Execution Factory递归创建Executor。然后不断调用Executor的Next()方法，生成Tuple。</li>
 <li>在创建Executor时，需要提供Execution Plan与Execution Context。</li>
 </ol>
-<h3 id="1-3-AbstractExpression"><a href="#1-3-AbstractExpression" class="headerlink" title="1.3 AbstractExpression"></a>1.3 AbstractExpression</h3><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220402141339718.png" alt="image-20220402141339718"></p>
+<h3 id="1-3-AbstractExpression"><a href="#1-3-AbstractExpression" class="headerlink" title="1.3 AbstractExpression"></a>1.3 AbstractExpression</h3><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220402141339718.png" srcset="/img/loading.gif" lazyload alt="image-20220402141339718"></p>
 <p>​    该抽象类是所有表达式的基类。它会被建模为树，即每个表达式可能有可变数量的子级。</p>
 <p>​    里面主要实现的方法有以下几个：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AbstractExpression</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  	...</span><br><span class="line">    <span class="comment">// 通过使用给定模式评估元组获得的值</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> Value <span class="title">Evaluate</span><span class="params">(<span class="keyword">const</span> Tuple *tuple, <span class="keyword">const</span> Schema *schema)</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 返回通过评估join的值</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> Value <span class="title">EvaluateJoin</span><span class="params">(<span class="keyword">const</span> Tuple *left_tuple, <span class="keyword">const</span> Schema *left_schema, <span class="keyword">const</span> Tuple *right_tuple,</span></span></span><br><span class="line"><span class="params"><span class="function">                             <span class="keyword">const</span> Schema *right_schema)</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">  	<span class="comment">// 返回通过评估聚合获得的值。</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> Value <span class="title">EvaluateAggregate</span><span class="params">(<span class="keyword">const</span> std::vector&lt;Value&gt; &amp;group_bys, <span class="keyword">const</span> std::vector&lt;Value&gt; &amp;aggregates)</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">    ...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">/** The children of this expression. Note that the order of appearance of children may matter. */</span></span><br><span class="line">    std::vector&lt;<span class="keyword">const</span> AbstractExpression *&gt; children_;</span><br><span class="line">    <span class="comment">/** The return type of this expression. */</span></span><br><span class="line">    TypeId ret_type_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AbstractExpression</span> &#123;</span><br><span class="hljs-keyword">public</span>:<br>  	...<br>    <span class="hljs-comment">// 通过使用给定模式评估元组获得的值</span><br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> Value <span class="hljs-title">Evaluate</span><span class="hljs-params">(<span class="hljs-keyword">const</span> Tuple *tuple, <span class="hljs-keyword">const</span> Schema *schema)</span> <span class="hljs-keyword">const</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-comment">// 返回通过评估join的值</span><br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> Value <span class="hljs-title">EvaluateJoin</span><span class="hljs-params">(<span class="hljs-keyword">const</span> Tuple *left_tuple, <span class="hljs-keyword">const</span> Schema *left_schema, <span class="hljs-keyword">const</span> Tuple *right_tuple,</span></span><br><span class="hljs-params"><span class="hljs-function">                             <span class="hljs-keyword">const</span> Schema *right_schema)</span> <span class="hljs-keyword">const</span> </span>= <span class="hljs-number">0</span>;<br>  	<span class="hljs-comment">// 返回通过评估聚合获得的值。</span><br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> Value <span class="hljs-title">EvaluateAggregate</span><span class="hljs-params">(<span class="hljs-keyword">const</span> std::vector&lt;Value&gt; &amp;group_bys, <span class="hljs-keyword">const</span> std::vector&lt;Value&gt; &amp;aggregates)</span> <span class="hljs-keyword">const</span> </span>= <span class="hljs-number">0</span>;<br>    ...<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-comment">/** The children of this expression. Note that the order of appearance of children may matter. */</span><br>    std::vector&lt;<span class="hljs-keyword">const</span> AbstractExpression *&gt; children_;<br>    <span class="hljs-comment">/** The return type of this expression. */</span><br>    TypeId ret_type_;<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403160141549.png" alt="image-20220403160141549"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220403160141549.png" srcset="/img/loading.gif" lazyload alt="image-20220403160141549"></p>
 <ul>
 <li><p>ConstantValueExpression </p>
 <p>  ​    Evaluate()方法返回这个常量。这个Expression主要作为后面类型节点的子树。EvaluateAggregate()方法是给ComparisonExpression的EvaluateAggregate()使用的，可以不管。</p>
@@ -93,7 +362,7 @@
 </ul>
 <h2 id="2-实验过程"><a href="#2-实验过程" class="headerlink" title="2 实验过程"></a>2 实验过程</h2><h3 id="2-1-Sequential-Scan"><a href="#2-1-Sequential-Scan" class="headerlink" title="2.1 Sequential Scan"></a>2.1 Sequential Scan</h3><p>​    该执行器用于顺序遍历表并<strong>一次返回一条</strong>记录。其中，SeqScanPlanNode包含将要扫描的表编号以及断言（predicate），如果某条记录不满足<code>predicate</code>，则不允许生成记录，相当于where。</p>
 <p>​    该部分还是比较简单的，定义一个<code>TableIterator</code>用于遍历<code>TableHeap</code>。这里要注意的是：不能直接将<code>TableIterator</code>返回的<code>Tuple</code>作为输出，因为有可能<code>plan</code>中的<code>out_schema</code>仅仅只是<code>TableHeapIterator</code>的一个映射（意思就是可能只需要查询部分列，需要筛选出需要查询的列）。大致筛选代码如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 筛选哪些列将要返回</span></span><br><span class="line">std::vector&lt;Value&gt; values;</span><br><span class="line">values.<span class="built_in">reserve</span>(output_schema-&gt;<span class="built_in">GetColumnCount</span>());</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; values.<span class="built_in">capacity</span>(); ++i) &#123;</span><br><span class="line">  values.<span class="built_in">push_back</span>(output_schema-&gt;<span class="built_in">GetColumn</span>(i).<span class="built_in">GetExpr</span>()-&gt;<span class="built_in">Evaluate</span>(</span><br><span class="line">      <span class="comment">// 注意这里由于TableIterator重载了*运算符，这里返回的是其指向tuple</span></span><br><span class="line">      &amp;(*iter_), &amp;(exec_ctx_-&gt;<span class="built_in">GetCatalog</span>()-&gt;<span class="built_in">GetTable</span>(plan_-&gt;<span class="built_in">GetTableOid</span>())-&gt;schema_)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 筛选哪些列将要返回</span><br>std::vector&lt;Value&gt; values;<br>values.<span class="hljs-built_in">reserve</span>(output_schema-&gt;<span class="hljs-built_in">GetColumnCount</span>());<br><span class="hljs-keyword">for</span> (<span class="hljs-keyword">size_t</span> i = <span class="hljs-number">0</span>; i &lt; values.<span class="hljs-built_in">capacity</span>(); ++i) &#123;<br>  values.<span class="hljs-built_in">push_back</span>(output_schema-&gt;<span class="hljs-built_in">GetColumn</span>(i).<span class="hljs-built_in">GetExpr</span>()-&gt;<span class="hljs-built_in">Evaluate</span>(<br>      <span class="hljs-comment">// 注意这里由于TableIterator重载了*运算符，这里返回的是其指向tuple</span><br>      &amp;(*iter_), &amp;(exec_ctx_-&gt;<span class="hljs-built_in">GetCatalog</span>()-&gt;<span class="hljs-built_in">GetTable</span>(plan_-&gt;<span class="hljs-built_in">GetTableOid</span>())-&gt;schema_)));<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <p>​    这样，再使用<code>Tuple temp_tuple(values, output_schema);</code>生成新的<code>Tuple</code>，进行判断<code>predicate</code>即可</p>
 <h3 id="2-2-Insert"><a href="#2-2-Insert" class="headerlink" title="2.2 Insert"></a>2.2 Insert</h3><p>​    InsertExecutor<strong>将记录插入表中并更新索引</strong>。这里的要求是不仅要实现原始插入（<code>Insert into ... Values (...)</code>），还要实现子查询插入（<code>Insert into ... Select ...</code>）。这里要知道的是，要通过<code>exec_ctx_-&gt;GetCatalog()</code>获取<code>catalog</code>，并调用<code>catalog_-&gt;GetTableIndexes(table_info_-&gt;name_)</code>得到某张表的索引。插入索引有提供好的API，直接调用即可。</p>
@@ -104,7 +373,7 @@
 <p>​    该执行器应实现本课程中介绍的简单嵌套循环连接算法。也就是说，对于联接的外部表中的每行记录，应考虑内部表中的每行记录。如果满足联接谓词，则应返回记录。这里的实现可以通过计算笛卡尔积并做筛选的方式。可以在<code>Init</code>中计算<code>Join</code>的结果，然后通过<code>Next</code>读取结果。注意使用<code>EvaluateJoin</code>判断两个行是否匹配。然后将匹配列输出到一个<code>output</code>，将每一行push到<code>result</code>中。在Next中返回即可。</p>
 <h3 id="2-6-Hash-Join"><a href="#2-6-Hash-Join" class="headerlink" title="2.6 Hash Join"></a>2.6 Hash Join</h3><p>​    HashJoinExecutor实现了一个哈希连接操作，该操作将来自其两个子执行器的记录组合在一起。顾名思义，哈希连接实在哈希表的帮助下实现的。</p>
 <p>​    这里没有提供哈希方法，所以需要我们来实现，代码如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> bustub &#123;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">HashJoinKey</span> &#123;</span></span><br><span class="line">  Value key_;</span><br><span class="line">  <span class="keyword">bool</span> <span class="keyword">operator</span>==(<span class="keyword">const</span> HashJoinKey &amp;other) <span class="keyword">const</span> &#123; <span class="keyword">return</span> key_.<span class="built_in">CompareEquals</span>(other.key_) == CmpBool::CmpTrue; &#125;</span><br><span class="line">&#125;;</span><br><span class="line">&#125;  <span class="comment">// namespace bustub</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> std &#123;</span><br><span class="line"><span class="keyword">template</span> &lt;&gt;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">hash</span>&lt;</span>bustub::HashJoinKey&gt; &#123;</span><br><span class="line">  <span class="function">std::<span class="keyword">size_t</span> <span class="title">operator</span><span class="params">()</span><span class="params">(<span class="keyword">const</span> bustub::HashJoinKey &amp;key)</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> bustub::HashUtil::<span class="built_in">HashValue</span>(&amp;key.key_); &#125;</span><br><span class="line">&#125;;</span><br><span class="line">&#125;  <span class="comment">// namespace std</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">namespace</span> bustub &#123;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">HashJoinKey</span> &#123;</span><br>  Value key_;<br>  <span class="hljs-keyword">bool</span> <span class="hljs-keyword">operator</span>==(<span class="hljs-keyword">const</span> HashJoinKey &amp;other) <span class="hljs-keyword">const</span> &#123; <span class="hljs-keyword">return</span> key_.<span class="hljs-built_in">CompareEquals</span>(other.key_) == CmpBool::CmpTrue; &#125;<br>&#125;;<br>&#125;  <span class="hljs-comment">// namespace bustub</span><br><br><span class="hljs-keyword">namespace</span> std &#123;<br><span class="hljs-keyword">template</span> &lt;&gt;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">hash</span>&lt;</span>bustub::HashJoinKey&gt; &#123;<br>  <span class="hljs-function">std::<span class="hljs-keyword">size_t</span> <span class="hljs-title">operator</span><span class="hljs-params">()</span><span class="hljs-params">(<span class="hljs-keyword">const</span> bustub::HashJoinKey &amp;key)</span> <span class="hljs-keyword">const</span> </span>&#123; <span class="hljs-keyword">return</span> bustub::HashUtil::<span class="hljs-built_in">HashValue</span>(&amp;key.key_); &#125;<br>&#125;;<br>&#125;  <span class="hljs-comment">// namespace std</span><br></code></pre></td></tr></table></figure>
 
 <p>​    同样的，依旧在<code>Init</code>中求出所有结果，在<code>Next</code>中进行返回。在遍历时，先把左表的内容散列到哈希表里，然后再遍历右表，构造结果。总体思路是先将左表中的全部列根据join条件散列到一张哈希表中，然后遍历右表，右表中的每行数据都要根据join条件的哈希结果在之前得到的哈希表中找到所有行，并一一组合。这样得到的结果才能是笛卡尔积。</p>
 <h3 id="2-7-Aggregation"><a href="#2-7-Aggregation" class="headerlink" title="2.7 Aggregation"></a>2.7 Aggregation</h3><p>​    此执行器将来自单个子执行器的多条记录的结果合并到一条记录中。这是所有执行器最难实现的一个，是基于哈希表实现的，但由于已经提供了一些API，所以只需要调用即可。通过将子查询器的数据插入到哈希表中，然后遍历时判断是否满足having条件。</p>
@@ -121,86 +390,406 @@
 </blockquote>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/sun-lingyu/p/15316626.html">CMU15-445 Lab3 Query Execution全记录 - sun-lingyu - 博客园 (cnblogs.com)</a></p>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/twentyonepilots/article/details/120868216">CMU15-445 数据库实验全满分通过笔记 2021 Fall bustub-cmudb lab_twentyonepilots的博客-CSDN博客_cmu15-445</a></p>
-</div><div class="article-licensing box"><div class="licensing-title"><p>Project3：Query Execution</p><p><a href="https://2w1nd.github.io/2022/04/01/CMU15445/Project3：Query-Execution/">https://2w1nd.github.io/2022/04/01/CMU15445/Project3：Query-Execution/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>w1nd</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-04-01</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-04-06</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/CMU15445/">CMU15445</a></div><div class="a2a_kit a2a_kit_size_32 a2a_default_style"><a class="a2a_dd" target="_blank" rel="noopener" href="https://www.addtoany.com/share"></a><a class="a2a_button_facebook"></a><a class="a2a_button_twitter"></a><a class="a2a_button_telegram"></a><a class="a2a_button_whatsapp"></a><a class="a2a_button_reddit"></a></div><script src="https://static.addtoany.com/menu/page.js" defer></script></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3><div class="buttons is-centered"><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>支付宝</span><span class="qrcode"><img src="/img/zhifubao.jpg" alt="支付宝"></span></a><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>微信</span><span class="qrcode"><img src="/img/wechat.jpg" alt="微信"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2022/04/03/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC75%E5%9C%BA%E5%8F%8C%E5%91%A8%E8%B5%9B/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">第75场双周赛</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/03/29/%E6%9D%82%E7%83%A9/4399%E9%9D%A2%E7%BB%8F/"><span class="level-item">4399面经</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="comment-container"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css"><script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script><script>var gitalk = new Gitalk({
-            id: "a0e80e572eddd4d64109b267faa99bab",
-            repo: "2w1nd.github.io",
-            owner: "2w1nd",
-            clientID: "86f226e9ed3278ed531f",
-            clientSecret: "650a04c534ecc65811ab5d3c679243fecd804b1a",
-            admin: ["2w1nd"],
-            createIssueManually: false,
-            distractionFreeMode: false,
-            perPage: 15,
-            pagerDirection: "last",
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Lab/" class="category-chain-item">Lab</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/CMU15445/">#CMU15445</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Project3：Query Execution</div>
+      <div>https://2w1nd.github.io/2022/04/01/CMU15445/Project3：Query-Execution/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>w1nd</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年4月1日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
             
             
-            enableHotKey: true,
-            language: "zh-CN",
-        })
-        gitalk.render('comment-container')</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#0-前言-amp-要求"><span class="level-left"><span class="level-item">0 前言 &amp; 要求</span></span></a></li><li><a class="level is-mobile" href="#1-实验分析"><span class="level-left"><span class="level-item">1 实验分析</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-1-概念"><span class="level-left"><span class="level-item">1.1 概念</span></span></a></li><li><a class="level is-mobile" href="#1-2-整体逻辑"><span class="level-left"><span class="level-item">1.2 整体逻辑</span></span></a></li><li><a class="level is-mobile" href="#1-3-AbstractExpression"><span class="level-left"><span class="level-item">1.3 AbstractExpression</span></span></a></li></ul></li><li><a class="level is-mobile" href="#2-实验过程"><span class="level-left"><span class="level-item">2 实验过程</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-Sequential-Scan"><span class="level-left"><span class="level-item">2.1 Sequential Scan</span></span></a></li><li><a class="level is-mobile" href="#2-2-Insert"><span class="level-left"><span class="level-item">2.2 Insert</span></span></a></li><li><a class="level is-mobile" href="#2-3-Update"><span class="level-left"><span class="level-item">2.3 Update</span></span></a></li><li><a class="level is-mobile" href="#2-4-Delete"><span class="level-left"><span class="level-item">2.4 Delete</span></span></a></li><li><a class="level is-mobile" href="#2-5-Nestde-Loop-Join"><span class="level-left"><span class="level-item">2.5 Nestde Loop Join</span></span></a></li><li><a class="level is-mobile" href="#2-6-Hash-Join"><span class="level-left"><span class="level-item">2.6 Hash Join</span></span></a></li><li><a class="level is-mobile" href="#2-7-Aggregation"><span class="level-left"><span class="level-item">2.7 Aggregation</span></span></a></li><li><a class="level is-mobile" href="#2-8-Limit"><span class="level-left"><span class="level-item">2.8 Limit</span></span></a></li><li><a class="level is-mobile" href="#2-9-Distinct"><span class="level-left"><span class="level-item">2.9 Distinct</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-自问自答"><span class="level-left"><span class="level-item">3 自问自答</span></span></a></li><li><a class="level is-mobile" href="#参考"><span class="level-left"><span class="level-item">参考</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/og_image.png" alt="浅风w1ndの博客" height="28"></a><p class="is-size-7"><span>&copy; 2022 w1nd</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>  <a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener"></a><br><span id="busuanzi_container_site_uv">共<span id="busuanzi_value_site_uv">0</span>个访客</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/2w1nd"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
-            article: {
-                highlight: {
-                    clipboard: true,
-                    fold: 'unfolded'
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/04/03/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC75%E5%9C%BA%E5%8F%8C%E5%91%A8%E8%B5%9B/" title="第75场双周赛">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">第75场双周赛</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/03/29/%E6%9D%82%E7%83%A9/4399%E9%9D%A2%E7%BB%8F/" title="4399面经">
+                        <span class="hidden-mobile">4399面经</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
                 }
+              }
             }
-        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
-      window.cookieconsent.initialise({
-        type: "info",
-        theme: "edgeless",
-        static: false,
-        position: "bottom-left",
-        content: {
-          message: "此网站使用Cookie来改善您的体验。",
-          dismiss: "知道了！",
-          allow: "允许使用Cookie",
-          deny: "拒绝",
-          link: "了解更多",
-          policy: "Cookie政策",
-          href: "https://www.cookiesandyou.com/",
-        },
-        palette: {
-          popup: {
-            background: "#edeff5",
-            text: "#838391"
-          },
-          button: {
-            background: "#4b81e8"
-          },
-        },
-      });
-    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
-            if (typeof $.fn.lightGallery === 'function') {
-                $('.article').lightGallery({ selector: '.gallery-item' });
-            }
-            if (typeof $.fn.justifiedGallery === 'function') {
-                if ($('.justified-gallery > p > .gallery-item').length) {
-                    $('.justified-gallery > p > .gallery-item').unwrap();
-                }
-                $('.justified-gallery').justifiedGallery();
-            }
-        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
-            'HTML-CSS': {
-                matchFontHeight: false
-            },
-            SVG: {
-                matchFontHeight: false
-            },
-            CommonHTML: {
-                matchFontHeight: false
-            },
-            tex2jax: {
-                inlineMath: [
-                    ['$','$'],
-                    ['\\(','\\)']
-                ]
-            }
-        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
-            outdatedBrowser({
-                bgColor: '#f25648',
-                color: '#ffffff',
-                lowerThan: 'object-fit' // display on IE11 or below
-            });
-        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><script src="/js/night.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
-            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
-        });</script></body></html>
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
