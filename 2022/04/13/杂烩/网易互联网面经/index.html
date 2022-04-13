@@ -16,23 +16,23 @@
   <meta name="author" content="w1nd">
   <meta name="keywords" content="IT BLOG">
   
-    <meta name="description" content="有关并发控制的实现">
+    <meta name="description" content="网易互联网面经">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Project4：Concurrency Control">
-<meta property="og:url" content="https://2w1nd.github.io/2022/04/03/CMU15445/Project4%EF%BC%9AConcurrency-Control/index.html">
+<meta property="og:title" content="网易互联网面经">
+<meta property="og:url" content="https://2w1nd.github.io/2022/04/13/%E6%9D%82%E7%83%A9/%E7%BD%91%E6%98%93%E4%BA%92%E8%81%94%E7%BD%91%E9%9D%A2%E7%BB%8F/index.html">
 <meta property="og:site_name" content="浅风w1ndの博客">
-<meta property="og:description" content="有关并发控制的实现">
+<meta property="og:description" content="网易互联网面经">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220411175423541.png">
-<meta property="article:published_time" content="2022-04-03T08:23:48.000Z">
-<meta property="article:modified_time" content="2022-04-11T09:55:07.970Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220411180128906.png">
+<meta property="article:published_time" content="2022-04-13T07:21:59.000Z">
+<meta property="article:modified_time" content="2022-04-13T12:44:03.158Z">
 <meta property="article:author" content="w1nd">
-<meta property="article:tag" content="CMU15445">
+<meta property="article:tag" content="IT BLOG">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220411175423541.png">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220411180128906.png">
   
   
-  <title>Project4：Concurrency Control - 浅风w1ndの博客</title>
+  <title>网易互联网面经 - 浅风w1ndの博客</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -191,7 +191,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Project4：Concurrency Control"></span>
+            <span id="subtitle" data-typed-text="网易互联网面经"></span>
           
         </div>
 
@@ -202,8 +202,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-04-03 16:23" pubdate>
-          2022年4月3日 下午
+        <time datetime="2022-04-13 15:21" pubdate>
+          2022年4月13日 下午
         </time>
       </span>
     
@@ -214,7 +214,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.7k 字
+          76 字
         
       </span>
     
@@ -225,7 +225,7 @@
         
         
         
-          32 分钟
+          1 分钟
         
       </span>
     
@@ -263,66 +263,17 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Project4：Concurrency Control</h1>
+            <h1 style="display: none">网易互联网面经</h1>
             
             <div class="markdown-body">
               
-              <h2 id="0-前言-amp-要求"><a href="#0-前言-amp-要求" class="headerlink" title="0 前言&amp;要求"></a>0 前言&amp;要求</h2><p>​    该部分是做一些并发控制的功能，在DBMS中实现一个<code>Lock Manager</code>，使用其来支持并发执行。锁管理器负责跟踪向事务发出的行级锁，并支持根据隔离级别适当的加上或释放共享锁或排他锁。    </p>
-<p>​    LM的基本思想是：维护一个关于活动事务当前持有的锁的内部数据结构，然后事务在访问数据项之前向LM发出锁请求，LM将根据情况决定锁授予该事务、阻止该事务还是终止该事务。在<code>Task1</code>中就要实现LM中的相关API</p>
-<ol>
-<li><code>LockShared(Transaction, RID)</code>：<code>Transaction txn</code>试图对记录<code>id RID</code>获取一个共享锁。这应该在等待时被阻塞，并且应该在授予时返回<code>true</code>。如果事务回滚(中止)则返回false。</li>
-<li><code>LockExclusive(Transaction, RID)</code>：<code>Transaction txn</code>图对记录<code>id RID</code>进行排他锁。这应该在等待时被阻塞，并且应该在授予时返回<code>true</code>。如果事务回滚(中止)则返回false。</li>
-<li><code>LockUpgrade(Transaction, RID)</code>：<code>Transaction txn</code>试图在记录<code>id RID</code>上将共享锁升级为排他锁。这应该在等待时被阻塞，并且应该在授予时返回<code>true</code>。如果事务回滚(中止)则返回<code>false</code>。这还应该中止事务，如果另一个事务已经在等待升级其锁，则返回<code>false</code>。</li>
-<li><code>Unlock(Transaction, RID)</code>：解锁由事务持有的给定记录<code>id</code>标识的记录。</li>
+              <h2 id="一面"><a href="#一面" class="headerlink" title="一面"></a>一面</h2><ol>
+<li>做题，两数之和（链表那种，而且头节点是高位）</li>
+<li>公平锁和非公平锁（结合AQS回答）</li>
+<li>数据库InnoDB为什么要用B+树</li>
+<li>redis使用的场景</li>
+<li>zset底层结构</li>
 </ol>
-<p>​    在设计时，还需要考虑隔离级别<code>READ_UNCOMMITED</code>，<code>READ_COMMITTED</code>和<code>REPEATABLE_READ</code>。LM将根据事务隔离级别来授予或释放锁。</p>
-<p>​    <code>Task2</code>是说实现的锁要注意进行死锁预防，使用<code>WOUND-WAIT</code>算法来决定中止哪些事务。</p>
-<p>​    <code>Task3</code>也就是将实现好的LM应用到Lab3中Executor里，以此增加对并发查询的支持。</p>
-<h2 id="1-实验分析"><a href="#1-实验分析" class="headerlink" title="1 实验分析"></a>1 实验分析</h2><h3 id="1-1-数据结构"><a href="#1-1-数据结构" class="headerlink" title="1.1 数据结构"></a>1.1 数据结构</h3><p>​    <code>Lock_Manager</code>中有一个<code>lock_table_</code>哈希表，它的类型为<code>std::unordered_map&lt;RID, LockRequestQueue&gt;</code>。其中，又包含了<code>LockRequestQueue</code>和<code>LockRequest</code>。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LockRequest</span> &#123;</span><br>    <span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">LockRequest</span>(<span class="hljs-keyword">txn_id_t</span> txn_id, LockMode lock_mode) : <span class="hljs-built_in">txn_id_</span>(txn_id), <span class="hljs-built_in">lock_mode_</span>(lock_mode), <span class="hljs-built_in">granted_</span>(<span class="hljs-literal">false</span>) &#123;&#125;<br><br>    <span class="hljs-keyword">txn_id_t</span> txn_id_;<br>    LockMode lock_mode_;<br>    <span class="hljs-keyword">bool</span> granted_;<br>&#125;;<br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LockRequestQueue</span> &#123;</span><br>    <span class="hljs-keyword">public</span>:<br>    std::list&lt;LockRequest&gt; request_queue_;<br>    std::condition_variable cv_;<br>    <span class="hljs-keyword">txn_id_t</span> upgrading_ = INVALID_TXN_ID;<br>&#125;;<br></code></pre></td></tr></table></figure>
-
-<p>​    表示了，对于每个RID（也就是每个tuple），都有一个请求队列<code>LockReuqestQueue</code>，其中有一个<code>list&lt;LockRequest&gt; request_queue_;</code>来存储当前对该tuple的锁请求事务，<code>LockRequest</code>也就是用于描述该事务的id，锁类型，是否授予信息的。</p>
-<p>​                                                                <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220405161057839.png" srcset="/img/loading.gif" lazyload alt="请求队列">        </p>
-<p>​        在《数据库系统概念》中有关锁管理器的算法。</p>
-<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220405161423834.png" srcset="/img/loading.gif" lazyload alt="锁管理器算法"></p>
-<h3 id="1-2-死锁预防"><a href="#1-2-死锁预防" class="headerlink" title="1.2 死锁预防"></a>1.2 死锁预防</h3><p>​    <code>wound-wait</code>通过使用抢占与事务回滚来实现死锁预防。当事务$T_i$申请的数据项被$T_j$所持有，当$T_i$的时间戳大于$T_j$的时间戳时（$T_i$比$T_j$年轻），允许$T_i$等待。否则，$T_j$回滚（$T_j$被$T_i$伤害）。</p>
-<h3 id="1-3-2PL"><a href="#1-3-2PL" class="headerlink" title="1.3 2PL"></a>1.3 2PL</h3><p>​    实验建议使用严格两阶段封锁协议来实现某些隔离级别，也就是整个事务分为两个阶段，前一个阶段为加锁（GROWING），后一个阶段为解锁（SHINKING）。在加锁阶段，事务只能加锁，也可以操作数据，但不能解锁，直到事务释放第一个锁，就进入解锁阶段，此过程中事务只能解锁，也可以操作数据，不能再加锁。</p>
-<h3 id="1-4-隔离级别"><a href="#1-4-隔离级别" class="headerlink" title="1.4 隔离级别"></a>1.4 隔离级别</h3><p>​    实验需要支持三种隔离级别：</p>
-<ol>
-<li><code>READ_UNCOMMITED</code>：读未提交，这种在需要时加写锁即可，因为允许脏读的发生，读锁不需要加</li>
-<li><code>READ_COMMITED</code>：读已提交，这要解决脏读的问题，解决方案就是读时上读锁，读完解读锁；写时上写锁，但等到commit时才解写锁；读时上读锁，读完解读锁。这样，永远不会读到未commit的数据，因为上面有写锁。</li>
-<li><code>REPEATABLE_READ</code>：可重复读，这需要解决不可重复读的问题了。也就是一个事务在读两次数据不会被其他事务的写干扰，这里需要用到二阶段封锁协议（2PL）。这样，第二次读取时，前一次的读锁还在，避免了中途被修改</li>
-</ol>
-<h2 id="2-实验过程"><a href="#2-实验过程" class="headerlink" title="2 实验过程"></a>2 实验过程</h2><h3 id="2-1-LockShare（共享锁）"><a href="#2-1-LockShare（共享锁）" class="headerlink" title="2.1 LockShare（共享锁）"></a>2.1 LockShare（共享锁）</h3><p>​    首先检查<code>txn</code>是不是<code>aborted</code>，是则返回<code>false</code>；</p>
-<p>​    然后检查<code>txn</code>的隔离级别，如果是<code>READ_UNCOMMIED</code>，是不需要共享锁的，将事务状态设置为<code>ABORTED</code>，返回<code>false</code></p>
-<p>​    检查<code>txn</code>的状态是否是<code>shrinking</code>。根据2PL的性质，该状态下不能申请锁，设置事务状态为<code>ABORTED</code>，返回<code>false</code></p>
-<p>​    判断该事务是否为该tuple加锁过，如果加锁过，返回<code>true</code></p>
-<p>​    然后遍历锁请求队列<code>lock_table[rid].request_queue</code>，如果当前事务（<code>txn</code>）为老事务并且占用独占锁的为新事务，则将新事务（遍历到的事务）abort掉；</p>
-<p>如果当前事务为新事务，老事务为独占锁，则等待，但也要向队列中插入该事务以及<code>sharedlockset</code>中进行标记，然后发出等待信号。</p>
-<p>​    如果遍历过程没有出现以上情况，说明锁队列为空或占用锁队列的均为共享锁，将当前事务状态设置为<code>GROWING</code>并且向队列添加事务即可。</p>
-<h3 id="2-2-LockExeclusive（排他锁）"><a href="#2-2-LockExeclusive（排他锁）" class="headerlink" title="2.2 LockExeclusive（排他锁）"></a>2.2 LockExeclusive（排他锁）</h3><p>​    与共享锁流程大同小异。要注意，如果是shrinking，根据2PL，不能继续申请锁，并且要在可重复读的隔离级别下。</p>
-<p>​    而且，既然是获取排他锁，那么其和其他锁都是不相容的，也就是说，要求该次请求必须为第一个请求，锁才能授予。那么在遍历队列时，如果当前事务为新事务，则要直接<code>abort</code>。</p>
-<h3 id="2-3-LockUpgrade（锁升级）"><a href="#2-3-LockUpgrade（锁升级）" class="headerlink" title="2.3 LockUpgrade（锁升级）"></a>2.3 LockUpgrade（锁升级）</h3><p>​    同样的，但锁升级需要判断该锁是否已经授予，如果已经授予，则返回false即可。否，则标记正在上锁。</p>
-<p>​    遍历队列，如果当前事务为老事务，则<code>abort</code>掉新事务的排他锁；当前事务为新事务，则进行等待。</p>
-<p>​    否则，进行锁升级，取出对头元素，设置为排他锁。</p>
-<h3 id="2-4-UnLock（解锁）"><a href="#2-4-UnLock（解锁）" class="headerlink" title="2.4 UnLock（解锁）"></a>2.4 UnLock（解锁）</h3><p>​    比较简单，遍历锁队列时，找到该事务，将该事务解锁（从队列中删除），再notify所有在该队列中睡眠的事务，因为这种情况下可能会有多个事务都获得锁。然后记得从事务对应的LockSet中删除该RID。还需要记得将事务状态设置为<code>shrinking</code>（<code>repeatable read</code>如果unlock是要shirnking的，<code>read commited</code>如果unlock的是sharelock则不用）。</p>
-<h3 id="2-5-并发执行器"><a href="#2-5-并发执行器" class="headerlink" title="2.5 并发执行器"></a>2.5 并发执行器</h3><p>​    这个部分是增加对并发query execution的支持。</p>
-<p><strong>seq_scan_executor</strong></p>
-<p>​    该executor就是在渎之前要加读锁，并且要注意未提交读情况不需要加锁。并且在<code>Next</code>结尾，如果隔离级别为<code>READ_COMMITED</code>，则直接释放该锁</p>
-<p><strong>update_executor</strong></p>
-<p>​    更新则要加锁独占锁，如果该锁已经被读锁占用，则进行升级锁，否则，加上独占锁。同样，提交读才需要解锁</p>
-<p>​    这里要记得记录事务变更</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">IndexWriteRecord <span class="hljs-title">write_record</span><span class="hljs-params">(tuple_rid, table_info_-&gt;oid_, WType::DELETE, new_tuple, index-&gt;index_oid_,</span></span><br><span class="hljs-params"><span class="hljs-function">                              exec_ctx_-&gt;GetCatalog())</span></span>;<br>write_record.old_tuple_ = old_tuple;<br>txn-&gt;<span class="hljs-built_in">GetIndexWriteSet</span>()-&gt;<span class="hljs-built_in">emplace_back</span>(write_record);<br></code></pre></td></tr></table></figure>
-
-<p><strong>insert_executor</strong></p>
-<p>​    和更新一样</p>
-<p><strong>delete_executor</strong></p>
-<p>​    同上= =</p>
-<h2 id="3-总结"><a href="#3-总结" class="headerlink" title="3 总结"></a>3 总结</h2><p>​    这部分是实现一个锁管理器，用来支持事务的并发执行。使用2PL来控制事务的并发，使用<code>wound-wait</code>策略来避免死锁，考虑了三种隔离级别。感觉难度还行，在实现时考虑的因素没有lab2要多，但很多细节需要注意就是。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://tech.meituan.com/2014/08/20/innodb-lock.html">Innodb中的事务隔离级别和锁的关系 - 美团技术团队 (meituan.com)</a></p>
-<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/420140287">15445-lab4：concurrency_control - 知乎 (zhihu.com)</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zszmhd/p/3365220.html">两阶段锁协议 - 使命召唤 - 博客园 (cnblogs.com)</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.epis2048.net/2021/15445-lab4/">CMU-15445-BusTub 笔记 - Lab 4: Concurrency Control | 吃着土豆坐地铁的博客 (epis2048.net)</a></p>
 
               
             </div>
@@ -340,7 +291,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/Lab/" class="category-chain-item">Lab</a>
+  <a href="/categories/%E6%9D%82%E7%83%A9/" class="category-chain-item">杂烩</a>
   
   
 
@@ -352,13 +303,6 @@
     </div>
   
   
-    <div class="post-meta">
-      <i class="iconfont icon-tags"></i>
-      
-        <a href="/tags/CMU15445/">#CMU15445</a>
-      
-    </div>
-  
 </div>
 
 
@@ -367,8 +311,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Project4：Concurrency Control</div>
-      <div>https://2w1nd.github.io/2022/04/03/CMU15445/Project4：Concurrency-Control/</div>
+      <div>网易互联网面经</div>
+      <div>https://2w1nd.github.io/2022/04/13/杂烩/网易互联网面经/</div>
     </div>
     <div class="license-meta">
       
@@ -380,7 +324,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年4月3日</div>
+          <div>2022年4月13日</div>
         </div>
       
       
@@ -410,9 +354,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/04/13/%E6%9D%82%E7%83%A9/%E7%BD%91%E6%98%93%E4%BA%92%E8%81%94%E7%BD%91%E9%9D%A2%E7%BB%8F/" title="网易互联网面经">
+                      <a href="/2022/04/13/%E5%AD%97%E8%8A%82%E9%9D%92%E8%AE%AD%E8%90%A5-%E5%88%B7%E9%A2%98%E6%89%93%E5%8D%A1%E6%B4%BB%E5%8A%A8/" title="字节青训营 | 刷题打卡活动">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">网易互联网面经</span>
+                        <span class="hidden-mobile">字节青训营 | 刷题打卡活动</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -420,8 +364,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/04/03/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC75%E5%9C%BA%E5%8F%8C%E5%91%A8%E8%B5%9B/" title="第75场双周赛">
-                        <span class="hidden-mobile">第75场双周赛</span>
+                      <a href="/2022/04/03/CMU15445/Project4%EF%BC%9AConcurrency-Control/" title="Project4：Concurrency Control">
+                        <span class="hidden-mobile">Project4：Concurrency Control</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -442,7 +386,7 @@
         var options = Object.assign(
           {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
           {
-            id: 'd0187cecc014768d3429ab7dfab95a1f'
+            id: '9a4b2a0f513bac553b4acf4e2065b388'
           }
         )
         var gitalk = new Gitalk(options);
