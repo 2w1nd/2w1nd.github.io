@@ -1,0 +1,890 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="w1nd">
+  <meta name="keywords" content="IT BLOG">
+  
+    <meta name="description" content="关于mit6.824课程中lab1的相关实现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="6.824 Lab1：MapReduce">
+<meta property="og:url" content="https://2w1nd.github.io/2022/04/16/MIT6.824/6-824-Lab1%EF%BC%9AMapReduce/index.html">
+<meta property="og:site_name" content="浅风w1ndの博客">
+<meta property="og:description" content="关于mit6.824课程中lab1的相关实现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220414191058189.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220414192021142.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220414192204142.png">
+<meta property="article:published_time" content="2022-04-16T08:23:12.000Z">
+<meta property="article:modified_time" content="2022-04-16T08:23:46.899Z">
+<meta property="article:author" content="w1nd">
+<meta property="article:tag" content="mit6.824">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220414191058189.png">
+  
+  
+  <title>6.824 Lab1：MapReduce - 浅风w1ndの博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"2w1nd.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+
+<body><!-- hexo injector body_begin start -->
+  <div id="particles-js"></div>
+<!-- hexo injector body_begin end -->
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>浅风w1ndの博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/book/">
+                <i class="iconfont icon-books"></i>
+                读书
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/Default4.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="6.824 Lab1：MapReduce"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-04-16 16:23" pubdate>
+          2022年4月16日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          52 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">6.824 Lab1：MapReduce</h1>
+            
+            <div class="markdown-body">
+              
+              <h2 id="0-前言-amp-要求"><a href="#0-前言-amp-要求" class="headerlink" title="0 前言&amp;要求"></a>0 前言&amp;要求</h2><p>​    该部分是要求构建一个MapReduce System。需要实现一个<code>Worker</code>可以具有<code>Map</code>和<code>Reduce</code>函数来处理和写入文件，并且还要实现一个<code>Coordinator</code>来对任务进行分配以及处理失败的<code>Worker</code>。另外，<code>Worker</code>和<code>Coordinator</code>之间通过RPC进行交互，实现时还需要自定义一些请求参数和应答参数。通过实现以上代码来完成<strong>分布式统计多篇文章单词出现次数</strong>。</p>
+<p>​    在实现代码前，可以先看看已经提供的<strong>非分布式</strong>的实现方式，在<code>src/main/mrsequential.go</code>中。并且在运行前，要先<code>build</code>下提供好的插件，通过go自带的<code>plugins</code>进行打包的，里面提供了基础的<code>Map</code>和<code>Reduce</code>函数用于统计单个文章的单词出现次数。实现很简单，就是通过<code>Map</code>将每个单词次数都设置为1，并添加到一个哈希桶，然后对<code>key</code>进行排序，通过<code>Reduce</code>来计算出总次数即可。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220414191058189.png" srcset="/img/loading.gif" lazyload alt="mrsequential（图片源自网络）"></p>
+<p>​    通过依照课程提供文档命令执行后，会得到一个<code>mr-out-0</code>，里面就包含了单词和出现次数，也是本lab要完成的标准。</p>
+<p>​    那么在分布式下，也就要求我们执行许多<code>Worker</code>来完成<code>Map</code>和<code>Reduce</code>操作。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220414192021142.png" srcset="/img/loading.gif" lazyload alt="MapReduce WordCount（图片来自网络）"></p>
+<h2 id="1-实验分析"><a href="#1-实验分析" class="headerlink" title="1 实验分析"></a>1 实验分析</h2><h3 id="1-1-架构设计"><a href="#1-1-架构设计" class="headerlink" title="1.1 架构设计"></a>1.1 架构设计</h3><p>​    只要讲到MapReduce，一定会搬出这张经典图片，该图片源自论文<a target="_blank" rel="noopener" href="https://pdos.csail.mit.edu/6.824/papers/mapreduce.pdf">MapReduce</a>，也是Google的三架马车之一，后面两架后续会谈到</p>
+<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220414192204142.png" srcset="/img/loading.gif" lazyload alt="Execution Overview"></p>
+<p>​    上图反映了MapReduce的程序流程：</p>
+<ol>
+<li><code>MapReduce</code>将输入文件分成几份</li>
+<li>通过<code>master</code>来进行任务的分配给<code>worker</code></li>
+<li>某个<code>worker</code>会执行<code>map</code>从分片中读取内容，然后解析出<code>key/value</code>对（可以认为<code>wc.go</code>的<code>map</code>进行解析），然后传递给用户定义的<code>Map</code>函数，将产生的中间<code>key/value</code>缓存到内存</li>
+<li>每过一段时间，会将缓存的数据写到本地磁盘，数据位置传递给<code>master</code>，<code>master</code>再将其传递给<code>reduce worker</code></li>
+<li>执行<code>reduce</code>的<code>worker</code>收到后，通过RPC从磁盘读取中间<code>key/value</code>。读取完之后，根据中间<code>key</code>进行排序，然后将其聚集到一起</li>
+<li>读取完之后，将<code>key</code>和对应的中间<code>value</code>集合传递给用户自定义<code>Reduce</code>函数，其输出会写到一个文件中。</li>
+<li>完成</li>
+</ol>
+<p>​    这里简单阐述论文中的逻辑，后续实现和这种还有些出入。</p>
+<h3 id="1-2-数据结构"><a href="#1-2-数据结构" class="headerlink" title="1.2  数据结构"></a>1.2  数据结构</h3><p>​    在设计程序前，要先抽象几个数据结构</p>
+<p class="note note-success">Task</p>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> Task <span class="hljs-keyword">struct</span> &#123;<br>	fileName <span class="hljs-keyword">string</span>	<span class="hljs-comment">// 文章名</span><br>	id	<span class="hljs-keyword">int</span>	<span class="hljs-comment">// 任务ID</span><br>	startTime time.Time	<span class="hljs-comment">// 开始时间</span><br>	status	TaskStatus	<span class="hljs-comment">// 状态</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    <code>worker</code>需要得到<code>Task</code>才能执行，而<code>Coordinater</code>则是进行任务分配的，对于每个<code>Task</code>，需要有<code>filename</code>对应其记录文件的位置，通过<code>ID</code>来识别每个任务。另外，由于要考虑到超时的问题，所以需要记录任务的开始时间；并且对于每个任务，需要有个状态来标识。</p>
+<p>任务状态</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">const</span> (<br>	Idle	TaskStatus = <span class="hljs-literal">iota</span><br>	Working<br>	Finished<br>)<br></code></pre></td></tr></table></figure>
+
+<p class="note note-success">Coordinator</p>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> Coordinator <span class="hljs-keyword">struct</span> &#123;<br>	files []<span class="hljs-keyword">string</span>	<span class="hljs-comment">// 文章列表</span><br>	nReduce <span class="hljs-keyword">int</span>		<span class="hljs-comment">// Reduce的任务数</span><br>	nMap	<span class="hljs-keyword">int</span>		<span class="hljs-comment">// Map的任务数</span><br>	phase	SchedulePhase	<span class="hljs-comment">// 阶段</span><br>	tasks	[]Task	<span class="hljs-comment">// 任务组</span><br><br>	heartbeatCh <span class="hljs-keyword">chan</span> heartbeatMsg	<span class="hljs-comment">// 心跳信息管道</span><br>	reportCh	<span class="hljs-keyword">chan</span> reportMsg		<span class="hljs-comment">// 回复信息管道</span><br>	doneCh		<span class="hljs-keyword">chan</span> <span class="hljs-keyword">struct</span>&#123;&#125;		<span class="hljs-comment">// 完成管道</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    <code>Coordinator</code>需要对任务进行管理和分配。所以需要维护一个<code>[]Task</code>和<code>files</code>。由于在<code>Map</code>和<code>Reduce</code>要记录数量，所以还需要两个int型。并且还需要一个调度阶段记录当前<code>Coordinator</code>执行到哪一个阶段了。</p>
+<p>​    通过管道来进行消息的监听和阻塞。</p>
+<p class="note note-success">HeartbeatResponse</p>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> HeartbeatResponse <span class="hljs-keyword">struct</span> &#123;<br>	FilePath <span class="hljs-keyword">string</span>	<span class="hljs-comment">// 文章路径</span><br>	JobType	JobType	<span class="hljs-comment">// 任务类型</span><br>	NReduce	<span class="hljs-keyword">int</span>		<span class="hljs-comment">// Reduce的数量</span><br>	NMap	<span class="hljs-keyword">int</span>		<span class="hljs-comment">// Map的数量</span><br>	Id		<span class="hljs-keyword">int</span>		<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    当<code>worker</code>请求时，<code>Coordinator</code>需要返回心跳信息，里面包含了任务的执行文章路径，id，Reduce数量，Map数量。</p>
+<p>​    注意<code>Job</code>和<code>Task</code>的区别：</p>
+<ul>
+<li>Job。整个MapReduce计算称为Job。</li>
+<li>Task。每一次MapReduce调用称为Task。</li>
+</ul>
+<p class="note note-success">ReportRequest</p>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> ReportRequest <span class="hljs-keyword">struct</span> &#123;<br>	Id <span class="hljs-keyword">int</span><br>	Phase SchedulePhase<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    该结构体用于<code>worker</code>向<code>Coordinator</code>返回处理信息。</p>
+<h3 id="1-3-测试文件"><a href="#1-3-测试文件" class="headerlink" title="1.3 测试文件"></a>1.3 测试文件</h3><p>​    2021的lab1测试一共有6个：</p>
+<p><code>wc test</code>：最基本的测试，只要实现<strong>单词计数</strong>的功能即可。</p>
+<p><code>indexer test</code>：会开启多个<code>worker</code>进行工作</p>
+<p><code>map/reduce parallelism</code>：会在<code>worker</code>进行<code>Map</code>时创建一个<code>mr-worker</code> + <code>PID</code>的文件，然后统计几个特定文件名数量，判断同时运行的<code>worker</code>数量</p>
+<p><code>job count test</code>：对任务进行计数</p>
+<p><code>early test</code>：是否有<code>worker</code>在全部任务完成前退出</p>
+<p><code>crash test</code>：需要保证该系统是具有容错能力的，如果分配的任务没有在规定时间完成，则认定任务失败</p>
+<h2 id="2-实验过程"><a href="#2-实验过程" class="headerlink" title="2 实验过程"></a>2 实验过程</h2><h3 id="2-1-Worker"><a href="#2-1-Worker" class="headerlink" title="2.1 Worker"></a>2.1 Worker</h3><p>​    在论文中，是由<code>coodinater</code>主动分配任务给<code>worker</code>进行实现的，而这里的实现是<code>workre</code>通过<code>RPC</code>发送请求获得<code>response</code>进行处理。对于每个<code>worker</code>，轮询的去做任务即可，主要逻辑如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Worker</span><span class="hljs-params">(mapF <span class="hljs-keyword">func</span>(<span class="hljs-keyword">string</span>, <span class="hljs-keyword">string</span>)</span> []<span class="hljs-title">KeyValue</span>,</span><br>	reduceF <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(<span class="hljs-keyword">string</span>, []<span class="hljs-keyword">string</span>)</span> <span class="hljs-title">string</span>)</span> &#123;<br><br>	<span class="hljs-keyword">for</span> &#123;<br>		response := doHeartbeat()<br>		log.Printf(<span class="hljs-string">&quot;Worker: receive coordinator&#x27;s heartbeat %v \n&quot;</span>, response)<br>		<span class="hljs-keyword">switch</span> response.JobType &#123;	<span class="hljs-comment">// 判断请求到的任务类型</span><br>		<span class="hljs-keyword">case</span> MapJob:<br>			doMapTask(mapF, response)<br>		<span class="hljs-keyword">case</span> ReduceJob:<br>			doReduceTask(reduceF, response)<br>		<span class="hljs-keyword">case</span> WaitJob:<br>			time.Sleep(<span class="hljs-number">1</span> * time.Second)<br>		<span class="hljs-keyword">case</span> CompleteJob:<br>			<span class="hljs-keyword">return</span><br>		<span class="hljs-keyword">default</span>:<br>			<span class="hljs-built_in">panic</span>(fmt.Sprintf(<span class="hljs-string">&quot;unexpected jobType %v&quot;</span>, response.JobType))<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    实现对应的<code>doMapTask</code>和<code>doReduceTask</code>即可。实现<code>doMapTask</code>要注意将中间量分别存到文件中，并且使用go自带的<code>json</code>包进行键值存储。还要注意以下两点</p>
+<p class="note note-success">原子写入文件</p>
+
+<p>​    实现时需要保证文件的原子性写入，避免异常情况导致文件受损，所以可以生成一个临时文件再利用<code>OS.Rename</code>进行原子性替换。</p>
+<p class="note note-success">中间态的存储</p>
+
+<p>​    在<code>mrsequential</code>的实现中，将所有的<code>kva</code>（<code>[]KeyValue</code>）都存到一个<code>intermediate</code>中，但在这里实现是，使用一个<code>[][]KeyValue</code>的哈希表进行存储的，同一个<code>key</code>的<code>kv</code>将会放在一起，后续实现<code>reduce</code>只需要遍历该哈希表即可。</p>
+<h3 id="2-2-Coodinator"><a href="#2-2-Coodinator" class="headerlink" title="2.2 Coodinator"></a>2.2 Coodinator</h3><p>​    这里实现的主要有两个点：<strong>监听通道进行调度</strong>和<strong>轮询选择任务进行分配</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// 调度函数</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *Coordinator)</span> <span class="hljs-title">schedule</span><span class="hljs-params">()</span></span> &#123;<br>	c.initMapPhase()<br>	<span class="hljs-keyword">for</span> &#123;<br>		<span class="hljs-keyword">select</span> &#123;<br>		<span class="hljs-comment">// 收到请求</span><br>		<span class="hljs-keyword">case</span> msg := &lt;-c.heartbeatCh:<br>			<span class="hljs-keyword">if</span> c.phase == CompletePhase &#123;<br>				msg.response.JobType = CompleteJob<br>			&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> c.selectTask(msg.response) &#123;<br>				<span class="hljs-keyword">switch</span> c.phase &#123;<br>				<span class="hljs-keyword">case</span> MapPhase:<br>                    ...<br>				<span class="hljs-keyword">case</span> ReducePhase:<br>                    ...<br>				<span class="hljs-keyword">case</span> CompletePhase:<br>                    ...<br>				&#125;<br>			&#125;<br>			msg.ok &lt;- <span class="hljs-keyword">struct</span>&#123;&#125;&#123;&#125;<br>		<span class="hljs-comment">// 收到通知</span><br>		<span class="hljs-keyword">case</span> msg := &lt;-c.reportCh:<br>            ...<br>			msg.ok &lt;- <span class="hljs-keyword">struct</span>&#123;&#125;&#123;&#125;<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// 选择任务进行分配</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *Coordinator)</span> <span class="hljs-title">selectTask</span><span class="hljs-params">(response *HeartbeatResponse)</span> <span class="hljs-title">bool</span></span> &#123;<br>	allFinished, hasNewJob := <span class="hljs-literal">true</span>, <span class="hljs-literal">false</span><br>	<span class="hljs-keyword">for</span> id, task := <span class="hljs-keyword">range</span> c.tasks &#123;<br>		<span class="hljs-keyword">switch</span> task.status &#123;<br>		<span class="hljs-keyword">case</span> Idle:<br>			...<br>		<span class="hljs-keyword">case</span> Working:<br>			...<br>		<span class="hljs-keyword">case</span> Finished:<br>		&#125;<br>        ...<br>	&#125;<br>    ...<br>	<span class="hljs-keyword">return</span> allFinished<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p class="note note-success">状态维护</p>
+
+<p>​    这里<code>Coodinator</code>主要维护的是<code>task</code>的状态，当请求到来时，会对所有的任务进行轮询，只有当任务状态为<code>Idle</code>或<code>Working</code>下超时了，才会被分配。</p>
+<p class="note note-success">管道</p>
+
+<p>​    在<code>coordinator</code>开启一个协程不断监控<code>heartbeatCh</code>和<code>reportCh</code>中的数据并进行处理。并且，管道可以很方便的控制并发，只有当<code>msg.ok</code>可输出时，才可以返回。这里需要考虑<code>channel</code>传值时的一些情况（直接引用了）：</p>
+<blockquote>
+<ul>
+<li>channel 传 struct{}：对于仅需要传输 happens-before 语义不需要传输数据的场景，创建的 channel 应该是 struct{} 类型，go 对其做了特别优化可以不耗费内存。</li>
+<li>channel 传指针：对于 report handler，其往 reportCh 中 send msg 时只需要传输 request 的指针，等 coordinator 的 schedule 协程处理完毕后即可返回，这里并没有什么问题。对于 heartbeat handler，其会相对复杂些，因为其往 heartbeatCh 中 send msg 时传输了 response 的指针，coordinator 的 schedule 协程需要对该指针对应的数据做处理后再返回，那么此时 rpc 协程在返回时是否能够看到另一个 goroutine 对其的修改呢？对于这种场景，如果协程间满足 happens-before 语义的话是可以的，如果不满足则不一定可以。那么是否满足 happens-before 语义呢？很多人都知道对于无 buffer 的 channel，其 <code>receive</code> 是 happens-before <code>send</code> 的，那么似乎就无法判断其是否满足 happens-before 语义了。实际上，<code>send</code> 与 <code>send 完成</code>是有区别的，可以参考此<a target="_blank" rel="noopener" href="https://studygolang.com/articles/14129">博客</a>，严格来说：对于无 buffer 的 channel，其 <code>send start</code> happens-before <code>receive complete</code> happens-before <code>send complete</code>，因此有了这个更清晰的语义，我们很显然可以得到 <code>schedule 协程修改 response</code> happens-before <code>worker rpc 协程返回 response</code>，因此这样写应该是没有问题的，我的 race detector 也没有报任何错误。</li>
+</ul>
+</blockquote>
+<h3 id="2-3-RPC"><a href="#2-3-RPC" class="headerlink" title="2.3 RPC"></a>2.3 RPC</h3><p>​    RPC的作用有两点：<code>worker</code>请求任务，<code>worker</code>处理完任务进行汇报</p>
+<p class="note note-success">worker</p>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// 请求</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">doHeartbeat</span><span class="hljs-params">()</span> *<span class="hljs-title">HeartbeatResponse</span></span> &#123;<br>	response := HeartbeatResponse&#123;&#125;<br>	call(<span class="hljs-string">&quot;Coordinator.Heartbeat&quot;</span>, &amp;HeartbeatRequest&#123;&#125;, &amp;response)<br>	<span class="hljs-keyword">return</span> &amp;response<br>&#125;<br>	<br><span class="hljs-comment">// 汇报</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">doReport</span><span class="hljs-params">(id <span class="hljs-keyword">int</span>, phase SchedulePhase)</span></span> &#123;<br>	call(<span class="hljs-string">&quot;Coordinator.Report&quot;</span>, &amp;ReportRequest&#123;id, phase&#125;, &amp;ReportResponse&#123;&#125;)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p class="note note-success">coodinator</p>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *Coordinator)</span> <span class="hljs-title">Heartbeat</span><span class="hljs-params">(request *HeartbeatRequest, response *HeartbeatResponse)</span> <span class="hljs-title">error</span></span> &#123;<br>	msg := heartbeatMsg&#123;response, <span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> <span class="hljs-keyword">struct</span>&#123;&#125;)&#125;<br>	c.heartbeatCh &lt;- msg<br>	&lt;-msg.ok<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *Coordinator)</span> <span class="hljs-title">Report</span><span class="hljs-params">(request *ReportRequest, response *ReportResponse)</span> <span class="hljs-title">error</span></span> &#123;<br>	msg := reportMsg&#123;request, <span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> <span class="hljs-keyword">struct</span>&#123;&#125;)&#125;<br>	c.reportCh &lt;- msg<br>	&lt;-msg.ok<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-总结"><a href="#3-总结" class="headerlink" title="3 总结"></a>3 总结</h2><p>​    整体实现还是参照着github一个文档，感觉写的不错。重要的内容的理解上要花上些时间，自己又好久没写过go了，花了几个小时看了下go的文档才上手。</p>
+<p>​    梳理下实现流程基本就是：<code>worker</code>通过RPC向<code>coodinator</code>请求任务，<code>coodinator</code>监听管道收到后，则开始轮询维护好的任务组，根据不同的任务状态对<code>response</code>进行修改，然后返回；<code>worker</code>收到后判断是什么类型的任务：<code>map</code>，对文章进行内容读取，然后使用哈希表保存中间态，每个写入到一个临时文件中，然后发送汇报信息；<code>reduce</code>：根据生成<code>filePath</code>进行读取，也就是取出<code>kva</code>，然后存到一个哈希表<code>map[string][]string</code>中，送给<code>reduceF</code>处理即可。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://github.com/2w1nd/MIT6.824-2022/blob/practice/docs/lab1.md">MIT6.824-2022/lab1.md at practice · 2w1nd/MIT6.824-2022 (github.com)</a></p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Lab/" class="category-chain-item">Lab</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/mit6-824/">#mit6.824</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>6.824 Lab1：MapReduce</div>
+      <div>https://2w1nd.github.io/2022/04/16/MIT6.824/6-824-Lab1：MapReduce/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>w1nd</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年4月16日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/04/13/%E5%AD%97%E8%8A%82%E9%9D%92%E8%AE%AD%E8%90%A5-%E5%88%B7%E9%A2%98%E6%89%93%E5%8D%A1%E6%B4%BB%E5%8A%A8/" title="字节青训营 | 刷题打卡活动">
+                        <span class="hidden-mobile">字节青训营 | 刷题打卡活动</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: '6c932aa9667463d72155d201a87c0059'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start -->
+  <script src="/js/particles.js"></script>
+
+  <script src="/js/particles.min.js"></script>
+
+  <div id="particles-js"></div>
+<!-- hexo injector body_end end --></body>
+</html>
