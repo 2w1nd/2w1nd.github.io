@@ -16,23 +16,21 @@
   <meta name="author" content="w1nd">
   <meta name="keywords" content="IT BLOG">
   
-    <meta name="description" content="第76场双周赛">
+    <meta name="description" content="​    一直对Java的字符串概念很模糊，记得很早之前就看到一道经典面试题：“String s &#x3D; new String(“a”)”产生了几个对象“，看了许多文章都不太明白，并且，由此产生的问题又有”String a &#x3D; b + c空间上怎么分配“，”String c &#x3D; “abc”产生了几个对象“等等。这里还是写篇博文将Java字符串有关的知识总结下把🤣 0 Java的字符串类​    Ja">
 <meta property="og:type" content="article">
-<meta property="og:title" content="第76场双周赛">
-<meta property="og:url" content="https://2w1nd.github.io/2022/04/16/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC76%E5%9C%BA%E5%8F%8C%E5%91%A8%E8%B5%9B/index.html">
+<meta property="og:title" content="谈谈Java的字符串及其常见问题">
+<meta property="og:url" content="https://2w1nd.github.io/2022/04/17/Java/String%E5%88%B0%E5%BA%95%E4%BA%A7%E7%94%9F%E4%BA%86%E5%87%A0%E4%B8%AA%E5%AF%B9%E8%B1%A1/index.html">
 <meta property="og:site_name" content="浅风w1ndの博客">
-<meta property="og:description" content="第76场双周赛">
+<meta property="og:description" content="​    一直对Java的字符串概念很模糊，记得很早之前就看到一道经典面试题：“String s &#x3D; new String(“a”)”产生了几个对象“，看了许多文章都不太明白，并且，由此产生的问题又有”String a &#x3D; b + c空间上怎么分配“，”String c &#x3D; “abc”产生了几个对象“等等。这里还是写篇博文将Java字符串有关的知识总结下把🤣 0 Java的字符串类​    Ja">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220411175645388.png">
-<meta property="article:published_time" content="2022-04-16T15:55:35.000Z">
-<meta property="article:modified_time" content="2022-04-16T15:56:04.676Z">
+<meta property="article:published_time" content="2022-04-17T12:17:30.000Z">
+<meta property="article:modified_time" content="2022-04-17T13:39:10.497Z">
 <meta property="article:author" content="w1nd">
-<meta property="article:tag" content="LC双周赛">
+<meta property="article:tag" content="Java">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220411175645388.png">
   
   
-  <title>第76场双周赛 - 浅风w1ndの博客</title>
+  <title>谈谈Java的字符串及其常见问题 - 浅风w1ndの博客</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -203,7 +201,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="第76场双周赛"></span>
+            <span id="subtitle" data-typed-text="谈谈Java的字符串及其常见问题"></span>
           
         </div>
 
@@ -214,8 +212,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-04-16 23:55" pubdate>
-          2022年4月16日 晚上
+        <time datetime="2022-04-17 20:17" pubdate>
+          2022年4月17日 晚上
         </time>
       </span>
     
@@ -226,7 +224,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          0 字
+          2.1k 字
         
       </span>
     
@@ -237,7 +235,7 @@
         
         
         
-          1 分钟
+          18 分钟
         
       </span>
     
@@ -275,11 +273,48 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">第76场双周赛</h1>
+            <h1 style="display: none">谈谈Java的字符串及其常见问题</h1>
             
             <div class="markdown-body">
               
-              
+              <p>​    一直对Java的字符串概念很模糊，记得很早之前就看到一道经典面试题：“String s = new String(“a”)”产生了几个对象“，看了许多文章都不太明白，并且，由此产生的问题又有”String a = b + c空间上怎么分配“，”String c = “abc”产生了几个对象“等等。这里还是写篇博文将Java字符串有关的知识总结下把🤣</p>
+<h2 id="0-Java的字符串类"><a href="#0-Java的字符串类" class="headerlink" title="0 Java的字符串类"></a>0 Java的字符串类</h2><p>​    Java中有三个可以用于表示字符串的类：<code>String </code>，<code>StringBuilder </code>，<code>StringBuffer</code>。</p>
+<p><strong>String</strong>：字符串常量，底层用了字符数组+<code>final</code>关键字构成，由于每次改变时，都会生成一个新的String对象，所以是线程安全的。</p>
+<p><strong>StringBuilder</strong>：继承了<code>AbstractStringBuilder</code>，可变类，每次修改不会产生新对象，但线程不安全</p>
+<p><strong>StringBuffer</strong>：同<code>StringBuilder</code>，但线程安全，支持并发操作</p>
+<h2 id="1-String-s-new-String-“a”-产生了几个对象"><a href="#1-String-s-new-String-“a”-产生了几个对象" class="headerlink" title="1 String s = new String(“a”)产生了几个对象"></a>1 String s = new String(“a”)产生了几个对象</h2><p>​    这个问题，我更偏向于网上一种答案：<strong>产生了一个或两个对象</strong>。因为new会在堆中创建一个对象，如果常量池之前没有，则会再创建一个。</p>
+<h2 id="2-String-intern"><a href="#2-String-intern" class="headerlink" title="2 String::intern"></a>2 String::intern</h2><p>​    <code>String::intern</code>是一个本地方法，作用是</p>
+<ul>
+<li>如果字符串常量池中已经包含一个等于此String对象的字符串，则返回代表池中这个字符串的String对象的引用</li>
+<li>否则，会将此String对象包含的字符串添加到常量池中，并且返回此String对象的引用</li>
+</ul>
+<p>​    由此产生的一段代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">String str2 = <span class="hljs-keyword">new</span> String(<span class="hljs-string">&quot;hello &quot;</span>) + <span class="hljs-keyword">new</span> String(<span class="hljs-string">&quot;world&quot;</span>); <span class="hljs-comment">// 1</span><br>str2.intern(); <span class="hljs-comment">// 2</span><br>String str1 = <span class="hljs-string">&quot;hello world&quot;</span>; <span class="hljs-comment">// 3</span><br>System.out.println(str2 == str1);<br></code></pre></td></tr></table></figure>
+
+<p>​    这段代码在<code>JDK6</code>中输出为<code>false</code>，在<code>jdk7</code>输出为<code>true</code></p>
+<p>​    这是因为在<code>JDK6</code>时，常量池是放在方法区永久代中的，而<code>new</code>生成的对象引用在堆中，返回的地址当然不一样</p>
+<p>​    而在<code>JDK7</code>时，将常量池移到了堆中，使用<code>intern</code>方法会先查询常量池中是否存在，如果存在，则放会常量池引用，但不存在，<strong>不会将字符串拷贝到常量池</strong>，而是在常量池中生成一个对字符串的引用。</p>
+<p>​    所以在示例中，执行第<code>1</code>行时常量池是没有<code>hello world</code>的，但执行了<code>intern</code>之后就会将其引用放到常量池中，然后执行第<code>3</code>行返回的就是该引用。结果就是<code>true</code>了。但如果将<code>2</code>和<code>3</code>对换位置就不一样了。</p>
+<h2 id="3-拼接的String是否相等"><a href="#3-拼接的String是否相等" class="headerlink" title="3 拼接的String是否相等"></a>3 拼接的String是否相等</h2><p>​    考虑以下代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">String st1 = <span class="hljs-string">&quot;a&quot;</span> + <span class="hljs-string">&quot;b&quot;</span> + <span class="hljs-string">&quot;c&quot;</span>;<br>String st2 = <span class="hljs-string">&quot;abc&quot;</span>;<br>System.out.println(st1 == st2);<br>System.out.println(st1.equals(st2));<br></code></pre></td></tr></table></figure>
+
+<p>​    答案是两个都是<code>true</code>。<code>“a”</code>，<code>”b”</code>，<code>”c”</code>三个本来就是字符串常量，进行+符号拼接之后变成了<code>“abc”</code>，<code>“abc”</code>本身就是字符串常量（Java中有常量优化机制），所以常量池立马会创建一个<code>“abc”</code>的字符串常量对象，在进行<code>st2=”abc”</code>,这个时候，常量池存在<code>“abc”</code>，所以不再创建。所以，不管比较内存地址还是比较字符串序列，都相等。</p>
+<h2 id="4-String类拼接数据是否相等"><a href="#4-String类拼接数据是否相等" class="headerlink" title="4 String类拼接数据是否相等"></a>4 String类拼接数据是否相等</h2><p>​    考虑以下代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java">String st1 = <span class="hljs-string">&quot;ab&quot;</span>;<br>String st2 = <span class="hljs-string">&quot;abc&quot;</span>;<br>String st3 = st1 + <span class="hljs-string">&quot;c&quot;</span>;<br>System.out.println(st2 == st3);<br>System.out.println(st2.equals(st3));<br></code></pre></td></tr></table></figure>
+
+<p>​    答案是<code>false</code>，<code>true</code>。第二个为<code>true</code>很好理解，但第一个为什么为<code>false</code>呢？</p>
+<p>​    因为在Java任何数据和字符串进行（+）运算的原理是<code>StringBuilder</code>或者<code>StringBuffer</code>类和里面的<code>append</code>方法实现拼接，然后调用<code>toString（）</code>把拼接的对象转换成字符串对象，最后把得到字符串对象的地址赋值给变量。</p>
+<p>​    大致流程为：</p>
+<ol>
+<li>常量池创建<code>“ab”</code>对象，并赋值给<code>st1</code>，所以<code>st1</code>指向了<code>“ab”</code></li>
+<li>常量池创建<code>“abc”</code>对象，并赋值给<code>st2</code>，所以<code>st2</code>指向了<code>“abc”</code></li>
+<li>由于这里走的（+）的拼接方法，所以第三步是使用<code>StringBuffer</code>类的<code>append</code>方法，得到了<code>“abc”</code>，这个时候内存0x0011表示的是一个<code>StringBuffer</code>对象，注意不是<code>String</code>对象。</li>
+<li>调用了<code>Object</code>的<code>toString</code>方法把<code>StringBuffer</code>对象装换成了<code>String</code>对象。</li>
+<li>把<code>String</code>对象（0x0022）赋值给st3</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>​    不得不说，Java的<del>八股</del>知识点是真的多呀，一个字符串这么多规矩，不过解决了这些问题感觉也对Java的字符串认识更加深刻了。😁</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u011541946/article/details/79865160">(125条消息) Java字符串篇-3-String类5个常见面试题的解答过程和原理</a></p>
+
               
             </div>
             <hr/>
@@ -296,7 +331,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E7%AE%97%E6%B3%95/" class="category-chain-item">算法</a>
+  <a href="/categories/Java/" class="category-chain-item">Java</a>
   
   
 
@@ -311,7 +346,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/LC%E5%8F%8C%E5%91%A8%E8%B5%9B/">#LC双周赛</a>
+        <a href="/tags/Java/">#Java</a>
       
     </div>
   
@@ -323,8 +358,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>第76场双周赛</div>
-      <div>https://2w1nd.github.io/2022/04/16/LC周赛/第76场双周赛/</div>
+      <div>谈谈Java的字符串及其常见问题</div>
+      <div>https://2w1nd.github.io/2022/04/17/Java/String到底产生了几个对象/</div>
     </div>
     <div class="license-meta">
       
@@ -336,7 +371,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年4月16日</div>
+          <div>2022年4月17日</div>
         </div>
       
       
@@ -366,18 +401,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/04/17/Java/String%E5%88%B0%E5%BA%95%E4%BA%A7%E7%94%9F%E4%BA%86%E5%87%A0%E4%B8%AA%E5%AF%B9%E8%B1%A1/" title="谈谈Java的字符串及其常见问题">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">谈谈Java的字符串及其常见问题</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/04/16/MIT6.824/6-824-Lab1%EF%BC%9AMapReduce/" title="6.824 Lab1：MapReduce">
-                        <span class="hidden-mobile">6.824 Lab1：MapReduce</span>
+                      <a href="/2022/04/16/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC76%E5%9C%BA%E5%8F%8C%E5%91%A8%E8%B5%9B/" title="第76场双周赛">
+                        <span class="hidden-mobile">第76场双周赛</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -398,7 +427,7 @@
         var options = Object.assign(
           {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
           {
-            id: '01b9e2d9b381a663421983b4927164b2'
+            id: '1ad6cec250acd7b4191f1d7ca5451e85'
           }
         )
         var gitalk = new Gitalk(options);
