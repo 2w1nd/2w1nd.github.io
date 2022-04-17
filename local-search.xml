@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>第76场双周赛</title>
+    <link href="/2022/04/16/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC76%E5%9C%BA%E5%8F%8C%E5%91%A8%E8%B5%9B/"/>
+    <url>/2022/04/16/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC76%E5%9C%BA%E5%8F%8C%E5%91%A8%E8%B5%9B/</url>
+    
+    <content type="html"><![CDATA[]]></content>
+    
+    
+    <categories>
+      
+      <category>算法</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>LC双周赛</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>6.824 Lab1：MapReduce</title>
     <link href="/2022/04/16/MIT6.824/6-824-Lab1%EF%BC%9AMapReduce/"/>
     <url>/2022/04/16/MIT6.824/6-824-Lab1%EF%BC%9AMapReduce/</url>
@@ -30,8 +55,8 @@
   
   <entry>
     <title>字节青训营 | 刷题打卡活动</title>
-    <link href="/2022/04/13/%E5%AD%97%E8%8A%82%E9%9D%92%E8%AE%AD%E8%90%A5-%E5%88%B7%E9%A2%98%E6%89%93%E5%8D%A1%E6%B4%BB%E5%8A%A8/"/>
-    <url>/2022/04/13/%E5%AD%97%E8%8A%82%E9%9D%92%E8%AE%AD%E8%90%A5-%E5%88%B7%E9%A2%98%E6%89%93%E5%8D%A1%E6%B4%BB%E5%8A%A8/</url>
+    <link href="/2022/04/13/%E6%9D%82%E7%83%A9/%E5%AD%97%E8%8A%82%E9%9D%92%E8%AE%AD%E8%90%A5-%E5%88%B7%E9%A2%98%E6%89%93%E5%8D%A1%E6%B4%BB%E5%8A%A8/"/>
+    <url>/2022/04/13/%E6%9D%82%E7%83%A9/%E5%AD%97%E8%8A%82%E9%9D%92%E8%AE%AD%E8%90%A5-%E5%88%B7%E9%A2%98%E6%89%93%E5%8D%A1%E6%B4%BB%E5%8A%A8/</url>
     
     <content type="html"><![CDATA[<h2 id="DAY-1"><a href="#DAY-1" class="headerlink" title="DAY 1"></a>DAY 1</h2><p>一、【多选】Golang 通过<code>plugin.(*Plugin).Lookup</code>函数可以查找到插件里面定义的哪些东西？</p><p>a. 变量<br>b. 函数<br>c. 类型<br>d. 包</p><p class="note note-success">答案&解析</p><p>​    a，b    </p><p>​    <code>a</code>和<code>b</code>都是能被赋值给<code>interface&#123;&#125;</code>类型的变量，但是<code>c</code>和<code>d</code>不能。因此<code>Lookup</code>方法返回的结果是一个<code>interface&#123;&#125;</code>类型（<code>Symbol</code>类型）的变量，因此<code>c</code>和<code>d</code>不能通过<code>Lookup</code>返回。</p><p>二、假如在抖音中发布视频时，可以选择带上位置信息，请设计一种数据结构或方案，用于存储检索位置信息（简化为平面坐标 x, y），以实现搜索附近视频的功能（如附近 3km）。</p><p class="note note-success">答案&解析</p><p>​    <strong>方法一</strong>：<strong>geohash</strong>：把二维问题降为一维</p><p>​    如坐标（示例非标准 geohash，只是演示了思想）：</p><p>​    (12, 345) -&gt; (<strong>0</strong>12, 345) -&gt; “031425”</p><p>​    (13, 348) -&gt; (<strong>0</strong>13, 348) -&gt; “031438”</p><p>​    (2, 789) -&gt; (<strong>00</strong>2, 789) -&gt; “070829”</p><p>​    最终做字符串前缀匹配，可得 “031425” 和 “031438” 匹配到的位数最多，二者距离最近。求 3km 内的坐标，只需提前算出需匹配前几位即可，如匹配前 4 位，按 sql 表达是 LIKE ‘0314%’</p><p>​    <strong>方法二</strong>：变通距离为 方圆 3km（曼哈顿距离）：</p><p>​    即 deltaX = 1500, deltaY = 1500，通过数据库解决 Create table tb_name ( x int, y int ) 并添加索引。</p><p>​    假如原点是 (x0, y0)，sql 如下：</p><p>​    WHERE (x &gt; x0 - 1500) AND (x &lt; x0 + 1500) AND (y &gt; y0 - 1500) AND (y &lt; y0 + 1500)</p><h2 id="DAY-2"><a href="#DAY-2" class="headerlink" title="DAY 2"></a>DAY 2</h2><p>一、【多选】下列关于Join 运算不正确的是：</p><p>a、Nested Loop Join 不能使用索引做优化。<br>b、如果左表太大，不能放入内存中，则不能使用 Hash Join。<br>c、如果 Join 的一个输入表在 Join Key 上有序，则一定会使用 Sort Merge Join。<br>d、Broadcast Join 适用于一张表很小，另一张表很大的场景。</p><p class="note note-success">答案&解析</p><p>Nested Loop Join 可以使用索引优化（Index Nested Loop Join）；</p><p>如果左表太大，不能放入内存，可以先对量表做分区，再对每个分区做 Hash Join （Parititioned Hash Join）；</p><p>如果Join的一个输入表在Join Key上有序，也可以 Hash Join，具体使用哪种 Join 方式取决于优化器的代价估计结果。</p><p>二、给定一个正整数数组 arrs 和整数 K ，请找出该数组内乘积小于等于 k 的连续的子数组的个数，算法时间复杂度o(n)。</p><p class="note note-success">答案</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> <span class="hljs-string">&quot;fmt&quot;</span><br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br><span class="hljs-keyword">var</span> n <span class="hljs-keyword">int</span><br><span class="hljs-keyword">var</span> k <span class="hljs-keyword">int</span><br>fmt.Scanf(<span class="hljs-string">&quot;%d%d&quot;</span>, &amp;n, &amp;k)<br>nums := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>, n)<br><span class="hljs-keyword">for</span> i := <span class="hljs-number">0</span>; i &lt; n; i++ &#123;<br>fmt.Scanf(<span class="hljs-string">&quot;%d&quot;</span>, &amp;nums[i])<br>&#125;<br><span class="hljs-keyword">if</span> k == <span class="hljs-number">0</span> || k == <span class="hljs-number">1</span> &#123;<br><span class="hljs-keyword">return</span><br>&#125;<br>l, r := <span class="hljs-number">0</span>, <span class="hljs-number">0</span><span class="hljs-comment">// 左右指针</span><br>cur := <span class="hljs-number">1</span><br>ans := <span class="hljs-number">0</span><br><span class="hljs-keyword">for</span> r &lt; <span class="hljs-built_in">len</span>(nums) &#123;<br>cur *= nums[r]<br><span class="hljs-keyword">for</span> cur &gt;= k &#123;<span class="hljs-comment">// 如果乘了之后会超过k，则l++</span><br>cur /= nums[l]<br>l ++<br>&#125;<br>ans += r - l + <span class="hljs-number">1</span><br>r ++<br>&#125;<br>fmt.Printf(<span class="hljs-string">&quot;%d\n&quot;</span>, ans)<br>&#125;<br></code></pre></td></tr></table></figure><h2 id="DAY-3"><a href="#DAY-3" class="headerlink" title="DAY 3"></a>DAY 3</h2><p>一、【多选】绝大多数硬盘可以提供哪些写入保证？</p><p>a. 单个sector原子写入</p><p>b. 单个page原子写入</p><p>c. 硬盘顺序执行文件系统发送的操作</p><p>d. 以上都不可以</p><p class="note note-success">答案&解析</p><p>​    d；</p><p>​    本题主要考察对于一个数据密集型应用开发者（比如数据库开发者、文件系统开发者），在数据不能出错的前提下，可以依赖磁盘的哪些能力，事实证明几乎有</p><p>什么能力可以依赖。</p><p>​    在随时可能断电的情况下，大多数硬件能提供单个sector的原子性写入；但是也有少数硬件连单个sector的写入都无法保证；如果一个page对应多个sector，单</p><p>个page的完整写入总是无法得到保障。更加详细的情况可以查看这个讨论：<a href="https://link.juejin.cn/?target=https://link.zhihu.com/?target=https://stackoverflow.com/questions/2009063/are-disk-sector-writes-atomic">crash - Are disk sector writes atomic?</a>。对于同时发给硬盘的多个操作（比如写多个不</p><p>连续的sector），硬盘并不保证操作的顺序。结合其弱原子性，所以硬盘可能处在任何一个中间状态。这主要是由于机械硬盘的寻址优化策略和固态/机械硬盘的缓</p><p>存策略导致的。</p><p>二、判断一棵二叉树是否是平衡二叉树。（平衡二叉树要求：树中节点左右子树树高差不超过1。）</p><p class="note note-success">答案</p><p><strong>后序递归写法（最优）</strong></p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * Definition for a binary tree node.</span><br><span class="hljs-comment"> * type TreeNode struct &#123;</span><br><span class="hljs-comment"> *     Val int</span><br><span class="hljs-comment"> *     Left *TreeNode</span><br><span class="hljs-comment"> *     Right *TreeNode</span><br><span class="hljs-comment"> * &#125;</span><br><span class="hljs-comment"> */</span><br><br><span class="hljs-keyword">var</span> res <span class="hljs-keyword">bool</span><br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">isBalanced</span><span class="hljs-params">(root *TreeNode)</span> <span class="hljs-title">bool</span></span> &#123;<br>    res = <span class="hljs-literal">true</span><br>    dfs(root)<br>    <span class="hljs-keyword">return</span> res<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">dfs</span><span class="hljs-params">(root *TreeNode)</span> <span class="hljs-title">int</span></span> &#123;<br>    <span class="hljs-keyword">if</span> root == <span class="hljs-literal">nil</span> &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span><br>    &#125;<br>    left := dfs(root.Left)<br>    right := dfs(root.Right)<br>    <span class="hljs-keyword">if</span> abs(left - right) &gt; <span class="hljs-number">1</span> &#123;<br>        res = <span class="hljs-literal">false</span><br>    &#125;<br>    <span class="hljs-keyword">return</span> max(left, right) + <span class="hljs-number">1</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">abs</span><span class="hljs-params">(x <span class="hljs-keyword">int</span>)</span> <span class="hljs-title">int</span></span> &#123;<br>    <span class="hljs-keyword">if</span> (x &lt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">return</span> -x;<br>    &#125;<br>    <span class="hljs-keyword">return</span> x;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">max</span><span class="hljs-params">(x <span class="hljs-keyword">int</span>, y <span class="hljs-keyword">int</span>)</span> <span class="hljs-title">int</span></span> &#123;<br>    <span class="hljs-keyword">if</span> (x &gt; y) &#123;<br>        <span class="hljs-keyword">return</span> x<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-keyword">return</span> y<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure><h2 id="DAY-4"><a href="#DAY-4" class="headerlink" title="DAY 4"></a>DAY 4</h2><p>一、【单选】go test 默认是以什么顺序执行测试的？</p><p>a、多个module并发执行，单module下多个测试并发执行</p><p>b、多个module并发执行，单module下多个测试串行执行</p><p>c、多个module串行执行，单module下多个测试并发执行</p><p>d、多个module串行执行，单module下多个测试串行执行</p><p>二、【分布式文件处理，获取最多的URL】如果有一个20g的日志文件，日志文件记录着用户访问过的url，每一行为一个url，给你一台512M的主机，找出出现次</p><p>数最多的10个url。</p><p>​    </p>]]></content>
     
@@ -50,25 +75,6 @@
       <tag>青训营</tag>
       
     </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>网易互联网面经</title>
-    <link href="/2022/04/13/%E6%9D%82%E7%83%A9/%E7%BD%91%E6%98%93%E4%BA%92%E8%81%94%E7%BD%91%E9%9D%A2%E7%BB%8F/"/>
-    <url>/2022/04/13/%E6%9D%82%E7%83%A9/%E7%BD%91%E6%98%93%E4%BA%92%E8%81%94%E7%BD%91%E9%9D%A2%E7%BB%8F/</url>
-    
-    <content type="html"><![CDATA[<h2 id="一面"><a href="#一面" class="headerlink" title="一面"></a>一面</h2><ol><li>做题，两数之和（链表那种，而且头节点是高位）</li><li>公平锁和非公平锁（结合AQS回答）</li><li>数据库InnoDB为什么要用B+树</li><li>redis使用的场景</li><li>zset底层结构</li></ol>]]></content>
-    
-    
-    <categories>
-      
-      <category>杂烩</category>
-      
-    </categories>
-    
     
   </entry>
   
@@ -150,31 +156,6 @@
   
   
   <entry>
-    <title>4399面经</title>
-    <link href="/2022/03/29/%E6%9D%82%E7%83%A9/4399%E9%9D%A2%E7%BB%8F/"/>
-    <url>/2022/03/29/%E6%9D%82%E7%83%A9/4399%E9%9D%A2%E7%BB%8F/</url>
-    
-    <content type="html"><![CDATA[<h2 id="一面（13分钟）"><a href="#一面（13分钟）" class="headerlink" title="一面（13分钟）"></a>一面（13分钟）</h2><ol><li>快排and归并</li><li>双亲委派机制</li><li>beanfactory和applicationcontext的区别</li><li>如何解决粘包/拆包</li><li>拥塞控制</li><li>mysql索引？用b+树的好处</li></ol>]]></content>
-    
-    
-    <categories>
-      
-      <category>杂烩</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>面经</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>Project2：Hash Index</title>
     <link href="/2022/03/27/CMU15445/Project2%EF%BC%9AHash-Index/"/>
     <url>/2022/03/27/CMU15445/Project2%EF%BC%9AHash-Index/</url>
@@ -242,31 +223,6 @@
     <tags>
       
       <tag>CMU15445</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>阿里支付宝营销平台一面</title>
-    <link href="/2022/03/22/%E6%9D%82%E7%83%A9/%E9%98%BF%E9%87%8C%E6%94%AF%E4%BB%98%E5%AE%9D%E8%90%A5%E9%94%80%E5%B9%B3%E5%8F%B0%E4%B8%80%E9%9D%A2/"/>
-    <url>/2022/03/22/%E6%9D%82%E7%83%A9/%E9%98%BF%E9%87%8C%E6%94%AF%E4%BB%98%E5%AE%9D%E8%90%A5%E9%94%80%E5%B9%B3%E5%8F%B0%E4%B8%80%E9%9D%A2/</url>
-    
-    <content type="html"><![CDATA[<ol><li>自我介绍</li><li>为什么第一志愿没有通过</li><li>项目介绍</li><li>项目表结构怎么样</li><li>如果redis宕机，导致扣减失败了怎么办</li><li>redis还能用在哪些场景中？</li><li>redis寻主？</li><li>多线程有用到吗？讲下线程池的参数</li><li>如何实现最终一致性的？</li><li>http状态码</li><li>口述两个队列实现一个栈</li><li>设计模式（抽象工厂）</li><li>单例模式的四种实现方式</li><li>有张表，字段为a，b，c，创建联合索引abc，问 where b = 3 and a &gt; 2 and c = 2会走索引吗？走了哪些</li><li>事务隔离级别</li><li>数据库特性</li><li>RPC和http的区别</li><li>netty是怎么用的呢</li><li>如何解决粘包拆包</li><li>软问题。。。</li></ol><p>笔试</p><p>​    火车站的最优排班。例如有10个火车进出站时间为【1，2】【3，4】【4，5】【6，7】【4，7】【1，7】【8，9】【9，10】【10，11】【11，12】</p><p>​    如果有别的火车在站中，则其他的不能进站。求出怎么让更多的火车在站中</p><p>​    没写出来。。想歪了，其实DFS就行，先按进站时间排序，然后每次固定一个火车在站，递归其他火车在站中的情况，最后取最优解即可。</p><p><strong>总结</strong></p><ol><li>还是会紧张，还被面试官说了QAQ，被软问题问得有些懵了</li><li>最后问面试官建议时，得到了以下回复：1，不要忽视毛概，马克思这些课，学校开设就有他的意义，认真学学可以提高沟通能力和奖学金。2，提高软实力，和别人合作时要给其他人参与感，一起讨论，即使最后结果还是自己的答案。3，多刷题。</li></ol>]]></content>
-    
-    
-    <categories>
-      
-      <category>杂烩</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>面经</tag>
       
     </tags>
     
@@ -833,31 +789,6 @@
   
   
   <entry>
-    <title>蔚来一面面经</title>
-    <link href="/2022/03/11/%E6%9D%82%E7%83%A9/%E8%94%9A%E6%9D%A5%E4%B8%80%E9%9D%A2%E9%9D%A2%E7%BB%8F/"/>
-    <url>/2022/03/11/%E6%9D%82%E7%83%A9/%E8%94%9A%E6%9D%A5%E4%B8%80%E9%9D%A2%E9%9D%A2%E7%BB%8F/</url>
-    
-    <content type="html"><![CDATA[<p>面试</p><ol><li>自我介绍</li><li>RPC（无语了= =，我更想面试官问第一个项目的）</li><li>http和tcp区别（？确定不是udp吗）</li><li>tcp三次握手，为什么不是两次四次</li><li>为什么要分OSI的7层，TCP的4层，有什么意义吗</li><li>为什么需要DNS？</li><li>设计模式（为什么要，熟悉哪些，设计模式有哪些原则，该原则保证了什么。。）</li><li>java springboot的作用？spring和springboot的区别？</li><li>spring如何加载配置文件的</li><li>spring bean的生命周期（还问了个为什么要了解这个？？？我内心：八股上说的）</li><li>线程，为什么要引入，有啥作用</li><li>mysql事务隔离级别，解决了什么问题</li></ol><p>笔试</p><ol><li>抢红包，要求均匀</li></ol><p>发问</p><ol><li>啥时候下一次通知</li><li>可以转正吗</li><li>对我有啥建议</li></ol>]]></content>
-    
-    
-    <categories>
-      
-      <category>杂烩</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>面经</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>Redis基础数据类型</title>
     <link href="/2022/03/10/Redis/Redis%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/"/>
     <url>/2022/03/10/Redis/Redis%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/</url>
@@ -985,31 +916,6 @@
       <tag>周赛</tag>
       
       <tag>LeetCode</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>阿里天猫国际一面凉经</title>
-    <link href="/2022/03/05/%E6%9D%82%E7%83%A9/%E9%98%BF%E9%87%8C%E5%A4%A9%E7%8C%AB%E5%9B%BD%E9%99%85%E4%B8%80%E9%9D%A2%E5%87%89%E7%BB%8F/"/>
-    <url>/2022/03/05/%E6%9D%82%E7%83%A9/%E9%98%BF%E9%87%8C%E5%A4%A9%E7%8C%AB%E5%9B%BD%E9%99%85%E4%B8%80%E9%9D%A2%E5%87%89%E7%BB%8F/</url>
-    
-    <content type="html"><![CDATA[<p>笔试</p><ol><li><p>long 100/1000</p></li><li><p>手写单例</p></li></ol><p>面试</p><ol start="3"><li><p>自我介绍</p></li><li><p>基础知识和java的学习分配</p></li><li><p>c++和java区别</p></li><li><p>java为什么还搞自己的内存分配，有什么优势呢？</p></li><li><p>上下文切换是如何记住状态的？</p></li><li><p>java中是如何识别重载，重写方法的?</p></li><li><p>你平常咋学习的</p></li><li><p>说下熟悉的源码</p></li><li><p>https和http区别</p></li><li><p>介绍下项目</p></li><li><p>说一下熟悉模块的设计</p></li><li><p>如何防止超卖</p></li><li><p>mysql索引为什么快</p></li><li><p>索引走几次io</p></li><li><p>知道java多态吗？java底层是怎么找到重载方法的?</p><p><a href="https://cloud.tencent.com/developer/article/1925122">Java及JVM是如何识别重载、重写方法的? - 云+社区 - 腾讯云 (tencent.com)</a></p></li></ol><p>总结失败总结</p><ul><li>面试比较紧张，可能是第一次面试的缘故，但归根结底还是自己心里没底，很多知识掌握的不牢靠</li><li>不够重视基础，太过于依赖所谓的“八股文”了，以为网上面经+八股合集=基础，但其实基础更多体现在日积月累的代码编写当中，例如单例模式，如果光背光看别人代码，不自己去实现面试时也可能因为紧张写错</li><li>项目理解的不够，虽然项目是从网上找的，自己也跟着敲了一遍，但没有形成一个整体的思维架构</li><li>要多问为什么，面试被问到多态，只答了重载和重写，但被问到如何定位重载方法时，就不知道了，所以平时在学习时要多想，不要总是带有一种模糊的概念</li></ul>]]></content>
-    
-    
-    <categories>
-      
-      <category>杂烩</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>面经</tag>
       
     </tags>
     
