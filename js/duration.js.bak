@@ -1,5 +1,5 @@
 !(function() {
-  /** ¼ÆÊ±ÆğÊ¼Ê±¼ä£¬×ÔĞĞĞŞ¸Ä **/
+  /** è®¡æ—¶èµ·å§‹æ—¶é—´ï¼Œè‡ªè¡Œä¿®æ”¹ **/
   var start = new Date("2020/01/01 00:00:00");
 
   function update() {
@@ -22,8 +22,8 @@
     if(String(snum).length === 1 ){
       snum = "0" + snum;
     }
-    document.getElementById("timeDate").innerHTML = "±¾Õ¾°²È«ÔËĞĞ&nbsp"+dnum+"&nbspÌì";
-    document.getElementById("times").innerHTML = hnum + "&nbspĞ¡Ê±&nbsp" + mnum + "&nbsp·Ö&nbsp" + snum + "&nbspÃë";
+    document.getElementById("timeDate").innerHTML = "æœ¬ç«™å®‰å…¨è¿è¡Œ&nbsp"+dnum+"&nbspå¤©";
+    document.getElementById("times").innerHTML = hnum + "&nbspå°æ—¶&nbsp" + mnum + "&nbspåˆ†&nbsp" + snum + "&nbspç§’";
   }
 
   update();
