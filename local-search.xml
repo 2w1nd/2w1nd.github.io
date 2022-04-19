@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>MapReduce论文读后感</title>
+    <link href="/2022/04/19/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/MapReduce%E8%AE%BA%E6%96%87%E8%AF%BB%E5%90%8E%E6%84%9F/"/>
+    <url>/2022/04/19/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/MapReduce%E8%AE%BA%E6%96%87%E8%AF%BB%E5%90%8E%E6%84%9F/</url>
+    
+    <content type="html"><![CDATA[<p>​    在MIT6.824的第一个Lab中，就是要我们实现一个MapReduce系统，当时只是粗略看了一下其基本的实现，再参照网上思路完成了该Lab。今天面试被问到该论文，很多问题都没答好，看来论文的阅读还是十分重要。🤔</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文阅读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>MapReduce</tag>
+      
+      <tag>分布式系统</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>MySQL事务的实现原理</title>
     <link href="/2022/04/18/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"/>
     <url>/2022/04/18/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/</url>
