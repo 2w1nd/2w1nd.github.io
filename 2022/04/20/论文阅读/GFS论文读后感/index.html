@@ -16,25 +16,27 @@
   <meta name="author" content="w1nd">
   <meta name="keywords" content="IT BLOG">
   
-    <meta name="description" content="​    在MIT6.824的第一个Lab中，就是要我们实现一个MapReduce系统，当时只是粗略看了一下其基本的实现，再参照网上思路完成了该Lab。今天面试被问到该论文，很多问题都没答好，看来论文的阅读还是十分重要。🤔  0 前言​    首先从摘要出发，摘要首先基本说明MapReduce大致流程，其实现需要注意的点以及其作用。 ​    MapReduce是用于处理和生成超大数据集的算法模">
+    <meta name="description" content="​    该论文是Google的三架马车之一，是实现了一个面向大规模密集型应用，可伸缩的的分布式文件系统。分布式存储的开篇之作，论文中主要阐述了该系统接口的扩展，如何设计，最后又讲了性能测试以及生产环境下性能数据。 ​    读后感不一定按论文框架描述，主要还是自己对系统的理解与总结 0 前言​    论文在简介中谈到了系统设计的初始思路，要考虑的因素  组件（程序，系统，机器）故障属于常态事件，">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MapReduce论文读后感">
-<meta property="og:url" content="https://2w1nd.github.io/2022/04/19/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/MapReduce%E8%AE%BA%E6%96%87%E8%AF%BB%E5%90%8E%E6%84%9F/index.html">
+<meta property="og:title" content="GFS论文读后感">
+<meta property="og:url" content="https://2w1nd.github.io/2022/04/20/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/GFS%E8%AE%BA%E6%96%87%E8%AF%BB%E5%90%8E%E6%84%9F/index.html">
 <meta property="og:site_name" content="浅风w1ndの博客">
-<meta property="og:description" content="​    在MIT6.824的第一个Lab中，就是要我们实现一个MapReduce系统，当时只是粗略看了一下其基本的实现，再参照网上思路完成了该Lab。今天面试被问到该论文，很多问题都没答好，看来论文的阅读还是十分重要。🤔  0 前言​    首先从摘要出发，摘要首先基本说明MapReduce大致流程，其实现需要注意的点以及其作用。 ​    MapReduce是用于处理和生成超大数据集的算法模">
+<meta property="og:description" content="​    该论文是Google的三架马车之一，是实现了一个面向大规模密集型应用，可伸缩的的分布式文件系统。分布式存储的开篇之作，论文中主要阐述了该系统接口的扩展，如何设计，最后又讲了性能测试以及生产环境下性能数据。 ​    读后感不一定按论文框架描述，主要还是自己对系统的理解与总结 0 前言​    论文在简介中谈到了系统设计的初始思路，要考虑的因素  组件（程序，系统，机器）故障属于常态事件，">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220419232929058.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220419210000811.png">
-<meta property="article:published_time" content="2022-04-19T12:37:35.000Z">
-<meta property="article:modified_time" content="2022-04-19T15:30:00.435Z">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422084854082.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422133801597.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422142334520.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422143246991.png">
+<meta property="article:published_time" content="2022-04-20T08:58:45.000Z">
+<meta property="article:modified_time" content="2022-04-22T07:15:50.920Z">
 <meta property="article:author" content="w1nd">
-<meta property="article:tag" content="MapReduce">
 <meta property="article:tag" content="分布式系统">
+<meta property="article:tag" content="GFS">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220419232929058.png">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422084854082.png">
   
   
-  <title>MapReduce论文读后感 - 浅风w1ndの博客</title>
+  <title>GFS论文读后感 - 浅风w1ndの博客</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -205,7 +207,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="MapReduce论文读后感"></span>
+            <span id="subtitle" data-typed-text="GFS论文读后感"></span>
           
         </div>
 
@@ -216,8 +218,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-04-19 20:37" pubdate>
-          2022年4月19日 晚上
+        <time datetime="2022-04-20 16:58" pubdate>
+          2022年4月20日 下午
         </time>
       </span>
     
@@ -228,7 +230,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.7k 字
+          2.4k 字
         
       </span>
     
@@ -239,7 +241,7 @@
         
         
         
-          32 分钟
+          21 分钟
         
       </span>
     
@@ -277,88 +279,103 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">MapReduce论文读后感</h1>
+            <h1 style="display: none">GFS论文读后感</h1>
             
             <div class="markdown-body">
               
-              <p>​    在MIT6.824的第一个Lab中，就是要我们实现一个MapReduce系统，当时只是粗略看了一下其基本的实现，再参照网上思路完成了该Lab。今天面试被问到该论文，很多问题都没答好，看来论文的阅读还是十分重要。🤔</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220419232929058.png" srcset="/img/loading.gif" lazyload alt="image-20220419232929058"></p>
-<h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0 前言"></a>0 前言</h2><p>​    首先从摘要出发，摘要首先基本说明MapReduce大致流程，其实现需要注意的点以及其作用。</p>
-<p>​    <code>MapReduce</code>是用于处理和生成超大数据集的算法模型的一个模型。通常流程是：用户用户首先创建一个 <code>Map</code> 函数处理一个基于 <code>key/value pair</code> 的数据集合，输出中间的基于 <code>key/value pair</code> 的数据集合（<code>shuffle</code>）；然后再创建一个 <code>Reduce</code>函数用来合并所有的具有相同中间 <code>key</code> 值的中间 <code>value</code>值</p>
-<p>​    实现该模型需要注意的是</p>
+              <p>​    该论文是Google的三架马车之一，是实现了一个面向大规模密集型应用，可伸缩的的<strong>分布式文件系统</strong>。分布式存储的开篇之作，论文中主要阐述了该系统接口的扩展，如何设计，最后又讲了性能测试以及生产环境下性能数据。</p>
+<p>​    读后感不一定按论文框架描述，主要还是自己对系统的理解与总结</p>
+<h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0 前言"></a>0 前言</h2><p>​    论文在简介中谈到了系统设计的初始思路，要考虑的因素</p>
 <ul>
-<li>如何分割输入数据</li>
-<li>在大量计算机组成的集群上调度</li>
-<li>集群中计算机的错误处理</li>
-<li>管理集群中计算之间必要的通信</li>
+<li>组件（程序，系统，机器）故障属于常态事件，而不是意外事件</li>
+<li>需要存储的文件非常巨大，通常是TB</li>
+<li>绝大多数文件的修改采用在文件尾部追加数据，而不是覆盖原有数据的方式（顺序读多，而非随机读）</li>
+<li>通过应用程序和文件系统的API协同设计提高了整个系统的灵活性</li>
 </ul>
-<p>​    在初期，该模型是Google用来处理海量的原始数据，比如文档抓取，Web请求日志等等；还有处理各种类型的衍生数据，比如倒排索引，Web文档的图结构的各种表示形式。这些数据处理很容易理解，但由于数据量太大，需要在多台主机上并行计算，但如何分发数据，处理错误？为此诞生了<code>MapRedece</code>模型。</p>
-<h2 id="1-编程模型"><a href="#1-编程模型" class="headerlink" title="1 编程模型"></a>1 编程模型</h2><p>​    论文在第二部分讲了该模型的大致框架以及应用，感觉框架很容易理解，这里贴张图即可。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220419210000811.png" srcset="/img/loading.gif" lazyload alt="MapReduce统计单词"></p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">map</span>(k1,v1) -&gt;<span class="hljs-built_in">list</span>(k2,v2)<br><span class="hljs-built_in">reduce</span>(k2,<span class="hljs-built_in">list</span>(v2)) -&gt;<span class="hljs-built_in">list</span>(v2)<br></code></pre></td></tr></table></figure>
+<p>​    首先，在分布式存储中经常出现的话题有，<strong>并行性能</strong>，<strong>容错</strong>，<strong>复制</strong>，<strong>一致性</strong>。GFS在解决这些问题用到了比较直观的方式，下面会谈到。</p>
+<p>​    在开始之前，我看到网上有篇文章写得很好，脉络清晰并且作者的思想也很<code>make sense</code>，我这里就对其中一些我不太明白的点进行总结，具体可以看这篇<a target="_blank" rel="noopener" href="https://spongecaptain.cool/post/paper/googlefilesystem/">Google File System-GFS 论文阅读</a></p>
+<h2 id="1-设计概述"><a href="#1-设计概述" class="headerlink" title="1 设计概述"></a>1 设计概述</h2><p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422084854082.png" srcset="/img/loading.gif" lazyload alt="image-20220422084854082"></p>
+<p>​    典型得<code>Master + Worker</code>结构，一个 Master 来管理任务、分配任务，而 Worker 是真正干活的节点。</p>
+<p class="note note-success">分块存储</p>
 
-<p>有趣的栗子</p>
-
-<ol>
-<li>计算URL访问频率：<code>Map</code>函数处理日志中 <code>web</code>页面请求的记录，然后输出<code>(URL,1)</code>。<code>Reduce</code>函数把相同<code>URL </code>的 <code>value </code>值都累加起来，产生<code>(URL,记录总数)</code>结果</li>
-<li>倒转网络链接图：<code>Map </code>函数在源页面<code>（source）</code>中搜索所有的链接目标<code>（target）</code>并输出为<code>(target,source)</code>。Reduce 函数把给定链接目标<code>（target）</code>的链接组合成一个列表，输出<code>(target,list(source))</code>。</li>
-<li>倒排索引：<code>Map</code>函数分析每个文档输出一个<code>(词,文档号)</code>的列表，<code>Reduce</code>函数的输入是一个给定词的所有<code>（词，文档号）</code>，排序所有的文档号，输出<code>(词,list（文档号）)</code>。所有的输出集合形成一个简单的倒排索引，它以一种简单的算法跟踪词在文档中的位置。</li>
-</ol>
-<h2 id="2-实现"><a href="#2-实现" class="headerlink" title="2 实现"></a>2 实现</h2><p>​    这一部分简单聊了集群计算环境的<code>MapReduce</code>实现。有一句话我觉得很有意思，大概是说<code>MapReduce</code>有许多实现方式，<strong>取决于具体环境</strong>，比如，用于<strong>小型的共享内存方式的机器</strong>，另外一种实现方式则<strong>适用于大型 NUMA 架构的多处理器的主机</strong>，还有适合<strong>大型的网络连接集群</strong>。</p>
-<blockquote>
-<p>​    这里我觉得有意思得是NUMA，之前从来没接触过，上网查阅资料发现，这是一种非均匀内存访问架构，指多处理器系统中，内存的访问时间是依赖于处理器和内存之间的相对位置的。这种设计里存在和处理器相对近的内存，通常被称作本地内存；还有和处理器相对远的内存， 通常被称为非本地内存。</p>
-<p>​    这和分布式有点扯远，具体可以看这篇博文：<a target="_blank" rel="noopener" href="https://houmin.cc/posts/b893097a/">【计算机体系结构】NUMA架构详解</a></p>
-</blockquote>
-<h3 id="2-1-执行概括"><a href="#2-1-执行概括" class="headerlink" title="2.1 执行概括"></a>2.1 执行概括</h3><p>​    这在我Lab1的实现提到了，<a target="_blank" rel="noopener" href="https://w1nd.xyz/2022/04/16/MIT6.824/6-824-Lab1%EF%BC%9AMapReduce/">6.824 Lab1：MapReduce</a></p>
-<p>​    这里不多BB</p>
-<h3 id="2-2-Master数据结构"><a href="#2-2-Master数据结构" class="headerlink" title="2.2 Master数据结构"></a>2.2 Master数据结构</h3><p>​    论文中说要维护的数据结构有如下</p>
+<p>​    分块存储可以理解为原来一个工人 1 小时能制作 1 个玩具，现在我请十个工人，每个人做玩具的一个组件，最后拼接，现在 1 小时就能够做不止 10 个玩具。</p>
+<p>​    这就是为什么分布式在各个领域应用得原因：<strong>并行操作</strong></p>
+<p>​    在GFS中，<strong>以 64 MB 为固定的 Chunk Size 大小</strong>，这远远大于典型的单机文件系统 chunk 的大小。（也就是单位读取数据大小）</p>
+<p>​    优点在于：</p>
 <ul>
-<li>每个<code>Map</code>和<code>Reduce</code>任务的状态</li>
-<li><code>Worker</code>机器的标识（非空闲）</li>
-<li>中间文件存储区域的大小和位置</li>
+<li>减少了 Client 与 Master 服务器交互的次数</li>
+<li>减少了 GFS Client 与 GFS chunkserver 进行交互的数据开销</li>
+<li>减少了存储在主服务器上的元数据的大小</li>
 </ul>
-<p>​    在做Lab时没根据这里来做，这里就不多说吧</p>
-<h3 id="2-3-容错"><a href="#2-3-容错" class="headerlink" title="2.3 容错"></a>2.3 容错</h3><p>​    谈到分布式就不得不谈到容错，一个好的分布式系统一定能有个优秀的容错机制</p>
-<p class="note note-success">worker故障</p>
+<p>​    缺点在于：</p>
+<ul>
+<li>小数据量（比如仅仅占据一个 chunk 的文件，文件至少占据一个 chunk）的文件很多时，当很多 GFS Client 同时将 record 存储到该文件时就会造成局部的 hot spots 热点。</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422133801597.png" srcset="/img/loading.gif" lazyload alt="image-20220422133801597"></p>
+<p class="note note-success">单Master节点的设计</p>
 
-<p>​    解决这种故障通过：</p>
-<p>​    <code>master</code>周期性的<code>ping</code>每个<code>worker</code>。如果在一个约定的时间范围没有收到<code>worker</code>返回的信息，<code>master</code>就将这个<code>worker</code>标记为失效。所有由这个失效的 <code>worker</code> 完成的 <code>Map</code> 任务被重设为初始的空闲状态，之后这些任务就可以被安排给其他的 <code>worker</code>。同样的，<code>worker</code>失效时正在运行的 <code>Map</code>或 <code>Reduce</code>任务也将被重新置为空闲状态，等待重新调度。</p>
-<p>​    当 <code>worker</code>故障时，由于已经完成的 <code>Map</code>任务的输出存储在这台机器上，<code>Map</code>任务的输出已不可访问了，因此必须重新执行。而已经完成的 <code>Reduce</code>任务的输出存储在全局文件系统上，因此不需要再次执行。</p>
-<p>​    当一个 <code>Map</code>任务首先被 <code>worker A </code>执行，之后由于 <code>worker A </code>失效了又被调度到 <code>worker B</code>执行，这个“新执行”的动作会被通知给所有执行 <code>Reduce </code>任务的 <code>worker</code>。任何还没有从 <code>worker A </code>读取数据的 <code>Reduce </code>任将从 <code>worker B </code>读取数据。</p>
-<p class="note note-success">master故障</p>
+<p><code>Master</code> 周期性通过 HeartBeat 机制和每一个 chunkserver 进行通信，进行指令的发送以及状态信息的接收</p>
+<p>主要负责：</p>
+<ul>
+<li>chunk租赁管理</li>
+<li>孤立块的收集</li>
+<li><code>chunckserver</code>之间<code>chunk</code>迁移</li>
+<li>追加记录</li>
+<li>对于 metadata 的维护以及为索要 metadata 数据的 GFS 客户端做出正确的响应；</li>
+</ul>
+<p>​    在参考博文中叙述了架构运行的一个大致流程，其中，说了<code>Master</code>节点中含有两个<code>Table</code>，统称为<code>metadata</code></p>
+<ul>
+<li><p>Table 1</p>
+<p>  ​    存储了<code>filename</code>以及其对应的<code>chunk handler</code></p>
+</li>
+<li><p>Table 2</p>
+<p>  ​    存储了<code>chunk hanler</code>以及其对应的<code>chunkserver</code></p>
+</li>
+</ul>
+<p>​    对于Table1使用哈希表来存储，Table2使用B+树来存储</p>
+<p><strong>持久化机制</strong></p>
+<p>​    由于<code>metadata</code>存储于内存中，但是由于内存是易失性存储体，因此还需要持久化操作</p>
+<ul>
+<li>客户端向 Master 节点请求的 metadata 数据直接存储于 Master 的内存中，避免每次请求都需要进行磁盘 I/O；</li>
+<li>Master 节点使用日志 + checkpoint 的方式来确保数据的持久化；</li>
+<li>Master 节点内存中的 Table1 与 Table2 中的 nv 数据会定期存储到 Master 的磁盘上（包括 shadow Master 节点）；</li>
+</ul>
+<p class="note note-success">Metadata-元数据</p>
 
-<p>​    最简单的解决方法就是实现落库，让 <code>master </code>周期性的将上面描述的数据结构的写入磁盘，即检查点（checkpoint）。如果这个 <code>master </code>任务失效了，可以从最后一个检查点（checkpoint）开始启动另一个<code>master </code>进程。但在Lab的实现是挂了就寄了= =，毕竟只有一个<code>master</code>进程恢复比较麻烦</p>
-<p class="note note-success">在失效方面的处理机制</p>
+<p>​    <code>Master</code>中有三类重要的<code>metadata</code>数据：</p>
+<ul>
+<li>File 和 chunk 的 namespace(命名空间)</li>
+<li>file 到 chunk 的映射 Map</li>
+<li>每一个 chunk replica 的存储位置</li>
+</ul>
+<p>​    前两个就是前面说的两个Table，最后一个是通过启动时以及 chunkserver 加入集群时发起 chunkserver 的每个 chunk 数据块位置的询问，不会持久化到硬盘。</p>
+<p>​    因为这样意义不大，<code>chunkserver</code>对它自己的磁盘上有什么块或没有什么块有最终决定权。在 Master 服务器上维护这个信息的一致视图是没有意义的，因为 chunkserver 上的错误可能会导致块自动消失(例如，磁盘可能坏了并被禁用)，或者运维为 chunkserver 重命名。</p>
+<p>​    还有一个<strong>Operation Log</strong> 包含关键 metadata 数据更改的历史记录</p>
+<p class="note note-success">一致性模型</p>
 
-<p>​    这里的翻译很奇怪，原文是<code>semantics in the presence of failures</code>。我不太理解为什么这样叫，但这一部分还是挺重要的。</p>
-<p>​    它规定了该模型<strong>依赖于<code>Map</code>和 <code>Reduce </code>任务的输出是原子提交的</strong>，这样才能保证任何情况下的输出都和所有程序没有出现任何错误、顺序的执行产生的输出是一样的。</p>
-<p>​    实现的原理是：每个工作中的任务把它的输出写到私有的临时文件中。</p>
-<p>​    当一个 <code>Map</code>任务完成的时，<code>worker</code>发送一个包含 R 个临时文件名的完成消息给 <code>master</code>。如果 <code>master </code>从一个已经完成的 Map 任务再次接收到到一个完成消息，<code>master </code>将忽略这个消息；否则，<code>master </code>将这 R 个文件的名字记录在数据结构里。</p>
-<p>​    当 <code>Reduce</code>任务完成时，<code>Reduce worker </code>进程以原子的方式把临时文件重命名为最终的输出文件。如果同一个 <code>Reduce </code>任务在多台机器上执行，针对同一个最终的输出文件将有多个重命名操作执行。我们依赖底层文件系统提供的重命名操作的原子性来保证最终的文件系统状态仅仅包含一个 <code>Reduce </code>任务产生的数据。</p>
-<p>​    这一部分论文重要的是指出<strong>原子写入</strong>这个事，只有保证了操作是确定性的，才可以使用合理的处理机制。</p>
-<p class="note note-success">存储位置</p>
+<p>​    GFS并不是强一致性的，他实现的是一个最终一致性的系统</p>
+<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422142334520.png" srcset="/img/loading.gif" lazyload alt="image-20220422142334520"></p>
+<p>​    上图是指修改之后的文件区域状态，这取决于修改类型，修改成功与否，是否存在并发</p>
+<p>​    具体文件区域状态意思可以看参考博客</p>
+<h2 id="2-系统内部交互"><a href="#2-系统内部交互" class="headerlink" title="2 系统内部交互"></a>2 系统内部交互</h2><p class="note note-success">租赁和修改顺序</p>
 
-<p>​    这一部分讲了咋在多台机器上分配资源。感觉用处不是很大，不细说了</p>
-<p class="note note-success">任务粒度</p>
+<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422143246991.png" srcset="/img/loading.gif" lazyload alt="image-20220422143246991"></p>
+<p>​    详细流程解释这里也不说了。。</p>
+<p>​    值得一提的是，数据流是通过线性进行传递的，也就是Client 负责给 primary 传输写入的数据，而 primary 负责给下一个 replica 传输数据，而下一个 replica 又负责给下下一个 replica 传输数据。如此，能充分利用每台机器的网络带宽，避免网络瓶颈和高延迟链接，并最小化通过所有数据的延迟。</p>
+<p class="note note-success">原子的记录追加</p>
 
-<p>​    通常，将把 <code>Map</code>拆分成了 <code>M </code>个片段、把 <code>Reduce </code>拆分成 <code>R </code>个片段执行。理想情况下，<code>M </code>和<code> R</code> 应当比集群中 <code>worker </code>的机器数量要多得多。在每台 <code>worker </code>机器都执行大量的不同任务能够提高集群的动态的负载均衡能力，并且能够加快故障恢复的速度：失效机器上执行的大量 <code>Map </code>任务都可以分布到所有其他的 <code>worker</code>机器上去执行。</p>
-<p>​    但是实际上，在我们的具体实现中对 <code>M </code>和 <code>R </code>的取值都有一定的客观限制，因为 <code>master</code>必须执行 <code>O(M+R)</code>次调度，并且在内存中保存 O(M*R)个状态（对影响内存使用的因素还是比较小的：O(M*R)块状态，大概每对 <code>Map </code>任务/<code>Reduce </code>任务 1 个字节就可以了）。</p>
-<p>​    更进一步，R 值通常是由用户指定的，因为每个 Reduce 任务最终都会生成一个独立的输出文件。实际使用时我们也倾向于选择合适的 M 值，以使得每一个独立任务都是处理大约 16M 到 64M 的输入数据（这样，上面描写的输入数据本地存储优化策略才最有效），另外，我们把 R 值设置为我们想使用的 worker 机器数量的小的倍数。我们通常会用这样的比例来执行 MapReduce：M=200000，R=5000，使用 2000 台 worker 机器。</p>
-<p class="note note-success">备用任务</p>
-
-<p>​    面试就被问到这里，当时在Lab实现是有的任务10s没完成直接分配给别的<code>worker</code>，结果被问到到论文是咋解决的😢</p>
-<p>​    因为在运算过程中，如果有一台机器花了很长的时间才完成最后几个 Map 或 Reduce 任务，导致 MapReduce 操作总的执行时间超过预期。出现“落伍者”的原因非常多。</p>
-<p>​    论文中解决方案</p>
-<p>​    当一个 <code>MapReduce </code>操作接近完成的时候，<code>master</code>调度备用（<code>backup</code>）任务进程来执行剩下的、处于处理中状态（<code>in-progress</code>）的任务。无论是最初的执行进程、还是备用（<code>backup</code>）任务进程完成了任务，我们都把这个任务标记成为已经完成。</p>
-<p>……..</p>
-<p>​    后续就是该模型一些扩展，优化，以及性能分析等了，感觉现在还不太会用到，就不细说了。</p>
-<h2 id="3-总结"><a href="#3-总结" class="headerlink" title="3 总结"></a>3 总结</h2><p>​    整篇论文看下来还是很清晰的，这种分布式系统的实现可以算是一个里程碑，模型简单容易理解，并且可以解决大多数的问题。在技术实现上，MapReduce 封装了并行处理、容错处理、数据本地化优化、负载均衡等等技术难点的细节，这使得 MapReduce库易于使用。并且，让性能优化提升到了仅仅通过增加机器就可以实现的地步，而不是花高价去雇人来优化。</p>
-<p>​    论文的最后，指出：</p>
-<ol>
-<li>约束编程模式使得并行和分布式计算非常容易，也易于构造容错的计算环境；</li>
-<li>网络带宽是稀有资源。大量的系统优化是针对减少网络传输量为目的的：本地优化策略使大量的数据从本地磁盘读取，中间文件写入本地磁盘、并且只写一份中间文件也节约了网络带宽</li>
-<li>多次执行相同的任务可以减少性能缓慢的机器带来的负面影响，同时解决了由于机器失效导致的数据丢失问题。</li>
+<p>​    普通写一般会指定一个offset写入，在并发的情况下，可能出现多个客户端数据交叉写入的情况。原子追加写入则只指定data，不指定offset，offset由GFS决定。</p>
+<p>……</p>
+<p>​    后续是主节点的操作以及容错与诊断，在参考博文中已经表达很详尽，我也不是很想去写了。其实如果真要完整写完可能字数就得达上万，虽然GFS的设计简单且容易理解，但作为十几年前的分布式系统著作，其蕴含的细节与内容是十分多的，阅读论文只是为了让我对分布式存储有一个大体的认识，而如果为了完成博文而阅读，就有点得不偿失了，所以，即然别人的博文写的更好，我也就不想去写太多了（<del>为自己懒惰找借口</del>）</p>
+<h2 id="3-收获"><a href="#3-收获" class="headerlink" title="3 收获"></a>3 收获</h2><ol>
+<li>GFS是一个单体<code>Master</code>，多个<code>ChunnkServer</code>的模型</li>
+<li>系统采用大文件的分块存储思想</li>
+<li>Master中包含了许多有用的<code>metadata</code></li>
+<li>GFS实现的并非是强一致性</li>
+<li>尽量减少<code>Master</code>节点在所有操作的参与</li>
+<li>……</li>
 </ol>
+<p>​    优秀的设计通常是简单的。</p>
 
               
             </div>
@@ -391,9 +408,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/MapReduce/">#MapReduce</a>
-      
         <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">#分布式系统</a>
+      
+        <a href="/tags/GFS/">#GFS</a>
       
     </div>
   
@@ -405,8 +422,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>MapReduce论文读后感</div>
-      <div>https://2w1nd.github.io/2022/04/19/论文阅读/MapReduce论文读后感/</div>
+      <div>GFS论文读后感</div>
+      <div>https://2w1nd.github.io/2022/04/20/论文阅读/GFS论文读后感/</div>
     </div>
     <div class="license-meta">
       
@@ -418,7 +435,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年4月19日</div>
+          <div>2022年4月20日</div>
         </div>
       
       
@@ -448,18 +465,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/04/20/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/GFS%E8%AE%BA%E6%96%87%E8%AF%BB%E5%90%8E%E6%84%9F/" title="GFS论文读后感">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">GFS论文读后感</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/04/18/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" title="MySQL事务的实现原理">
-                        <span class="hidden-mobile">MySQL事务的实现原理</span>
+                      <a href="/2022/04/19/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/MapReduce%E8%AE%BA%E6%96%87%E8%AF%BB%E5%90%8E%E6%84%9F/" title="MapReduce论文读后感">
+                        <span class="hidden-mobile">MapReduce论文读后感</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -480,7 +491,7 @@
         var options = Object.assign(
           {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
           {
-            id: '56ff17c637261b0842901d298a2bc1b3'
+            id: '4511609943547cb5083905e7d51c033c'
           }
         )
         var gitalk = new Gitalk(options);
