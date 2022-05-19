@@ -1,0 +1,922 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="w1nd">
+  <meta name="keywords" content="IT BLOG">
+  
+    <meta name="description" content="​    该部分要求我们实现ShardKV。在前面Lab中，我们实现一个构成基础分布式数据库的框架，支持多节点的数据一致性，CURD，日志快照。但在单一集群中，这样的实现会导致所有的请求都要由Leader来处理，当数据增长到一定程度，会导致请求响应时间变长。解决办法就是，将数据按某种方式分开存储到不同的集群，将不同的请求发送到不同的集群中。 ​    Lab还是偏难的，论文中也没有具体去写这一部分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="6.824 Lab 4: Sharded Key&#x2F;Value Service">
+<meta property="og:url" content="https://2w1nd.github.io/2022/05/18/MIT6.824/6-824-Lab4%EF%BC%9ASharded-Key-Value-Service/index.html">
+<meta property="og:site_name" content="浅风w1ndの博客">
+<meta property="og:description" content="​    该部分要求我们实现ShardKV。在前面Lab中，我们实现一个构成基础分布式数据库的框架，支持多节点的数据一致性，CURD，日志快照。但在单一集群中，这样的实现会导致所有的请求都要由Leader来处理，当数据增长到一定程度，会导致请求响应时间变长。解决办法就是，将数据按某种方式分开存储到不同的集群，将不同的请求发送到不同的集群中。 ​    Lab还是偏难的，论文中也没有具体去写这一部分">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220503163657204.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220519134739421.png">
+<meta property="article:published_time" content="2022-05-18T12:48:30.000Z">
+<meta property="article:modified_time" content="2022-05-19T07:19:23.418Z">
+<meta property="article:author" content="w1nd">
+<meta property="article:tag" content="mit6.824">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220503163657204.png">
+  
+  
+  <title>6.824 Lab 4: Sharded Key/Value Service - 浅风w1ndの博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"2w1nd.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+
+<body><!-- hexo injector body_begin start -->
+  <div id="particles-js"></div>
+<!-- hexo injector body_begin end -->
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>浅风w1ndの博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/book/">
+                <i class="iconfont icon-books"></i>
+                读书
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/Default4.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="6.824 Lab 4: Sharded Key/Value Service"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-05-18 20:48" pubdate>
+          2022年5月18日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          18k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          153 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">6.824 Lab 4: Sharded Key/Value Service</h1>
+            
+            <div class="markdown-body">
+              
+              <p>​    该部分要求我们实现ShardKV。在前面Lab中，我们实现一个构成基础分布式数据库的框架，支持多节点的数据一致性，CURD，日志快照。但在单一集群中，这样的实现会导致所有的请求都要由Leader来处理，当数据增长到一定程度，会导致请求响应时间变长。解决办法就是，<strong>将数据按某种方式分开存储到不同的集群，将不同的请求发送到不同的集群中</strong>。</p>
+<p>​    Lab还是偏难的，论文中也没有具体去写这一部分，很多需要参照网上资料去完成。</p>
+<h2 id="0-前言-amp-要求"><a href="#0-前言-amp-要求" class="headerlink" title="0 前言 &amp; 要求"></a>0 前言 &amp; 要求</h2><p>​    Lab4分为两部分：第一部分实现一个<code>ShardCtrler</code>，用于将Client请求定位到Group；第二部分实现一个<code>ShardKV</code>，从整体来看，它维护了许多raft组（Group），通过与ShardCtriler进行交互更新配置（Config），并且提供如Lab3实现的读写服务。难点在于实现时要考虑不同raft组之间分片迁移以及如何进行非阻塞式的配置更新，还有对删除分片进行清理，空日志检测。这部分直接抄的<a target="_blank" rel="noopener" href="https://github.com/OneSizeFitsQuorum/MIT6.824-2021/blob/master/docs/lab4.md#%E5%88%86%E7%89%87%E7%BB%93%E6%9E%84">Lab4-2B</a>这位大佬的，感觉如果自己去想的话，估计得花上许久，先借鉴<del>抄</del>下别人的做法，后续有时间想到新的思路再回来修改。</p>
+<h2 id="1-实验分析"><a href="#1-实验分析" class="headerlink" title="1 实验分析"></a>1 实验分析</h2><h3 id="1-1-整体架构"><a href="#1-1-整体架构" class="headerlink" title="1.1 整体架构"></a>1.1 整体架构</h3><p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220503163657204.png" srcset="/img/loading.gif" lazyload alt="ShardKV整体架构图（图片来自网络）"></p>
+<p>​    可以看出，<code>ShardCtrler</code>作为一个控制器的角色，需要获得Client的请求<code>Key</code>，找到对应<code>Shard</code>，通过<code>Shard</code>再找到相应<code>Group</code>，<code>Group</code>还会映射相应<code>server</code>，需要将这些信息返回给Client，才能发送请求到正确的集群中。</p>
+<p class="note note-success">符号解释</p>
+
+<p><code>Shard</code>：互不相交且组成完整数据的每一个数据子集。例如以<code>a</code>开头的字母可构成一个<code>Shard</code></p>
+<p><code>Config</code>：在某一阶段，<code>Shard</code>与集群的对应关系。里面维护了<code>Shard-&gt;gid</code>，<code>gid-&gt;server</code>的信息。</p>
+<h3 id="1-2-服务端提供的功能"><a href="#1-2-服务端提供的功能" class="headerlink" title="1.2  服务端提供的功能"></a>1.2  服务端提供的功能</h3><p>​    读写服务：如Lab3实现的一样，应该要提供对数据<code>Put</code>，<code>Get</code>，<code>Append</code>操作。不同的是，在一个Group中，会存在不同的分片，而我们的取值应该是在不同的分片数组进行，所以需要维护的是一组分片状态机</p>
+<p>​    配置更新：在2A中除Query以外的操作（Move，Join，Leave）都会使得生成新的配置，Server需要定期地拉取和提交新的配置</p>
+<p>​    分片迁移：Move操作会使得分片向其他的Group进行迁移，我们也需要定期的检测哪些分片需要进行迁移</p>
+<p>​    分片清理：Leave操作会删除某个Group，这样会导致有部分分片需要被回收，需要定期检测</p>
+<p>​    空日志检测：</p>
+<h3 id="1-3-Challenge"><a href="#1-3-Challenge" class="headerlink" title="1.3 Challenge"></a>1.3 Challenge</h3><p>​    实验要求提出有两个Challenge需要解决，才能供生产使用</p>
+<ol>
+<li><strong>如何处理分片删除的状态转移？</strong>。假设我们有两个组，G1 和 G2，并且有一个新配置 C 将分片 S 从 G1 移动到 G2。如果 G1 在转移到 C 时从其数据库中删除了 S 中的所有键，那么当 G2 试图转移到 C 时，如何获取 S 的数据？也就是说，我们应该要保证<strong>及时清理不再属于本分片的数据</strong></li>
+<li><strong>如何处理配置更改期间的客户端请求？</strong>我们不可能每次进行配置更新都阻塞客户端操作，这显然是生产不可用的。并且要考虑，当如果G3进行配置更新时，需要来自G1的分片S1，G2的分片S2，要保证收到必要的分片就可以立即提供服务，而不是等待所有分片到达。也就是说，<strong>不仅要保证分片迁移时不影响未迁移分片的读写服务，还要不同的分片数据能够独立迁移</strong></li>
+</ol>
+<h3 id="1-4-分片状态"><a href="#1-4-分片状态" class="headerlink" title="1.4 分片状态"></a>1.4 分片状态</h3><p>​    维护Shard的状态如下：</p>
+<ol>
+<li>防止分片<code>Shard</code>中间状态被覆盖，从而导致任务被丢弃。只有当分片<code>Shard</code>的状态都为默认状态才允许拉取最新配置</li>
+<li>由于challenge2要求不能阻塞客户端的操作，并且要保证配置更新和分片状态变化（状态变化意味着是否可提供读写服务）彼此独立。所以需要将不同<code>raft Group</code>的分片数据独立起来，分别提交多条日志来维护状态。</li>
+</ol>
+<p>​    每个分片有四种状态：</p>
+<ul>
+<li>Serving：分片的默认状态，如果当前<code>raft Group</code>在当前<code>config</code>下负责管理此分片，则该分片可以提供读写服务，否则该分片暂不可以提供读写服务，但不会阻塞配置更新协程拉取新配置</li>
+<li>Pulling：表示当前 <code>raft Group</code> 在当前 <code>config</code> 下负责管理此分片，暂不可以提供读写服务，需要当前 <code>raft Group</code> 从上一个配置该分片所属 <code>raft Group</code> 拉数据过来之后才可以提供读写服务，系统会有一个分片迁移协程检测所有分片的 <code>Pulling</code> 状态，接着以 <code>raft Group</code>为单位去对应 <code>raft Group</code> 拉取数据，接着尝试重放该分片的所有数据到本地并将分片状态置为 <code>Serving</code>，以继续提供服务。</li>
+<li>BePulling：表示当前 <code>raft Group</code> 在当前 <code>config</code> 下不负责管理此分片，不可以提供读写服务，但当前 <code>raft Group</code> 在上一个 <code>config</code> 时复制管理此分片，因此当前 <code>config</code> 下负责管理此分片的 <code>raft Group</code> 拉取完数据后会向本 <code>raft</code> 组发送分片清理的 <code>rpc</code>，接着本 <code>raft</code> 组将数据清空并重置为 <code>serving</code> 状态即可。</li>
+<li>GCing：表示当前 <code>raft Group</code>在当前 <code>config</code> 下负责管理此分片，可以提供读写服务，但需要清理掉上一个配置该分片所属 <code>raft Group</code> 的数据。系统会有一个分片清理协程检测所有分片的 <code>GCing</code> 状态，接着以 <code>raft Group</code> 为单位去对应 <code>raft Group</code> 删除数据，一旦远程 <code>raft Group</code> 删除数据成功，则本地会尝试将相关分片的状态置为 <code>Serving</code>。</li>
+</ul>
+<p>​    还有一件事，<strong>如何考虑更新Shard状态的时机</strong></p>
+<p>​    如果在 apply 协程更新配置的时候由 leader 异步启动对应的协程，让其独立的根据 raft 组为粒度拉取数据，这会出现以下问题：leader apply 了新配置后便挂了，然后此时 follower 也 apply 了该配置但并不会启动该任务，在该 raft 组的新 leader 选出来后，该任务已经无法被执行了。</p>
+<p>​    因此，<strong>不能在 apply 配置的时候启动异步任务，而是应该只更新 shard 的状态，由单独的协程去异步的执行分片迁移，分片清理等任务</strong>。</p>
+<h3 id="1-5-日志类型"><a href="#1-5-日志类型" class="headerlink" title="1.5 日志类型"></a>1.5 日志类型</h3><p>​    同样的，在Lab3，我们封装了Get，Put，Append的请求指令，在KVServer中，我们又增添了一些操作，所以需要增加对应的请求类型，以用作raft层的日志存储。</p>
+<ul>
+<li>Operation：客户端传来的读写操作日志，有 <code>Put</code>，<code>Get</code>，<code>Append</code> 等请求。</li>
+<li>Configuration：配置更新日志，包含一个配置。</li>
+<li>InsertShards：分片更新日志，包含至少一个分片的数据和配置版本。</li>
+<li>DeleteShards：分片删除日志，包含至少一个分片的 id 和配置版本。</li>
+<li>EmptyEntry：空日志，<code>Data</code> 为空，使得状态机达到最新。</li>
+</ul>
+<h3 id="1-6-设计总览"><a href="#1-6-设计总览" class="headerlink" title="1.6 设计总览"></a>1.6 设计总览</h3><p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220519134739421.png" srcset="/img/loading.gif" lazyload alt="image-20220519134739421"></p>
+<p>​    该设计会发现和Lab3的大致设计一致，不同的是，多了4个协程来保证分片的状态转移。</p>
+<p class="note note-success">幂等性</p>
+
+<p>​    这里幂等性指的是不同协程做的操作不会影响数据的正确性。</p>
+<p>​    考虑第一种情况，某个<code>raft Group</code>集体被kill并重启时，这时候配置可能都更新过好几次了，然后重启后<code>raft Group</code>首先需要重放所有日志（在raft层进行日志同步，应用到上层），在这个过程，由于分片迁移协程和apply协程是并行的，迁移协程可能检测到某个中间状态从而发起数据的迁移，这是如果对数据进行覆盖则会破坏正确性。所以，为每个分片迁移和清理请求带上一个配置版本，只有版本相同才可以覆盖，</p>
+<p>​    考虑第二种情况，当前<code>raft Group</code>更新了配置，迁移协程根据配置从其他<code>raft Group</code>拉取分片数据和去重表进行提交，系统依旧对外提供服务，迁移协程不会重复拉该分片的数据。然后这时整个<code>raft Group</code>被kill并重启时，重放日志到更新配置的日志时，迁移协程恰好捕捉到最新配置的中间状态，并再次向其他 raft 组拉数据和去重表并尝试提交，这样在 apply 该分片更新日志时两者版本一致，从而进行了直接覆盖。（如果在 raft 回放完毕和迁移协程拉到数据并提交日志中间该 raft 组又执行了该分片的写操作，那么直接覆盖就会导致这些改动丢失）。所以，版本比较还不够完备，需要判断分片的状态。</p>
+<h3 id="测试文件"><a href="#测试文件" class="headerlink" title="测试文件"></a>测试文件</h3><p>​    </p>
+<h2 id="2-实验过程"><a href="#2-实验过程" class="headerlink" title="2 实验过程"></a>2 实验过程</h2><h3 id="2-1-ShardCtrler的四种操作"><a href="#2-1-ShardCtrler的四种操作" class="headerlink" title="2.1 ShardCtrler的四种操作"></a>2.1 ShardCtrler的四种操作</h3><p>​    整体实现和Lab3大同小异，由于<code>Config</code>包含信息较小，所以不需要<code>snapshot</code>。客户端会发送RPC进行一些操作，每当<code>shard-&gt;gid</code>的对应关系被改变时，都需要创建一个新<code>Config</code>来保存。<code>ShardCtrler</code>需要支持<code>Join</code>，<code>Leave</code>，<code>Move</code>，<code>Query</code>四种操作。</p>
+<p><strong>RPC结构体</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> CommandRequest <span class="hljs-keyword">struct</span> &#123;<br>	Servers <span class="hljs-keyword">map</span>[<span class="hljs-keyword">int</span>][]<span class="hljs-keyword">string</span>	<span class="hljs-comment">// For Join</span><br>	GIDs []<span class="hljs-keyword">int</span>					<span class="hljs-comment">// For Leave</span><br>	Shard <span class="hljs-keyword">int</span>					<span class="hljs-comment">// For Move</span><br>	GID   <span class="hljs-keyword">int</span>					<span class="hljs-comment">// For Move</span><br>	Num <span class="hljs-keyword">int</span>						<span class="hljs-comment">// For Query</span><br>	Op OperationOp<br>	ClientId  <span class="hljs-keyword">int64</span><br>	CommandId <span class="hljs-keyword">int64</span><br>&#125;<br><br><span class="hljs-keyword">type</span> CommandResponse <span class="hljs-keyword">struct</span> &#123;<br>	Err   Err<br>	Config Config<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p class="note note-success">Query</p>
+
+<p>​    查询指定版本的<code>Config</code></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(cf *MemoryConfigStateMachine)</span> <span class="hljs-title">Query</span><span class="hljs-params">(num <span class="hljs-keyword">int</span>)</span> <span class="hljs-params">(Config, Err)</span></span> &#123;<br>	<span class="hljs-keyword">if</span> num &lt; <span class="hljs-number">0</span> || num &gt;= <span class="hljs-built_in">len</span>(cf.Configs) &#123;<br>		<span class="hljs-keyword">return</span> cf.Configs[<span class="hljs-built_in">len</span>(cf.Configs)<span class="hljs-number">-1</span>], OK<br>	&#125;<br>	<span class="hljs-keyword">return</span> cf.Configs[num], OK<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p class="note note-success">Move</p>
+
+<p>​    将指定的<code>Shard</code>交由新的<code>Group</code>负责</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(cf *MemoryConfigStateMachine)</span> <span class="hljs-title">Move</span><span class="hljs-params">(shard, gid <span class="hljs-keyword">int</span>)</span> <span class="hljs-title">Err</span></span> &#123;<br>	length := <span class="hljs-built_in">len</span>(cf.Configs)<br>	lastConfig := cf.Configs[length<span class="hljs-number">-1</span>]<br>	newConfig := Config&#123;<br>		Num:    length,<br>		Shards: lastConfig.Shards,<br>		Groups: deepCopy(lastConfig.Groups),<br>	&#125;<br>	newConfig.Shards[shard] = gid<br>	cf.Configs = <span class="hljs-built_in">append</span>(cf.Configs, newConfig)<br>	<span class="hljs-keyword">return</span> OK<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p class="note note-success">Join</p>
+
+<p>​    为当前<code>Config</code>添加一些<code>server</code>，这些<code>server</code>有可能是加入到现有<code>Group</code>中，也可能是新增的<code>Group</code>。</p>
+<p>​    自平衡方案很简单：每次将<code>shard</code>数量最多的<code>Group</code>分配给<code>shard</code>数量最少的<code>Group</code>，直到差值小于等于1。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(cf *MemoryConfigStateMachine)</span> <span class="hljs-title">Join</span><span class="hljs-params">(groups <span class="hljs-keyword">map</span>[<span class="hljs-keyword">int</span>][]<span class="hljs-keyword">string</span>)</span> <span class="hljs-title">Err</span></span> &#123;<br>	length := <span class="hljs-built_in">len</span>(cf.Configs)<br>	lastConfig := cf.Configs[length<span class="hljs-number">-1</span>]<br>	newConfig := Config&#123;<br>		Num:    length,<br>		Shards: lastConfig.Shards,<br>		Groups: deepCopy(lastConfig.Groups),<br>	&#125;<br>	<span class="hljs-comment">// 为新Config加入之前没有的Group</span><br>	<span class="hljs-keyword">for</span> gid, servers := <span class="hljs-keyword">range</span> groups &#123;<br>		<span class="hljs-keyword">if</span> _, ok := newConfig.Groups[gid]; !ok &#123;<br>			newServers := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">string</span>, <span class="hljs-built_in">len</span>(servers))<br>			<span class="hljs-built_in">copy</span>(newServers, servers)<br>			newConfig.Groups[gid] = newServers<br>		&#125;<br>	&#125;<br>	<span class="hljs-comment">// 得到每个Group对应的Shards Map</span><br>	s2g := Group2Shards(newConfig)<br>	<span class="hljs-comment">// 进行Shard平衡</span><br>	<span class="hljs-keyword">for</span> &#123;<br>		source, target := GetGIDWithMaximumShards(s2g), GetGIDWithMinimumShards(s2g)<br>		<span class="hljs-keyword">if</span> source != <span class="hljs-number">0</span> &amp;&amp; <span class="hljs-built_in">len</span>(s2g[source])-<span class="hljs-built_in">len</span>(s2g[target]) &lt;= <span class="hljs-number">1</span> &#123;<br>			<span class="hljs-keyword">break</span><br>		&#125;<br>		s2g[target] = <span class="hljs-built_in">append</span>(s2g[target], s2g[source][<span class="hljs-number">0</span>])<br>		s2g[source] = s2g[source][<span class="hljs-number">1</span>:]<br>	&#125;<br>	<span class="hljs-comment">// 一个Group中会有可能包含许多Shard</span><br>	<span class="hljs-keyword">var</span> newShards [NShards]<span class="hljs-keyword">int</span><br>	<span class="hljs-keyword">for</span> gid, shards := <span class="hljs-keyword">range</span> s2g &#123;<br>		<span class="hljs-keyword">for</span> _, shard := <span class="hljs-keyword">range</span> shards &#123;<br>			newShards[shard] = gid<br>		&#125;<br>	&#125;<br>	newConfig.Shards = newShards<br>	cf.Configs = <span class="hljs-built_in">append</span>(cf.Configs, newConfig)<br>	<span class="hljs-keyword">return</span> OK<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p class="note note-success">Leave</p>
+
+<p>​    删除<code>Group</code>。如果删除之后还有<code>Group</code>，则需要将<code>Shrad</code>均匀分配给所有<code>Group</code>。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(cf *MemoryConfigStateMachine)</span> <span class="hljs-title">Leave</span><span class="hljs-params">(gIds []<span class="hljs-keyword">int</span>)</span> <span class="hljs-title">Err</span></span> &#123;<br>	length := <span class="hljs-built_in">len</span>(cf.Configs)<br>	lastConfig := cf.Configs[length<span class="hljs-number">-1</span>]<br>	newConfig := Config&#123;<br>		Num:    length,<br>		Shards: lastConfig.Shards,<br>		Groups: deepCopy(lastConfig.Groups),<br>	&#125;<br>	s2g := Group2Shards(newConfig)<br>	orphanShards := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>, <span class="hljs-number">0</span>)<br>	<span class="hljs-comment">// 删除Group，并将删除的shards保存在orphanShards中</span><br>	<span class="hljs-keyword">for</span> _, gid := <span class="hljs-keyword">range</span> gIds &#123;<br>		<span class="hljs-keyword">if</span> _, ok := newConfig.Groups[gid]; ok &#123;<br>			<span class="hljs-built_in">delete</span>(newConfig.Groups, gid)<br>		&#125;<br>		<span class="hljs-keyword">if</span> shards, ok := s2g[gid]; ok &#123;<br>			orphanShards = <span class="hljs-built_in">append</span>(orphanShards, shards...)<br>			<span class="hljs-built_in">delete</span>(s2g, gid)<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">var</span> newShards [NShards]<span class="hljs-keyword">int</span><br>	<span class="hljs-comment">// 如果还有Group，则将删除Group中的shard分配到最少shard的Group</span><br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(newConfig.Groups) != <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-keyword">for</span> _, shard := <span class="hljs-keyword">range</span> orphanShards &#123;<br>			target := GetGIDWithMinimumShards(s2g)<br>			s2g[target] = <span class="hljs-built_in">append</span>(s2g[target], shard)<br>		&#125;<br>		<span class="hljs-keyword">for</span> gid, shards := <span class="hljs-keyword">range</span> s2g &#123;<br>			<span class="hljs-keyword">for</span> _, shard := <span class="hljs-keyword">range</span> shards &#123;<br>				newShards[shard] = gid<br>			&#125;<br>		&#125;<br>	&#125;<br>	newConfig.Shards = newShards<br>	cf.Configs = <span class="hljs-built_in">append</span>(cf.Configs, newConfig)<br>	<span class="hljs-keyword">return</span> OK<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-ShardKV客户端"><a href="#2-2-ShardKV客户端" class="headerlink" title="2.2 ShardKV客户端"></a>2.2 ShardKV客户端</h3><p>客户端执行逻辑如下：</p>
+<ol>
+<li>使用<code>key2shard()</code>去<code>ShardCtrler</code>找到一个<code>key</code>对应哪个分片<code>shard</code></li>
+<li>根据<code>shard</code>从当前配置获取到<code>gid</code></li>
+<li>根据<code>gid</code>获取到<code>servers</code>信息</li>
+<li>循环查找到<code>leaderid</code>，直到返回请求成功、<code>ErrWrongGroup</code>或整个 group 都遍历请求过</li>
+<li><code>Query</code> 最新的配置，回到<strong>步骤1</strong>循环重复；</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(ck *Clerk)</span> <span class="hljs-title">Command</span><span class="hljs-params">(request *CommandRequest)</span> <span class="hljs-title">string</span></span> &#123;<br>	request.ClientId, request.CommandId = ck.clientId, ck.commandId<br>	<span class="hljs-keyword">for</span> &#123;<br>		shard := key2shard(request.Key)<br>		gid	:= ck.config.Shards[shard]<br>		<span class="hljs-keyword">if</span> servers, ok := ck.config.Groups[gid]; ok &#123;<br>			<span class="hljs-keyword">if</span> _, ok = ck.leaderIds[gid]; !ok &#123;<br>				ck.leaderIds[gid] = <span class="hljs-number">0</span><br>			&#125;<br>			oldLeaderId	:= ck.leaderIds[gid]<br>			newLeaderId := oldLeaderId<br>			<span class="hljs-keyword">for</span> &#123;<br>				<span class="hljs-keyword">var</span> response CommandResponse<br>				ok := ck.make_end(servers[newLeaderId]).Call(<span class="hljs-string">&quot;ShardKV.Command&quot;</span>, request, &amp;response)<br>				<span class="hljs-keyword">if</span> ok &amp;&amp; (response.Err == OK || response.Err == ErrNoKey) &#123;<br>					ck.commandId ++<br>					<span class="hljs-keyword">return</span> response.Value<br>				&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ok &amp;&amp; response.Err == ErrWrongGroup &#123;<br>					<span class="hljs-keyword">break</span><br>				&#125; <span class="hljs-keyword">else</span> &#123;<br>					newLeaderId = (newLeaderId + <span class="hljs-number">1</span>) % <span class="hljs-built_in">len</span>(servers)	<span class="hljs-comment">// 找Leader</span><br>					<span class="hljs-keyword">if</span> newLeaderId == oldLeaderId &#123;<br>						<span class="hljs-keyword">break</span><br>					&#125;<br>					<span class="hljs-keyword">continue</span><br>				&#125;<br>			&#125;<br>		&#125;<br>		time.Sleep(<span class="hljs-number">100</span> * time.Millisecond)<br>		ck.config = ck.sm.Query(<span class="hljs-number">-1</span>)<br>	&#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-3-ShardKV服务端"><a href="#2-3-ShardKV服务端" class="headerlink" title="2.3  ShardKV服务端"></a>2.3  ShardKV服务端</h3><p>​    这部分是最难的，首先明确系统整体的交互方式：</p>
+<ul>
+<li>服务需要创建多个<code>raft Group</code>来承载所有分片的读写任务</li>
+<li>服务端需要完成<strong>配置更新</strong>，<strong>分片迁移</strong>，<strong>分片清理</strong>，<strong>空日志检测</strong>等功能</li>
+</ul>
+<h4 id="2-3-1-结构"><a href="#2-3-1-结构" class="headerlink" title="2.3.1 结构"></a>2.3.1 结构</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> ShardKV <span class="hljs-keyword">struct</span> &#123;<br>	mu           sync.RWMutex<br>	dead		 <span class="hljs-keyword">int32</span><br>	rf           *raft.Raft<br>	applyCh      <span class="hljs-keyword">chan</span> raft.ApplyMsg<br><br>	makeEnd     <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(<span class="hljs-keyword">string</span>)</span> *<span class="hljs-title">labrpc</span>.<span class="hljs-title">ClientEnd</span></span><br>	gid          <span class="hljs-keyword">int</span><br>	sc 			 *shardctrler.Clerk<br><br>	maxRaftState <span class="hljs-keyword">int</span> <span class="hljs-comment">// 执行快照的阈值</span><br>	lastApplied	 <span class="hljs-keyword">int</span> <br><br>	<span class="hljs-comment">// 相对于单集群多出的字段</span><br>	lastConfig 		shardctrler.Config<br>	currentConfig	shardctrler.Config<br><br>	stateMachines	<span class="hljs-keyword">map</span>[<span class="hljs-keyword">int</span>]*Shard				   <span class="hljs-comment">// server数据存储</span><br>	lastOperations	<span class="hljs-keyword">map</span>[<span class="hljs-keyword">int64</span>]OperationContext		<span class="hljs-comment">// 通过记录最后一个commandId和clientId对应的response来判断log是否重复</span><br>	notifyChans		<span class="hljs-keyword">map</span>[<span class="hljs-keyword">int</span>]<span class="hljs-keyword">chan</span> *CommandResponse	<span class="hljs-comment">// 记录每个kv操作的返回值</span><br>&#125;<br><br><span class="hljs-comment">// 用于提交日志</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">applier</span><span class="hljs-params">()</span></span> &#123;<br>	<span class="hljs-keyword">for</span> kv.killed() == <span class="hljs-literal">false</span> &#123;<br>		<span class="hljs-keyword">select</span> &#123;<br>		<span class="hljs-keyword">case</span> message := &lt;-kv.applyCh:<br>			<span class="hljs-keyword">if</span> message.CommandValid &#123;<br>				kv.mu.Lock()<br>				<span class="hljs-keyword">if</span> message.CommandIndex &lt;= kv.lastApplied &#123;<br>					kv.mu.Unlock()<br>					<span class="hljs-keyword">continue</span><br>				&#125;<br>				kv.lastApplied = message.CommandIndex<br><br>				<span class="hljs-keyword">var</span> response *CommandResponse<br>				command := message.Command.(Command)<br>				<span class="hljs-keyword">switch</span> command.Op &#123;<br>				<span class="hljs-keyword">case</span> Operation:<br>					operation := command.Data.(CommandRequest)<br>					response = kv.applyOperation(&amp;message, &amp;operation)<br>				<span class="hljs-keyword">case</span> Configuration:<br>					nextConfig := command.Data.(shardctrler.Config)<br>					response = kv.applyConfiguration(&amp;nextConfig)<br>				<span class="hljs-keyword">case</span> InsertShards:<br>					shardsInfo := command.Data.(ShardOperationResponse)<br>					response = kv.applyInsertShards(&amp;shardsInfo)<br>				<span class="hljs-keyword">case</span> DeleteShards:<br>					shardsInfo := command.Data.(ShardOperationRequest)<br>					response = kv.applyDeleteShards(&amp;shardsInfo)<br>				<span class="hljs-keyword">case</span> EmptyEntry:<br>					response = kv.applyEmptyEntry()<br>				&#125;<br><br>				<span class="hljs-comment">// 仅当节点为领导者时才通知 currentTerm 日志的相关通道</span><br>				<span class="hljs-keyword">if</span> currentTerm, isLeader := kv.rf.GetState(); isLeader &amp;&amp; message.CommandTerm == currentTerm &#123;<br>					ch := kv.getNotifyChan(message.CommandIndex)<br>					ch &lt;- response<br>				&#125;<br><br>				needSnapshot := kv.needSnapshot()<br>				<span class="hljs-keyword">if</span> needSnapshot &#123;<br>					kv.takeSnapshot(message.CommandIndex)<br>				&#125;<br><br>				kv.mu.Unlock()<br>			&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> message.SnapshotValid &#123;<br>				kv.mu.Lock()<br>				<span class="hljs-keyword">if</span> kv.rf.CondInstallSnapshot(message.SnapshotTerm, message.SnapshotIndex, message.Snapshot) &#123;<br>					kv.restoreSnapshot(message.Snapshot)<br>					kv.lastApplied = message.SnapshotIndex<br>				&#125;<br>				kv.mu.Unlock()<br>			&#125; <span class="hljs-keyword">else</span> &#123;<br>				<span class="hljs-built_in">panic</span>(fmt.Sprintf(<span class="hljs-string">&quot;unexpected Message %v&quot;</span>, message))<br>			&#125;<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-3-2-读写服务"><a href="#2-3-2-读写服务" class="headerlink" title="2.3.2 读写服务"></a>2.3.2 读写服务</h4><p>​    根据1.4阐述，只有当分片状态为<code>Serving</code>或<code>GCing</code>，当前<code>raft Group</code>在当前<code>config</code>下负责管理此分片，本<code>raft Group</code>才可以为该分片提供读写服务，否则返回 <code>ErrWrongGroup</code> 让客户端重新拉取最新的 <code>config</code> 并重试即可。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">Command</span><span class="hljs-params">(request *CommandRequest, response *CommandResponse)</span></span> &#123;<br>	kv.mu.RLock()<br>	<span class="hljs-comment">// 重复请求直接返回结果，不参与raft层</span><br>	<span class="hljs-keyword">if</span> request.Op != Get &amp;&amp; kv.isDuplicateRequest(request.ClientId, request.CommandId) &#123;<br>		lastResponse := kv.lastOperations[request.ClientId].LastResponse<br>		response.Value, response.Err = lastResponse.Value, lastResponse.Err<br>		kv.mu.RUnlock()<br>		<span class="hljs-keyword">return</span><br>	&#125;<br><br>	<span class="hljs-comment">// 直接返回 ErrWrongGroup 让客户端获取最新配置，如果此分片当前无法提供此key，则执行重试</span><br>	<span class="hljs-keyword">if</span> !kv.canServe(key2shard(request.Key))&#123;<br>		response.Err = ErrWrongGroup<br>		kv.mu.RUnlock()<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	kv.mu.RUnlock()<br>	kv.Execute(NewOperationCommand(request), response)<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">Execute</span><span class="hljs-params">(command Command, response *CommandResponse)</span></span> &#123;<br>	<span class="hljs-comment">// 不持有锁以提高吞吐量</span><br>	<span class="hljs-comment">// 当 KVServer 持有锁进行快照时，底层 raft 仍然可以提交 raft 日志</span><br>	index, _, isLeader := kv.rf.Start(command)<br>	<span class="hljs-keyword">if</span> !isLeader &#123;<br>		response.Err = ErrWrongLeader<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	kv.mu.Lock()<br>	ch := kv.getNotifyChan(index)<br>	kv.mu.Unlock()<br>	<span class="hljs-keyword">select</span> &#123;<br>	<span class="hljs-keyword">case</span> result := &lt;-ch:<br>		response.Value, response.Err = result.Value, result.Err<br>	<span class="hljs-keyword">case</span> &lt;-time.After(ExecuteTimeout):<br>		response.Err = ErrTimeout<br>	&#125;<br><br>	<span class="hljs-comment">// 释放 notifyChan 以减少内存占用</span><br>	<span class="hljs-comment">// 为什么是异步的？ 为了提高吞吐量，这里不需要阻塞客户端请求</span><br>	<span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>		kv.mu.Lock()<br>		kv.removeOutdatedNotifyChan(index)<br>		kv.mu.Unlock()<br>	&#125;()<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">applyOperation</span><span class="hljs-params">(message *raft.ApplyMsg, operation *CommandRequest)</span> *<span class="hljs-title">CommandResponse</span></span> &#123;<br>	<span class="hljs-keyword">var</span> response *CommandResponse<br>	shardID := key2shard(operation.Key)<br>	<span class="hljs-keyword">if</span> kv.canServe(shardID) &#123;<br>		<span class="hljs-keyword">if</span> operation.Op != Get &amp;&amp; kv.isDuplicateRequest(operation.ClientId, operation.CommandId) &#123;<br>			<span class="hljs-keyword">return</span> kv.lastOperations[operation.ClientId].LastResponse<br>		&#125; <span class="hljs-keyword">else</span> &#123;<br>			response = kv.applyLogToStateMachine(operation, shardID)<br>			<span class="hljs-keyword">if</span> operation.Op != Get &#123;<br>				kv.lastOperations[operation.ClientId] = OperationContext&#123;operation.CommandId, response&#125;<br>			&#125;<br>			<span class="hljs-keyword">return</span> response<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">return</span> &amp;CommandResponse&#123;<br>		Err:   ErrWrongGroup,<br>		Value: <span class="hljs-string">&quot;&quot;</span>,<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">canServe</span><span class="hljs-params">(shardID <span class="hljs-keyword">int</span>)</span> <span class="hljs-title">bool</span></span> &#123;<br>	<span class="hljs-keyword">return</span> kv.currentConfig.Shards[shardID] == kv.gid &amp;&amp; (kv.stateMachines[shardID].Status == Serving || kv.stateMachines[shardID].Status == GCing)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-3-3-配置更新"><a href="#2-3-3-配置更新" class="headerlink" title="2.3.3 配置更新"></a>2.3.3 配置更新</h4><p>​    配置更新协程负责定时检测所有分片的状态，<strong>一旦存在至少一个分片的状态不为默认状态</strong>，则预示其他协程仍然还没有完成任务，那么此时需要阻塞新配置的拉取和提交。</p>
+<p>在 <code>apply</code> 配置更新日志时需要保证幂等性：</p>
+<ul>
+<li>不同版本的配置更新日志：<code>apply</code> 时仅可逐步递增的去更新配置，否则返回<code>ErrOutDated</code>。</li>
+<li>相同版本的配置更新日志：由于配置更新日志仅由配置更新协程提交，而配置更新协程只有检测到比本地更大地配置时才会提交配置更新日志，所以该情形不会出现。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">configureAction</span><span class="hljs-params">()</span></span> &#123;<br>	canPerformNextConfig := <span class="hljs-literal">true</span><br>	kv.mu.RLock()<br>	<span class="hljs-keyword">for</span> _, shard := <span class="hljs-keyword">range</span> kv.stateMachines &#123;<br>		<span class="hljs-keyword">if</span> shard.Status != Serving &#123;<br>			canPerformNextConfig = <span class="hljs-literal">false</span><br>			<span class="hljs-keyword">break</span><br>		&#125;<br>	&#125;<br>	currentConfigNum := kv.currentConfig.Num<br>	kv.mu.RUnlock()<br>	<span class="hljs-keyword">if</span> canPerformNextConfig &#123;<br>		nextConfig := kv.sc.Query(currentConfigNum + <span class="hljs-number">1</span>)<br>		<span class="hljs-keyword">if</span> nextConfig.Num == currentConfigNum + <span class="hljs-number">1</span> &#123;<br>			kv.Execute(NewConfigurationCommand(&amp;nextConfig), &amp;CommandResponse&#123;&#125;)<br>		&#125;<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">applyConfiguration</span><span class="hljs-params">(nextConfig *shardctrler.Config)</span> *<span class="hljs-title">CommandResponse</span></span> &#123;<br>	<span class="hljs-keyword">if</span> nextConfig.Num == kv.currentConfig.Num+<span class="hljs-number">1</span> &#123;<br>		kv.updateShardStatus(nextConfig)<br>		kv.lastConfig = kv.currentConfig<br>		kv.currentConfig = *nextConfig<br>		<span class="hljs-keyword">return</span> &amp;CommandResponse&#123;OK, <span class="hljs-string">&quot;&quot;</span>&#125;<br>	&#125;<br>	<span class="hljs-keyword">return</span> &amp;CommandResponse&#123;ErrOutDated, <span class="hljs-string">&quot;&quot;</span>&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>​    </p>
+<h4 id="2-3-4-分片迁移"><a href="#2-3-4-分片迁移" class="headerlink" title="2.3.4 分片迁移"></a>2.3.4 分片迁移</h4><p>​    分片迁移协程会定时的检测分片的<code>Pulling</code>状态，利用<code>lastConfig</code>计算出相应的<code>servers</code>和要拉取的分片，然后并行的去拉取数据。在该Action中，需要使用<code>waitGroup</code>来保证独立地任务完成后才会进行下一次任务，并且，<code>wg.Wait</code>一定要在释放锁之后，否则就会造成分片串行迁移，不能满足要求。</p>
+<p>​    在执行拉取分片的Handler中，首先要保证是由<code>Leader</code>处理该请求，其次如果发现请求的<code>Config</code>大于当前版本，那就说明拉取的是未来的数据，则返回<code>ErrNotReady</code>让其稍后重试，否则将分片数据和去重表都深拷贝到<code>response</code>即可</p>
+<p>​    在<code>apply</code>分片迁移日志时需要保证幂等性：</p>
+<ul>
+<li>不同版本的配置更新日志：仅可执行与当前配置版本相同的分片更新日志，否则返回 <code>ErrOutDated</code>。</li>
+<li>相同版本的配置更新日志：仅在对应分片状态为 <code>Pulling</code> 时为第一次应用，此时覆盖状态机即可并修改状态为 <code>GCing</code>，以让分片清理协程检测到 <code>GCing</code> 状态并尝试删除远端的分片。否则说明已经应用过，直接 <code>break</code> 即可。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">migrationAction</span><span class="hljs-params">()</span></span> &#123;<br>	kv.mu.RLock()<br>	gid2shardIDs := kv.getShardIDsByStatus(Pulling)<br>	<span class="hljs-keyword">var</span> wg sync.WaitGroup<br>	<span class="hljs-keyword">for</span> gid, shardIDs := <span class="hljs-keyword">range</span> gid2shardIDs &#123;<br>		wg.Add(<span class="hljs-number">1</span>)<br>		<span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(servers []<span class="hljs-keyword">string</span>, configNum <span class="hljs-keyword">int</span>, shardIDs []<span class="hljs-keyword">int</span>)</span></span> &#123;<br>			<span class="hljs-keyword">defer</span> wg.Done()<br>			pullTaskRequest := ShardOperationRequest&#123;configNum, shardIDs&#125;<br>			<span class="hljs-keyword">for</span> _, server := <span class="hljs-keyword">range</span> servers &#123;<br>				<span class="hljs-keyword">var</span> pullTaskResponse ShardOperationResponse<br>				srv := kv.makeEnd(server)<br>				<span class="hljs-keyword">if</span> srv.Call(<span class="hljs-string">&quot;ShardKV.GetShardsData&quot;</span>, &amp;pullTaskRequest, &amp;pullTaskResponse) &amp;&amp; pullTaskResponse.Err == OK &#123;<br>					kv.Execute(NewInsertShardsCommand(&amp;pullTaskResponse), &amp;CommandResponse&#123;&#125;)<br>				&#125;<br>			&#125;<br>		&#125;(kv.lastConfig.Groups[gid], kv.currentConfig.Num, shardIDs)<br>	&#125;<br>	kv.mu.RUnlock()<br>	wg.Wait()<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">GetShardsData</span><span class="hljs-params">(request *ShardOperationRequest, response *ShardOperationResponse)</span></span> &#123;<br>	<span class="hljs-keyword">if</span> _, isLeader := kv.rf.GetState(); !isLeader &#123;<br>		response.Err = ErrWrongLeader<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	kv.mu.RLock()<br>	<span class="hljs-keyword">defer</span> kv.mu.RUnlock()<br><br>	<span class="hljs-keyword">if</span> kv.currentConfig.Num &lt; request.ConfigNum &#123; <span class="hljs-comment">// 拉取的版本过高</span><br>		response.Err = ErrNotReady<br>		<span class="hljs-keyword">return</span><br>	&#125;<br><br>	response.Shards = <span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[<span class="hljs-keyword">int</span>]<span class="hljs-keyword">map</span>[<span class="hljs-keyword">string</span>]<span class="hljs-keyword">string</span>)<br>	<span class="hljs-keyword">for</span> _, shardID := <span class="hljs-keyword">range</span> request.ShardIDs &#123;<br>		response.Shards[shardID] = kv.stateMachines[shardID].deepCopy()<br>	&#125;<br><br>	response.LastOperations = <span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[<span class="hljs-keyword">int64</span>]OperationContext)<br>	<span class="hljs-keyword">for</span> clientID, operation := <span class="hljs-keyword">range</span> kv.lastOperations &#123;<br>		response.LastOperations[clientID] = operation.deepCopy()<br>	&#125;<br><br>	response.ConfigNum, response.Err = request.ConfigNum, OK<br>&#125;s<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">applyInsertShards</span><span class="hljs-params">(shardsInfo *ShardOperationResponse)</span> *<span class="hljs-title">CommandResponse</span></span> &#123;<br>	<span class="hljs-keyword">if</span> shardsInfo.ConfigNum == kv.currentConfig.Num &#123;<br>		<span class="hljs-keyword">for</span> shardId, shardData := <span class="hljs-keyword">range</span> shardsInfo.Shards &#123;<br>			shard := kv.stateMachines[shardId]<br>			<span class="hljs-keyword">if</span> shard.Status == Pulling &#123;<br>				<span class="hljs-keyword">for</span> key, value := <span class="hljs-keyword">range</span> shardData &#123;<br>					shard.KV[key] = value<br>				&#125;<br>				shard.Status = GCing<br>			&#125; <span class="hljs-keyword">else</span> &#123;<br>				<span class="hljs-keyword">break</span><br>			&#125;<br>		&#125;<br>		<span class="hljs-keyword">for</span> clientId, operationContext := <span class="hljs-keyword">range</span> shardsInfo.LastOperations &#123;<br>			<span class="hljs-keyword">if</span> lastOperation, ok := kv.lastOperations[clientId]; !ok || lastOperation.MaxAppliedCommandId &lt; operationContext.MaxAppliedCommandId &#123;<br>				kv.lastOperations[clientId] = operationContext<br>			&#125;<br>		&#125;<br>		<span class="hljs-keyword">return</span> &amp;CommandResponse&#123;OK, <span class="hljs-string">&quot;&quot;</span>&#125;<br>	&#125;<br>	<span class="hljs-keyword">return</span> &amp;CommandResponse&#123;OK, <span class="hljs-string">&quot;&quot;</span>&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-3-5-分片清理"><a href="#2-3-5-分片清理" class="headerlink" title="2.3.5 分片清理"></a>2.3.5 分片清理</h4><p>​    分片清理协程会定时的检测分片的<code>GCing</code>状态，利用<code>lastConfig</code>计算出相应的<code>servers</code>和要拉取的分片，然后并行的去清理分片。</p>
+<p>​    在清理分片的<code>handler</code>中，首先仅由<code>Leader</code>处理该请求，其次如果发现请求中的配置版本小于本地的版本，那说明该请求已经执行过，此时直接返回 OK 即可，否则在本地提交一个删除分片的日志。</p>
+<p>​    在 <code>apply</code> 分片清理日志时需要保证幂等性：</p>
+<ul>
+<li>不同版本的配置更新日志：仅可执行与当前配置版本相同地分片删除日志，否则已经删除过，直接返回 OK 即可。</li>
+<li>相同版本的配置更新日志：如果分片状态为 <code>GCing</code>，说明是本 <code>raft Group</code> 已成功删除远端 <code>raft Group</code> 的数据，现需要更新分片状态为默认状态以支持配置的进一步更新；否则如果分片状态为 <code>BePulling</code>，则说明本 <code>raft Group</code> 第一次删除该分片的数据，此时直接重置分片即可。否则说明该请求已经应用过，直接 <code>break</code> 返回 OK 即可。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">gcAction</span><span class="hljs-params">()</span></span> &#123;<br>	kv.mu.RLock()<br>	gid2shardIDs := kv.getShardIDsByStatus(GCing)<br>	<span class="hljs-keyword">var</span> wg sync.WaitGroup<br>	<span class="hljs-keyword">for</span> gid, shardIDs := <span class="hljs-keyword">range</span> gid2shardIDs &#123;<br>		wg.Add(<span class="hljs-number">1</span>)<br>		<span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(servers []<span class="hljs-keyword">string</span>, configNum <span class="hljs-keyword">int</span>, shardIDs []<span class="hljs-keyword">int</span>)</span></span> &#123;<br>			<span class="hljs-keyword">defer</span> wg.Done()<br>			gcTaskRequest := ShardOperationRequest&#123;configNum, shardIDs&#125;<br>			<span class="hljs-keyword">for</span> _, server := <span class="hljs-keyword">range</span> servers &#123;<br>				<span class="hljs-keyword">var</span> gcTaskResponse ShardOperationResponse<br>				srv := kv.makeEnd(server)<br>				<span class="hljs-keyword">if</span> srv.Call(<span class="hljs-string">&quot;ShardKV.DeleteShardsData&quot;</span>, &amp;gcTaskRequest, &amp;gcTaskResponse) &amp;&amp; gcTaskResponse.Err == OK &#123;<br>					kv.Execute(NewDeleteShardsCommand(&amp;gcTaskRequest), &amp;CommandResponse&#123;&#125;)<br>				&#125;<br>			&#125;<br>		&#125;(kv.lastConfig.Groups[gid], kv.currentConfig.Num, shardIDs)<br>	&#125;<br>	kv.mu.RUnlock()<br>	wg.Wait()<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">DeleteShardsData</span><span class="hljs-params">(request *ShardOperationRequest, response *ShardOperationResponse)</span></span> &#123;<br>	<span class="hljs-comment">// only delete shards when role is leader</span><br>	<span class="hljs-keyword">if</span> _, isLeader := kv.rf.GetState(); !isLeader &#123;<br>		response.Err = ErrWrongLeader<br>		<span class="hljs-keyword">return</span><br>	&#125;<br><br>	kv.mu.RLock()<br>	<span class="hljs-keyword">if</span> kv.currentConfig.Num &gt; request.ConfigNum &#123;<br>		response.Err = OK<br>		kv.mu.RUnlock()<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	kv.mu.RUnlock()<br><br>	<span class="hljs-keyword">var</span> commandResponse CommandResponse<br>	kv.Execute(NewDeleteShardsCommand(request), &amp;commandResponse)<br><br>	response.Err = commandResponse.Err<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">applyDeleteShards</span><span class="hljs-params">(shardsInfo *ShardOperationRequest)</span> *<span class="hljs-title">CommandResponse</span></span> &#123;<br>	<span class="hljs-keyword">if</span> shardsInfo.ConfigNum == kv.currentConfig.Num &#123;<br>		<span class="hljs-keyword">for</span> _, shardId := <span class="hljs-keyword">range</span> shardsInfo.ShardIDs &#123;<br>			shard := kv.stateMachines[shardId]<br>			<span class="hljs-keyword">if</span> shard.Status == GCing &#123;<br>				shard.Status = Serving<br>			&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> shard.Status == BePulling &#123;<br>				kv.stateMachines[shardId] = NewShard()<br>			&#125; <span class="hljs-keyword">else</span> &#123;<br>				<span class="hljs-keyword">break</span><br>			&#125;<br>		&#125;<br>		<span class="hljs-keyword">return</span> &amp;CommandResponse&#123;OK, <span class="hljs-string">&quot;&quot;</span>&#125;<br>	&#125;<br>	<span class="hljs-keyword">return</span> &amp;CommandResponse&#123;OK, <span class="hljs-string">&quot;&quot;</span>&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-3-6-空日志检测"><a href="#2-3-6-空日志检测" class="headerlink" title="2.3.6 空日志检测"></a>2.3.6 空日志检测</h4><p>​    空日志检测协程会定时检测<code>raft</code> 层的 <code>leader</code> 是否拥有当前 <code>term</code> 的日志，如果没有则提交一条空日志，这使得新 <code>leader</code> 的状态机能够迅速达到最新状态，从而避免多 <code>raft</code> 组间的活锁状态。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">checkEntryInCurrentTermAction</span><span class="hljs-params">()</span></span> &#123;<br>	<span class="hljs-keyword">if</span> !kv.rf.HasLogInCurrentTerm() &#123;<br>		kv.Execute(NewEmptyEntryCommand(), &amp;CommandResponse&#123;&#125;)<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span> <span class="hljs-title">applyEmptyEntry</span><span class="hljs-params">()</span> *<span class="hljs-title">CommandResponse</span></span> &#123;<br>	<span class="hljs-keyword">return</span> &amp;CommandResponse&#123;OK, <span class="hljs-string">&quot;&quot;</span>&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-总结"><a href="#3-总结" class="headerlink" title="3 总结"></a>3 总结</h2><p>​    </p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/464097239">mit-6.824 2021 Lab4：ShardKV</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/OneSizeFitsQuorum/MIT6.824-2021/blob/master/docs/lab4.md">MIT6.824-2021/lab4</a></p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Lab/" class="category-chain-item">Lab</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/mit6-824/">#mit6.824</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>6.824 Lab 4: Sharded Key/Value Service</div>
+      <div>https://2w1nd.github.io/2022/05/18/MIT6.824/6-824-Lab4：Sharded-Key-Value-Service/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>w1nd</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年5月18日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/05/14/GMP%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3/" title="GMP模型详解">
+                        <span class="hidden-mobile">GMP模型详解</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: '917ed81c6aa59f7aaf3bf95d31a74e39'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start -->
+  <script src="/js/particles.js"></script>
+
+  <script src="/js/particles.min.js"></script>
+
+  <div id="particles-js"></div>
+<!-- hexo injector body_end end --></body>
+</html>

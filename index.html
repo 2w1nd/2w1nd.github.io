@@ -227,6 +227,67 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
+        <a href="/2022/05/18/MIT6.824/6-824-Lab4%EF%BC%9ASharded-Key-Value-Service/" target="_self">
+          6.824 Lab 4: Sharded Key/Value Service
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2022/05/18/MIT6.824/6-824-Lab4%EF%BC%9ASharded-Key-Value-Service/" target="_self">
+        <div>
+          
+          ​    该部分要求我们实现ShardKV。在前面Lab中，我们实现一个构成基础分布式数据库的框架，支持多节点的数据一致性，CURD，日志快照。但在单一集群中，这样的实现会导致所有的请求都要由Leader来处理，当数据增长到一定程度，会导致请求响应时间变长。解决办法就是，将数据按某种方式分开存储到不同的集群，将不同的请求发送到不同的集群中。 ​    Lab还是偏难的，论文中也没有具体去写这一部分
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-05-18 20:48" pubdate>
+              2022-05-18
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Lab/" class="category-chain-item">Lab</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/mit6-824/">#mit6.824</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
         <a href="/2022/05/14/GMP%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3/" target="_self">
           GMP模型详解
         </a>
@@ -357,7 +418,7 @@
       <a class="index-excerpt" href="/2022/05/01/MIT6.824/6-824-lab2%EF%BC%9ARaft/" target="_self">
         <div>
           
-          ​    Lab2据说是所有Lab中比较难的一个，要求实现一个Raft一致性算法，主要分为了三个部分：领导选举，日志复制，持久化，日志压缩。总共花了差不多半个月完成，期间由于要准备面试，夏令营啥的耽误了些时间。在做Lab前最好先将Raft论文通读几遍，理解大概的流程，并且课程提供的locking， structure 的描述以及guidance也得好好看看，不然BUG乱飞。 0 前言 &amp;
+          ​    Lab2难度还是很大的，要求实现一个Raft一致性算法，主要分为了三个部分：领导选举，日志复制，持久化，日志压缩。总共花了差不多半个月完成，期间由于要准备面试，夏令营啥的耽误了些时间。在做Lab前最好先将Raft论文通读几遍，理解大概的流程，并且课程提供的locking， structure 的描述以及guidance也得好好看看，不然BUG乱飞。 0 前言 &amp; 要求​    实
         </div>
       </a>
 
@@ -1116,75 +1177,6 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/CMU15445/">#CMU15445</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2022/03/20/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC285%E5%9C%BA%E5%91%A8%E8%B5%9B/" target="_self">
-          <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220411175645388.png" srcset="/img/loading.gif" lazyload alt="第285场周赛">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2022/03/20/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC285%E5%9C%BA%E5%91%A8%E8%B5%9B/" target="_self">
-          第285场周赛
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2022/03/20/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC285%E5%9C%BA%E5%91%A8%E8%B5%9B/" target="_self">
-        <div>
-          
-          第285场周赛
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2022-03-20 13:46" pubdate>
-              2022-03-20
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E7%AE%97%E6%B3%95/" class="category-chain-item">算法</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/%E5%91%A8%E8%B5%9B/">#周赛</a>
-            
-              <a href="/tags/LeetCode/">#LeetCode</a>
             
           </div>
         
