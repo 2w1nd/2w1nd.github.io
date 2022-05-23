@@ -16,20 +16,21 @@
   <meta name="author" content="w1nd">
   <meta name="keywords" content="IT BLOG">
   
-    <meta name="description" content="有关缓冲池管理的设计">
+    <meta name="description" content="1 基本介绍​    缓冲池作为物理页面在主内存和磁盘的移动介质。这使得DBMS操作大于系统可用内存量的数据库。 ​    我们只需要实现提供的API即可 2 实验内容2.1 LRU Replacement Policy​    该部分需要完成跟踪缓冲池中页面的使用情况。 ​    需要实现LRUReplacer in src&#x2F;include&#x2F;buffer&#x2F;lru_replacer.h和它对应的c">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Project1：Buffer Pool Manager">
 <meta property="og:url" content="https://2w1nd.github.io/2022/03/23/CMU15445/Project1%EF%BC%9ABuffer-Pool-Manager/index.html">
 <meta property="og:site_name" content="浅风w1ndの博客">
-<meta property="og:description" content="有关缓冲池管理的设计">
+<meta property="og:description" content="1 基本介绍​    缓冲池作为物理页面在主内存和磁盘的移动介质。这使得DBMS操作大于系统可用内存量的数据库。 ​    我们只需要实现提供的API即可 2 实验内容2.1 LRU Replacement Policy​    该部分需要完成跟踪缓冲池中页面的使用情况。 ​    需要实现LRUReplacer in src&#x2F;include&#x2F;buffer&#x2F;lru_replacer.h和它对应的c">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220411175423541.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220325223314700.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220401113354109.png">
 <meta property="article:published_time" content="2022-03-23T08:22:09.000Z">
-<meta property="article:modified_time" content="2022-04-11T09:54:58.104Z">
+<meta property="article:modified_time" content="2022-05-23T02:35:44.832Z">
 <meta property="article:author" content="w1nd">
 <meta property="article:tag" content="CMU15445">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220411175423541.png">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220325223314700.png">
   
   
   <title>Project1：Buffer Pool Manager - 浅风w1ndの博客</title>

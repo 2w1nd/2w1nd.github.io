@@ -16,22 +16,23 @@
   <meta name="author" content="w1nd">
   <meta name="keywords" content="IT BLOG">
   
-    <meta name="description" content="6027. 统计数组中峰和谷的数量 - 力扣（LeetCode） (leetcode-cn.com) 123456789101112131415161718class Solution &amp;#123;public:    int countHillValley(vector&lt;int&gt;&amp; nums) &amp;#123;        int n &#x3D; nums.size();">
+    <meta name="description" content="​    前几天上了好几节字节的架构课，上的很懵逼，这里稍微总结一下，方便自己对企业架构有个大体的认识。 0 前言0.1 什么是架构​    实现一个软件的方法论。 ​    没错，就是这么简单&#x3D; &#x3D;。百度一堆抽象的概念，但感觉架构就类似于地基。针对不同软件都有一种方法而已。 0.2 架构类型单机  ​    软件就是指所有功能都实现在一个进程中，并部署在一台机器上。缺点显然是无法应对C10问题以">
 <meta property="og:type" content="article">
-<meta property="og:title" content="第285场周赛">
-<meta property="og:url" content="https://2w1nd.github.io/2022/03/20/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC285%E5%9C%BA%E5%91%A8%E8%B5%9B/index.html">
+<meta property="og:title" content="架构初探">
+<meta property="og:url" content="https://2w1nd.github.io/2022/05/23/%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/index.html">
 <meta property="og:site_name" content="浅风w1ndの博客">
-<meta property="og:description" content="6027. 统计数组中峰和谷的数量 - 力扣（LeetCode） (leetcode-cn.com) 123456789101112131415161718class Solution &amp;#123;public:    int countHillValley(vector&lt;int&gt;&amp; nums) &amp;#123;        int n &#x3D; nums.size();">
+<meta property="og:description" content="​    前几天上了好几节字节的架构课，上的很懵逼，这里稍微总结一下，方便自己对企业架构有个大体的认识。 0 前言0.1 什么是架构​    实现一个软件的方法论。 ​    没错，就是这么简单&#x3D; &#x3D;。百度一堆抽象的概念，但感觉架构就类似于地基。针对不同软件都有一种方法而已。 0.2 架构类型单机  ​    软件就是指所有功能都实现在一个进程中，并部署在一台机器上。缺点显然是无法应对C10问题以">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-03-20T05:46:25.000Z">
-<meta property="article:modified_time" content="2022-05-23T02:37:04.144Z">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523105754256.png">
+<meta property="article:published_time" content="2022-05-23T02:40:11.000Z">
+<meta property="article:modified_time" content="2022-05-23T03:07:51.937Z">
 <meta property="article:author" content="w1nd">
-<meta property="article:tag" content="周赛">
-<meta property="article:tag" content="LeetCode">
+<meta property="article:tag" content="架构">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523105754256.png">
   
   
-  <title>第285场周赛 - 浅风w1ndの博客</title>
+  <title>架构初探 - 浅风w1ndの博客</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -202,7 +203,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="第285场周赛"></span>
+            <span id="subtitle" data-typed-text="架构初探"></span>
           
         </div>
 
@@ -213,8 +214,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-03-20 13:46" pubdate>
-          2022年3月20日 下午
+        <time datetime="2022-05-23 10:40" pubdate>
+          2022年5月23日 上午
         </time>
       </span>
     
@@ -225,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.7k 字
+          703 字
         
       </span>
     
@@ -236,7 +237,7 @@
         
         
         
-          15 分钟
+          6 分钟
         
       </span>
     
@@ -274,21 +275,38 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">第285场周赛</h1>
+            <h1 style="display: none">架构初探</h1>
             
             <div class="markdown-body">
               
-              <p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/count-hills-and-valleys-in-an-array/">6027. 统计数组中峰和谷的数量 - 力扣（LeetCode） (leetcode-cn.com)</a></p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Solution</span> &#123;</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">countHillValley</span><span class="hljs-params">(vector&lt;<span class="hljs-keyword">int</span>&gt;&amp; nums)</span> </span>&#123;<br>        <span class="hljs-keyword">int</span> n = nums.<span class="hljs-built_in">size</span>();<br>        vector&lt;<span class="hljs-keyword">int</span>&gt; vec;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; n; i ++) &#123;<br>            <span class="hljs-keyword">while</span> (i + <span class="hljs-number">1</span> &lt; n &amp;&amp; nums[i] == nums[i + <span class="hljs-number">1</span>]) i ++;<br>            vec.<span class="hljs-built_in">push_back</span>(nums[i]);<br>        &#125;<br>        <span class="hljs-keyword">int</span> res = <span class="hljs-number">0</span>;<br>        <span class="hljs-comment">// for (auto num: vec) cout &lt;&lt; num &lt;&lt; endl;</span><br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">1</span>; i &lt; vec.<span class="hljs-built_in">size</span>() - <span class="hljs-number">1</span>; i ++) &#123;<br>            <span class="hljs-keyword">if</span> (vec[i - <span class="hljs-number">1</span>] &gt; vec[i] &amp;&amp; vec[i + <span class="hljs-number">1</span>] &gt; vec[i]) res ++;<br>            <span class="hljs-keyword">if</span> (vec[i - <span class="hljs-number">1</span>] &lt; vec[i] &amp;&amp; vec[i] &gt; vec[i + <span class="hljs-number">1</span>]) res ++;<br>        &#125;<br>        <span class="hljs-keyword">return</span> res;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+              <p>​    前几天上了好几节字节的架构课，上的很懵逼，这里稍微总结一下，方便自己对企业架构有个大体的认识。</p>
+<h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0 前言"></a>0 前言</h2><h3 id="0-1-什么是架构"><a href="#0-1-什么是架构" class="headerlink" title="0.1 什么是架构"></a>0.1 什么是架构</h3><p>​    实现一个软件的方法论。</p>
+<p>​    没错，就是这么简单= =。百度一堆抽象的概念，但感觉架构就类似于地基。针对不同软件都有一种方法而已。</p>
+<h3 id="0-2-架构类型"><a href="#0-2-架构类型" class="headerlink" title="0.2 架构类型"></a>0.2 架构类型</h3><p class="note note-success">单机</p>
 
-<p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/count-collisions-on-a-road/">6028. 统计道路上的碰撞次数 - 力扣（LeetCode） (leetcode-cn.com)</a></p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Solution</span> &#123;</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">countCollisions</span><span class="hljs-params">(string directions)</span> </span>&#123;<br>        <span class="hljs-keyword">int</span> ans = <span class="hljs-number">0</span>;<br>        <span class="hljs-keyword">bool</span> flag = <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; directions.<span class="hljs-built_in">size</span>(); i ++) &#123;<br>            <span class="hljs-keyword">if</span> (directions[i] == <span class="hljs-string">&#x27;R&#x27;</span> || directions[i] == <span class="hljs-string">&#x27;S&#x27;</span>) flag = <span class="hljs-literal">true</span>;<br>            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (flag) ans ++;<br>        &#125;<br>        flag = <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = directions.<span class="hljs-built_in">size</span>() - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; i --) &#123;<br>            <span class="hljs-keyword">if</span> (directions[i] == <span class="hljs-string">&#x27;L&#x27;</span> || directions[i] == <span class="hljs-string">&#x27;S&#x27;</span>) flag = <span class="hljs-literal">true</span>;<br>            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (flag) ans ++;    <br>        &#125;<br>        <span class="hljs-keyword">return</span> ans;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>​    软件就是指所有功能都实现在一个进程中，并部署在一台机器上。缺点显然是无法应对C10问题以及不易维护，大型项目难以多人开发等。</p>
+<blockquote>
+<p>​    C10K problem，也即单机处理10k个并发连接的问题。随着epoll，kqueue等技术的不断发展。高性能网络编程逐渐回答了C10K问题。但在互联网飞速发展的今天，我们正陆续面临C10M、C10B等问题。也就是说，单体服务一定是有架构瓶颈的。</p>
+</blockquote>
+<p class="note note-success">垂直架构</p>
 
-<p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/maximum-points-in-an-archery-competition/">6029. 射箭比赛中的最大得分 - 力扣（LeetCode） (leetcode-cn.com)</a></p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Solution</span> &#123;</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function">vector&lt;<span class="hljs-keyword">int</span>&gt; <span class="hljs-title">maximumBobPoints</span><span class="hljs-params">(<span class="hljs-keyword">int</span> numArrows, vector&lt;<span class="hljs-keyword">int</span>&gt;&amp; aliceArrows)</span> </span>&#123;<br>        <span class="hljs-keyword">int</span> n = aliceArrows.<span class="hljs-built_in">size</span>();<br>        <span class="hljs-function">vector&lt;<span class="hljs-keyword">int</span>&gt; <span class="hljs-title">ans</span><span class="hljs-params">(n, <span class="hljs-number">0</span>)</span></span>;<br>        <span class="hljs-keyword">int</span> maxScore = <span class="hljs-number">0</span>;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">1</span> &lt;&lt; n; i ++) &#123;<br>            <span class="hljs-keyword">int</span> score = <span class="hljs-number">0</span>, arrows = <span class="hljs-number">0</span>;;<br>            <span class="hljs-function">vector&lt;<span class="hljs-keyword">int</span>&gt; <span class="hljs-title">bobArrows</span><span class="hljs-params">(n, <span class="hljs-number">0</span>)</span></span>;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> j = <span class="hljs-number">0</span>; j &lt; n; j ++) &#123;<br>                <span class="hljs-keyword">if</span> (((i &gt;&gt; j) &amp; <span class="hljs-number">1</span>) == <span class="hljs-number">1</span>) &#123;<br>                    score += j;<br>                    arrows += aliceArrows[j] + <span class="hljs-number">1</span>;<br>                    bobArrows[j] = aliceArrows[j] + <span class="hljs-number">1</span>;<br>                &#125;<br>            &#125;<br>            <span class="hljs-keyword">if</span> (arrows &gt; numArrows) <span class="hljs-keyword">continue</span>;<br>            <span class="hljs-keyword">if</span> (score &gt; maxScore) &#123;<br>                maxScore = score;<br>                bobArrows[<span class="hljs-number">0</span>] += (numArrows - arrows);<br>                ans = bobArrows;<br>            &#125;<br>        &#125;<br>        <span class="hljs-keyword">return</span> ans;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<p>​    按应用垂直切分的单体。优点就是水平扩容，运维不需要停服。缺点就是职责太多，开发效率不高。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523105754256.png" srcset="/img/loading.gif" lazyload alt="image-20220523105754256"></p>
+<p class="note note-success">水平架构</p>
 
-<p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/longest-substring-of-one-repeating-character/">6030. 由单个字符重复的最长子字符串 - 力扣（LeetCode） (leetcode-cn.com)</a></p>
-<p>要用线段树，不太会</p>
+<p>​    SOA，微服务都属于这一种。微服务是SOA的去中心化演进方向</p>
+<p>​    SOA</p>
+<ol>
+<li>将应用的不同功能单元抽象为服务</li>
+<li>定义服务之间的通信标准</li>
+</ol>
+<p>​    问题在于如何保证数据一致性，高可用，服务治理，解耦等。    </p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs markdown">&#123;% gi %&#125;<br>![<span class="hljs-string">image-20220523110223056</span>](<span class="hljs-link">https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523110223056.png</span>)<br>![<span class="hljs-string">image-20220523110313815</span>](<span class="hljs-link">https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523110313815.png</span>)	<br>&#123;% endgi %&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+
+
 
               
             </div>
@@ -306,7 +324,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E7%AE%97%E6%B3%95/" class="category-chain-item">算法</a>
+  <a href="/categories/%E6%9E%B6%E6%9E%84/" class="category-chain-item">架构</a>
   
   
 
@@ -321,9 +339,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/%E5%91%A8%E8%B5%9B/">#周赛</a>
-      
-        <a href="/tags/LeetCode/">#LeetCode</a>
+        <a href="/tags/%E6%9E%B6%E6%9E%84/">#架构</a>
       
     </div>
   
@@ -335,8 +351,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>第285场周赛</div>
-      <div>https://2w1nd.github.io/2022/03/20/LC周赛/第285场周赛/</div>
+      <div>架构初探</div>
+      <div>https://2w1nd.github.io/2022/05/23/架构初探/</div>
     </div>
     <div class="license-meta">
       
@@ -348,7 +364,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年3月20日</div>
+          <div>2022年5月23日</div>
         </div>
       
       
@@ -378,18 +394,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/03/23/CMU15445/Project1%EF%BC%9ABuffer-Pool-Manager/" title="Project1：Buffer Pool Manager">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Project1：Buffer Pool Manager</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/03/18/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/LC%E7%BB%8F%E5%85%B8%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E9%A2%98%E9%9B%86/" title="LC中经典数据结构题集">
-                        <span class="hidden-mobile">LC中经典数据结构题集</span>
+                      <a href="/2022/05/22/GO%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" title="GO的内存管理">
+                        <span class="hidden-mobile">GO的内存管理</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -410,7 +420,7 @@
         var options = Object.assign(
           {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
           {
-            id: '5469db37dde4f8dab4d8dcfa144ab9f9'
+            id: '3e7c24b73dc160028c33c533ab69dd9e'
           }
         )
         var gitalk = new Gitalk(options);
