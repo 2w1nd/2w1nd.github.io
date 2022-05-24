@@ -16,22 +16,33 @@
   <meta name="author" content="w1nd">
   <meta name="keywords" content="IT BLOG">
   
-    <meta name="description" content="​    前几天上了好几节字节的架构课，上的很懵逼，这里稍微总结一下，方便自己对企业架构有个大体的认识。 0 前言0.1 什么是架构​    实现一个软件的方法论。 ​    没错，就是这么简单&#x3D; &#x3D;。百度一堆抽象的概念，但感觉架构就类似于地基。针对不同软件都有一种方法而已。 0.2 架构类型单机  ​    软件就是指所有功能都实现在一个进程中，并部署在一台机器上。缺点显然是无法应对C10问题以">
+    <meta name="description" content="​    前几天上了好几节字节的架构课，上的很懵逼，这里稍微总结一下，方便自己对企业架构有个大体的认识。 0 架构初识0.1 什么是架构​    实现一个软件的方法论。 ​    没错，就是这么简单&#x3D; &#x3D;。百度一堆抽象的概念，但感觉架构就类似于地基。针对不同软件都有一种方法而已。 0.2 架构类型单机  ​    软件就是指所有功能都实现在一个进程中，并部署在一台机器上。缺点显然是无法应对C10问">
 <meta property="og:type" content="article">
 <meta property="og:title" content="架构初探">
 <meta property="og:url" content="https://2w1nd.github.io/2022/05/23/%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/index.html">
 <meta property="og:site_name" content="浅风w1ndの博客">
-<meta property="og:description" content="​    前几天上了好几节字节的架构课，上的很懵逼，这里稍微总结一下，方便自己对企业架构有个大体的认识。 0 前言0.1 什么是架构​    实现一个软件的方法论。 ​    没错，就是这么简单&#x3D; &#x3D;。百度一堆抽象的概念，但感觉架构就类似于地基。针对不同软件都有一种方法而已。 0.2 架构类型单机  ​    软件就是指所有功能都实现在一个进程中，并部署在一台机器上。缺点显然是无法应对C10问题以">
+<meta property="og:description" content="​    前几天上了好几节字节的架构课，上的很懵逼，这里稍微总结一下，方便自己对企业架构有个大体的认识。 0 架构初识0.1 什么是架构​    实现一个软件的方法论。 ​    没错，就是这么简单&#x3D; &#x3D;。百度一堆抽象的概念，但感觉架构就类似于地基。针对不同软件都有一种方法而已。 0.2 架构类型单机  ​    软件就是指所有功能都实现在一个进程中，并部署在一台机器上。缺点显然是无法应对C10问">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523105754256.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523110223056.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523110313815.png">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133555278.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133657813.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133902834.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133913637.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523113858104.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523114930387.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523115100944.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523115421796.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133051684.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133118034.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133141533.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523134559833.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523135207981.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523135302626.png?raw=true">
 <meta property="article:published_time" content="2022-05-23T02:40:11.000Z">
-<meta property="article:modified_time" content="2022-05-23T03:13:55.406Z">
+<meta property="article:modified_time" content="2022-05-24T13:28:25.137Z">
 <meta property="article:author" content="w1nd">
 <meta property="article:tag" content="架构">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523105754256.png">
+<meta name="twitter:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133555278.png?raw=true">
   
   
   <title>架构初探 - 浅风w1ndの博客</title>
@@ -228,7 +239,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          460 字
+          1.7k 字
         
       </span>
     
@@ -239,7 +250,7 @@
         
         
         
-          4 分钟
+          14 分钟
         
       </span>
     
@@ -282,7 +293,7 @@
             <div class="markdown-body">
               
               <p>​    前几天上了好几节字节的架构课，上的很懵逼，这里稍微总结一下，方便自己对企业架构有个大体的认识。</p>
-<h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0 前言"></a>0 前言</h2><h3 id="0-1-什么是架构"><a href="#0-1-什么是架构" class="headerlink" title="0.1 什么是架构"></a>0.1 什么是架构</h3><p>​    实现一个软件的方法论。</p>
+<h2 id="0-架构初识"><a href="#0-架构初识" class="headerlink" title="0 架构初识"></a>0 架构初识</h2><h3 id="0-1-什么是架构"><a href="#0-1-什么是架构" class="headerlink" title="0.1 什么是架构"></a>0.1 什么是架构</h3><p>​    实现一个软件的方法论。</p>
 <p>​    没错，就是这么简单= =。百度一堆抽象的概念，但感觉架构就类似于地基。针对不同软件都有一种方法而已。</p>
 <h3 id="0-2-架构类型"><a href="#0-2-架构类型" class="headerlink" title="0.2 架构类型"></a>0.2 架构类型</h3><p class="note note-success">单机</p>
 
@@ -293,7 +304,11 @@
 <p class="note note-success">垂直架构</p>
 
 <p>​    按应用垂直切分的单体。优点就是水平扩容，运维不需要停服。缺点就是职责太多，开发效率不高。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523105754256.png" srcset="/img/loading.gif" lazyload alt="image-20220523105754256"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133555278.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523133555278.png"></p>
+<p class="note note-success">分布式架构</p>
+
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133657813.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523133657813.png"></p>
+<p>​    抽出业务无关的公共模块。优势是业务无关的独立服务；劣势在于服务模块bug会导致全站瘫痪，调用关系复杂</p>
 <p class="note note-success">水平架构</p>
 
 <p>​    SOA，微服务都属于这一种。微服务是SOA的去中心化演进方向</p>
@@ -303,14 +318,149 @@
 <li>定义服务之间的通信标准</li>
 </ol>
 <p>​    问题在于如何保证数据一致性，高可用，服务治理，解耦等。    </p>
-<div class="group-image-container"><div class="group-image-row"><div class="group-image-wrap"><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523110223056.png" srcset="/img/loading.gif" lazyload alt="image-20220523110223056"></div><div class="group-image-wrap"><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220523110313815.png" srcset="/img/loading.gif" lazyload alt="image-20220523110313815"></div></div></div>
+<div class="group-image-container"><div class="group-image-row"><div class="group-image-wrap"><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133902834.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523133902834.png"></div><div class="group-image-wrap"><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133913637.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523133913637.png"></div></div></div>
 
+<h3 id="0-3-企业后端架构"><a href="#0-3-企业后端架构" class="headerlink" title="0.3 企业后端架构"></a>0.3 企业后端架构</h3><p class="note note-success">云计算</p>
 
+<p>​    通过软件自动化管理，提供计算资源的服务网络</p>
+<p>基础：</p>
+<ul>
+<li>虚拟化技术——Docker</li>
+<li>编排技术——K8S</li>
+</ul>
+<p>架构</p>
+<ul>
+<li><p>IaaS</p>
+<p>  ​    基础设施即服务。也就是将硬件资源外包到其他公司。类似买云服务器。</p>
+</li>
+<li><p>PaaS</p>
+<p>  ​    平台即服务。也就是购买中间件，比如虚拟服务器和操作系统。</p>
+</li>
+<li><p>SaaS</p>
+<p>  ​    软件即服务。不需要考虑基础设施维护，只需要考虑软件的使用。类似WordPress</p>
+</li>
+<li><p>FaaS</p>
+<p>  ​    方法即服务。类似刷题网站，只需要提供实现函数，不需要关注中间执行流程。</p>
+</li>
+</ul>
+<p class="note note-success">云原生</p>
 
-
-
-
-
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523113858104.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523113858104.png"></p>
+<p><strong>弹性资源类型（可扩容缩容）</strong></p>
+<ul>
+<li>弹性<strong>计算</strong>资源调度<ul>
+<li>在线计算——互联网后端服务</li>
+<li>离线计算——大数据分析</li>
+</ul>
+</li>
+<li><strong>存储</strong>资源<ul>
+<li>经典<ul>
+<li>对象存储</li>
+<li>大数据存储</li>
+</ul>
+</li>
+<li>关系型数据库</li>
+<li>元数据</li>
+<li>NoSQL</li>
+</ul>
+</li>
+</ul>
+<p><strong>DevOps（驱动软件开发生命周期轮转）</strong></p>
+<ul>
+<li>敏捷开发</li>
+<li>CI/CD</li>
+</ul>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523114930387.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523114930387.png"></p>
+<p><strong>微服务架构</strong></p>
+<p>通信标准</p>
+<ul>
+<li>HTTP（RESTful）</li>
+<li>RPC（Thrift，gRPC）</li>
+</ul>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523115100944.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523115100944.png"></p>
+<p>​    HTTP通信协议往往选择<code>JSON</code>，<strong>其可读性更好，方便调试</strong>，所以服务的接入都是从HTTP请求发起，来源可能是各种客户端，而经过Gateway之后则使用<code>rpc通信</code>，因为<strong>其序列化协议往往有着更好的压缩率</strong>，如<code>pb</code>、<code>thrift</code>。并且<strong>rpc中间件往往集成了丰富的服务治理能力：熔断、降级、超时等</strong></p>
+<p><strong>服务网格</strong></p>
+<ul>
+<li>微服务之间通信的中间层</li>
+<li>高性能网络代理</li>
+<li>业务代码与治理解耦</li>
+</ul>
+<p>​    相比较于RPC/HTTP框架</p>
+<ul>
+<li>异构系统治理统一化（例如不同系统可以用不同语言开发）</li>
+<li>与业务进程解耦，生命周期易管理</li>
+</ul>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523115421796.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523115421796.png"></p>
+<h3 id="0-4-后端架构的挑战"><a href="#0-4-后端架构的挑战" class="headerlink" title="0.4 后端架构的挑战"></a>0.4 后端架构的挑战</h3><p>基础设施</p>
+<ul>
+<li>物理资源有限</li>
+<li>资源利用率</li>
+</ul>
+<p>用户层面</p>
+<ul>
+<li>微服务之间网络通信开销大</li>
+<li>网络抖动导致运维成本高</li>
+<li>异构环境下，不同实例资源水位不均，如何合理分配资源</li>
+</ul>
+<p>一些解决方案</p>
+<p><strong>离/在线资源并池（在线业务分时潮汐特性）</strong></p>
+<p>在线业务特点</p>
+<ul>
+<li>IO密集型</li>
+<li>潮汐性，实时性</li>
+</ul>
+<p>离线业务特点</p>
+<ul>
+<li>CPU密集型</li>
+<li>非实时性</li>
+</ul>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133051684.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523133051684.png"></p>
+<p><strong>微服务亲和性部署（调用关系紧密的服务部署在一台机器上，使用<code>IPC</code>代替<code>RPC</code>）</strong></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133118034.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523133118034.png"></p>
+<p>流量治理（微服务中间件&amp;服务网格的流量治理）</p>
+<p>屏蔽异构环境的算力差距（CPU水位负载均衡）</p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523133141533.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523133141533.png"></p>
+<h2 id="1-微服务架构"><a href="#1-微服务架构" class="headerlink" title="1 微服务架构"></a>1 微服务架构</h2><h3 id="1-1-核心要素"><a href="#1-1-核心要素" class="headerlink" title="1.1 核心要素"></a>1.1 核心要素</h3><p>服务治理</p>
+<ul>
+<li>服务注册</li>
+<li>服务发现</li>
+<li>负载均衡</li>
+<li>扩缩容</li>
+<li>流量治理</li>
+<li>稳定性治理</li>
+</ul>
+<p>可观测性</p>
+<ul>
+<li>日志采集</li>
+<li>日志分析</li>
+<li>监控打点</li>
+<li>监控大盘</li>
+<li>异常报警</li>
+<li>链路追踪</li>
+</ul>
+<p>安全</p>
+<ul>
+<li>身份授权</li>
+<li>认证授权</li>
+<li>访问令牌</li>
+<li>审计</li>
+<li>传输加密</li>
+<li>黑产攻击</li>
+</ul>
+<h3 id="1-2-基本概念"><a href="#1-2-基本概念" class="headerlink" title="1.2 基本概念"></a>1.2 基本概念</h3><p>​    服务：一组运行相同逻辑的运行实体</p>
+<p>​    实例：一个服务中，每个运行实体即为一个实例</p>
+<p>​    实例与进程关系：一个实例可以对应一个或多个进程</p>
+<p>​    集群：服务内部的逻辑划分</p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523134559833.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523134559833.png"></p>
+<h3 id="1-3-服务注册与发现"><a href="#1-3-服务注册与发现" class="headerlink" title="1.3 服务注册与发现"></a>1.3 服务注册与发现</h3><p>​    增加一个统一的服务注册中心，用于存储服务名到服务实例的映射</p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523135207981.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523135207981.png"></p>
+<h3 id="1-4-流量特征"><a href="#1-4-流量特征" class="headerlink" title="1.4 流量特征"></a>1.4 流量特征</h3><ul>
+<li>统一网关入口</li>
+<li>内网通信多数采用RPC</li>
+<li>网状调用链路</li>
+</ul>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220523135302626.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220523135302626.png"></p>
+<h2 id="2-总结"><a href="#2-总结" class="headerlink" title="2 总结"></a>2 总结</h2><p>​    本篇文章仅作对企业架构的了解而已，课上还讲了企业项目发布和服务治理（重试机制），这里就不细说了。虽然估计现在还很难用上，但至少扩宽了自己的视野吧。</p>
 
               
             </div>

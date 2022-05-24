@@ -23,17 +23,17 @@
 <meta property="og:site_name" content="浅风w1ndの博客">
 <meta property="og:description" content="​    Lab2难度还是很大的，要求实现一个Raft一致性算法，主要分为了三个部分：领导选举，日志复制，持久化，日志压缩。总共花了差不多半个月完成，期间由于要准备面试，夏令营啥的耽误了些时间。在做Lab前最好先将Raft论文通读几遍，理解大概的流程，并且课程提供的locking， structure 的描述以及guidance也得好好看看，不然BUG乱飞。 0 前言 &amp; 要求​    实">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220426165424404.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220426202104121.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220426202639998.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220427141202859.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220427164450825.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211524467.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211623562.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211602693.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211501787.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211412982.png">
 <meta property="article:published_time" content="2022-05-01T08:16:09.000Z">
-<meta property="article:modified_time" content="2022-05-19T03:20:59.812Z">
+<meta property="article:modified_time" content="2022-05-24T13:16:42.369Z">
 <meta property="article:author" content="w1nd">
 <meta property="article:tag" content="mit6.824">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220426165424404.png">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211524467.png">
   
   
   <title>6.824 lab2：Raft - 浅风w1ndの博客</title>
@@ -287,7 +287,7 @@
 <h2 id="0-前言-amp-要求"><a href="#0-前言-amp-要求" class="headerlink" title="0 前言 &amp; 要求"></a>0 前言 &amp; 要求</h2><p>​    实验代码在<code>src/raft</code>下，课程已经提供了大致的代码框架以及<code>RPC</code>代码，核心代码在<code>raft.go</code>中。</p>
 <p>​    先说说什么是共识算法把。熟知的共识算法有两种<code>Raft</code>和<code>Paxos</code>。<code>Raft</code>由于其可理解性更加被大家所推崇。</p>
 <p>​    而在构建分布式系统时，最基本的问题也就是：<strong>面对故障，服务器之间能否达成一致？</strong>那么，就需要共识算法来解决这一问题。通常，这种一致性通过复制日志来实现，也就是说，每个服务器存储一系列命令的日志，复制状态机<strong>顺序</strong>执行这些命令，以此保证每个每个状态机相同的状态以及输出序列(顺序性and完整性)。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220426165424404.png" srcset="/img/loading.gif" lazyload alt="复制状态机架构"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211524467.png" srcset="/img/loading.gif" lazyload alt="复制状态机架构"></p>
 <p>​    可以发现，共识算法目的其实很明显，就是为了<strong>保证日志一致性，完整性，持久性</strong>。</p>
 <p>​    在<code>Raft</code>中，将这种一致性问题分成三个独立的子问题：</p>
 <ul>
@@ -298,9 +298,9 @@
 <p>​    这里推荐一个理解<code>Raft</code>算法可视化平台<a target="_blank" rel="noopener" href="http://thesecretlivesofdata.com/raft/">Raft</a>。其实，该算法理解起来并不困难，但是当引入延迟消息，网络分区，故障服务器等，问题就不简单了，很多细节等着我们去处理。</p>
 <p>​    ok，我这里只是对论文3.1之前的内容做个简述，理解问题。</p>
 <h2 id="1-实验分析"><a href="#1-实验分析" class="headerlink" title="1 实验分析"></a>1 实验分析</h2><h3 id="1-1-领导选举思路"><a href="#1-1-领导选举思路" class="headerlink" title="1.1 领导选举思路"></a>1.1 领导选举思路</h3><p>​    这里分析PartA实现时的选举思路，首先，要知道每一个节点都处于三个状态之一：<strong>领导者（Leader）</strong>，<strong>跟随者（Follwer）</strong>，<strong>候选人（Candidate）</strong>。它们之间状态关系如下图</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220426202104121.png" srcset="/img/loading.gif" lazyload alt="服务器状态"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211623562.png" srcset="/img/loading.gif" lazyload alt="服务器状态"></p>
 <p>​    第二件要知道的是，<code>Raft</code>会将时间分割成任意长度的任期。如果一个候选人赢得选举，然后他就在接下来的任期内充当领导者的职责。注意，这里要保证在一个任期内，最多只有一个领导者。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220426202639998.png" srcset="/img/loading.gif" lazyload alt="时间被划分成一个个的任期，每个任期开始都是一次选举"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211602693.png" srcset="/img/loading.gif" lazyload alt="时间被划分成一个个的任期，每个任期开始都是一次选举"></p>
 <p>​    任期在选举中是十分重要的，它起到一个逻辑时钟的作用，在选举时，如果请求任期小于当前任期或者相等但当前节点已经投了别人，则需要响应拒绝；否则，将改变当前节点状态以及投票对象。并且，在Leader发送心跳时，如果小于，则说明当前Leader任期过期了，修改响应任期并返回<code>false</code>，否则，将<code>Follwer</code>的任期修改为当前Leader的任期。</p>
 <p>ok，接下来就看看选举是怎么进行的：</p>
 <p>首先，Follwer要先增加自己当前的任期号并转换为Candidate。然后就<strong>并行</strong>的向其他节点发送请求来给自己投票，投票结果有三种，下面逐一分析</p>
@@ -332,7 +332,7 @@
 <p> ​    在<code>AppendEntries</code>中，有<strong>前一个日志条目位置</strong>（<code>PrevLogIndex</code>）和<strong>任期号</strong>（<code>PrevLogTerm</code>），如果Follwer在其日志找不到前一个日志，则拒绝日志，Leader收到拒绝后，发送<strong>前一个日志条目</strong>，逐渐向前定位到Follower第一个缺失的日志。</p>
 </li>
 <li><p><strong>Leader宕机</strong>。那么崩溃的Leader和部分Follwer还没有提交，而被选出的新Leader又不具备这些日志，这时候就有部分Follwer的日志和新Leader的日志不相同。参照下图</p>
-<p> <img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220427141202859.png" srcset="/img/loading.gif" lazyload alt="image-20220427141202859"></p>
+<p> <img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211501787.png" srcset="/img/loading.gif" lazyload alt="image-20220524211501787"></p>
 <p> ​    可以发现<code>c</code>和<code>d</code>比Leader还多出两个日志，但是Leader其实还是可以通过<code>a</code>，<code>b</code>，<code>e</code>的投票当选，另外，<code>f</code>具有别的节点不具有的日志，也就是说在<code>2</code>，<code>3</code>任期担任Leader，但日志没有提交。（注：方框中数字表示该日志条目创建时的任期号）</p>
 <p> ​    解决方式是，Leader通过一致性检查找到Follwer中最后一个和自己一致日志之后，把这之后Follwer和自己冲突所有日志覆盖掉（因为其没有提交，抛弃也无所谓）。</p>
 </li>
@@ -346,7 +346,7 @@
 <p class="note note-success">2. Leader宕机处理：新Leader是否提交之前任期内的日志条目</p>
 
 <p>​    这里是比较难理解的一部分，先看下图</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220427164450825.png" srcset="/img/loading.gif" lazyload alt="如图的时间序列展示了为什么领导者无法决定对老任期号的日志条目进行提交。"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220524211412982.png" srcset="/img/loading.gif" lazyload alt="如图的时间序列展示了为什么领导者无法决定对老任期号的日志条目进行提交。"></p>
 <p>​        这里d和e是c处理后可能出现的两种情况，e是恰当，而d是不恰当的，下面说说</p>
 <ol>
 <li>（a）：S1为Leader，复制<code>idx = 2</code>的数字到<code>S2</code></li>

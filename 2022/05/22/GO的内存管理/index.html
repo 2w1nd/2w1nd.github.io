@@ -23,17 +23,17 @@
 <meta property="og:site_name" content="浅风w1ndの博客">
 <meta property="og:description" content="​    这其实和上一篇文章“GMP调度模型”有着一定关联，当一个协程通过GMP模型调度产生对象以后，就要涉及到Go的内存管理机制了。本文的内存管理是一个比较大的概念，包含了垃圾分配和对象内存管理。 0 整体架构&amp;概念​    首先要明确自动内存管理其实就是指垃圾回收，由程序语言的运行时系统（runtime）管理动态内存。另外，几个英文对照的概念：  Mutator：业务线程，分配新对象，">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220519174137814.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220519184026434.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220519193858815.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220522202648374.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220522210831818.png">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220519174137814.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220519184026434.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220519193858815.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220522202648374.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220522210831818.png?raw=true">
 <meta property="article:published_time" content="2022-05-22T13:17:12.000Z">
-<meta property="article:modified_time" content="2022-05-22T13:17:31.325Z">
+<meta property="article:modified_time" content="2022-05-24T13:33:48.509Z">
 <meta property="article:author" content="w1nd">
 <meta property="article:tag" content="Go">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220519174137814.png">
+<meta name="twitter:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220519174137814.png?raw=true">
   
   
   <title>GO的内存管理 - 浅风w1ndの博客</title>
@@ -293,7 +293,7 @@
 <li>Parallel GC：支持多个collectors同时回收的GC算法</li>
 <li>Concurrent GC：mutator(s)和collector(s)可以同时执行</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220519174137814.png" srcset="/img/loading.gif" lazyload alt="image-20220519174137814"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220519174137814.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220519174137814.png"></p>
 <h2 id="1-Go垃圾回收"><a href="#1-Go垃圾回收" class="headerlink" title="1 Go垃圾回收"></a>1 Go垃圾回收</h2><p>​    首先，垃圾回收主要可以从以下方面讨论：</p>
 <ul>
 <li>垃圾分类</li>
@@ -303,7 +303,7 @@
 <h3 id="1-1-垃圾分类"><a href="#1-1-垃圾分类" class="headerlink" title="1.1 垃圾分类"></a>1.1 垃圾分类</h3><p>​    语法垃圾和语义垃圾</p>
 <p><strong>语义垃圾</strong></p>
 <p>​    这是垃圾回收器无法回收的垃圾，通常是由于程序员的不正当操作导致的<strong>内存泄露</strong>而产生的。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220519184026434.png" srcset="/img/loading.gif" lazyload alt="image-20220519184026434"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220519184026434.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220519184026434.png"></p>
 <p>​    如图，数组后面的两个元素无法再访问了，但其关联的堆上内存依然是无法释放的。</p>
 <p><strong>语法垃圾</strong>    </p>
 <p>​    也就是指针指向关系不可达的对象，是垃圾回收的对象</p>
@@ -332,7 +332,7 @@
 </ul>
 <p>对象分配：根据对象的大小，选择最合适的块返回</p>
 <h3 id="2-2-缓存"><a href="#2-2-缓存" class="headerlink" title="2.2 缓存"></a>2.2 缓存</h3><p>​    使用了TCMalloc<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/8sWt9bML8KkmF_6FD0J5FQ">18张图解密新时代内存分配器TCMalloc (qq.com)</a></p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220519193858815.png" srcset="/img/loading.gif" lazyload alt="image-20220519193858815"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220519193858815.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220519193858815.png"></p>
 <ul>
 <li> 每个p包含一个<code>mcache</code>用于快速分配，用于为绑定于p上的g分配对象</li>
 <li><code>mcache</code>管理一组<code>mspan</code></li>
@@ -347,7 +347,7 @@
 <li>无须和其他分配请求互斥</li>
 <li>分配动作简单高效</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220522202648374.png" srcset="/img/loading.gif" lazyload alt="image-20220522202648374"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220522202648374.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220522202648374.png"></p>
 <p>​    如图，只需要移动指针就可以完成对象的分配</p>
 <p>存在的问题</p>
 <ul>
@@ -361,7 +361,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220522210831818.png" srcset="/img/loading.gif" lazyload alt="image-20220522210831818"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220522210831818.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220522210831818.png"></p>
 <h2 id="3-总结"><a href="#3-总结" class="headerlink" title="3 总结"></a>3 总结</h2><p>​    Go的内存管理包括了垃圾回收和内存分配，之前有看过Java这方面的知识，感觉还是挺容易理解的，并且Go没有垃圾回收器，TLAB等概念，感觉八股这块还是略弱于Java哈哈。</p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/TXJDVTexdMirOqdGJHCP-w">图解 Go GC (qq.com)</a></p>
 <p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/352133292">字节跳动 Go 语言面试高频题 01：内存分配 - 知乎 (zhihu.com)</a></p>
