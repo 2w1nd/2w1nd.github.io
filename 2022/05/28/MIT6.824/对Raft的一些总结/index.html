@@ -24,8 +24,9 @@
 <meta property="og:description" content="​    历时一个半月，总算完成6.824的四个Lab，虽然为了赶进度很多思路都是借鉴网上的博文，思路，但作为第一次接触分布式共识算法小白的我来说，也从其中学到了不少东西。在实现过程中，也遇到了许多Bug，一些Conner case要反复调试才能出来，对此，也认识到了实现一个可靠完备的共识算法是十分艰辛的。接下来，我会以问题的形式总结一些在实现6.824Lab过程中的思考，也是对Raft算法的一个">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220602195113739.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220602211908893.png">
 <meta property="article:published_time" content="2022-05-28T13:32:56.000Z">
-<meta property="article:modified_time" content="2022-06-02T12:15:13.674Z">
+<meta property="article:modified_time" content="2022-06-02T13:36:59.888Z">
 <meta property="article:author" content="w1nd">
 <meta property="article:tag" content="Raft">
 <meta name="twitter:card" content="summary_large_image">
@@ -226,7 +227,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3k 字
+          3.9k 字
         
       </span>
     
@@ -237,7 +238,7 @@
         
         
         
-          26 分钟
+          33 分钟
         
       </span>
     
@@ -337,7 +338,34 @@
 <li><code>nextIndex</code>：集群中每个节点<strong>待接收</strong>的日志索引号（模糊）</li>
 <li><code>matchIndex</code>：集群中每个节点和该server对齐的日志Index（准确）</li>
 </ul>
-<p>​    </p>
+<p><strong>currentTerm</strong></p>
+<p>​    这是需要持久化的。试想，如果三个节点都挂了，那么它们重启后currentTerm都会变成0，进而election timeout后currentTerm变成1，如果之前的日志Term比1大，那么就无法选举出Leader。</p>
+<p>​    那么，为什么不使用log最新的term来进行代替呢？</p>
+<p>​    考虑一种情况：</p>
+<ol>
+<li>S1作为日志Term从5开始，S2，S3也是从5开始</li>
+<li>此时，S1发起选举并获得大多数选票成为Leader，并收到Client的一个请求，此时增加日志Term=6，但是没发出AE就crash（也就是还没有进行日志复制）</li>
+<li>这时，S1飞速重启，又像上一步一样成为Leader，收到请求，增加日志Term=7，然后crash</li>
+<li>S2，S3此时currentTerm应该是7，这是由于在收到投票请求时更新了。那么这两个节点在进行下次选举将会用Term=8</li>
+<li>但是，如果此时S2，S3 crash了，如果没有持久化currentTerm，他们就会用Term=6进行选举（因为最新日志是5）</li>
+<li>那么问题出现了，在同一个Term中会出现两个Leader（S1之前Term=6也是Leader）</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220602211908893.png" srcset="/img/loading.gif" lazyload alt="image-20220602211908893"></p>
+<p><strong>votedFor</strong></p>
+<p>​    这是需要持久化的。同样考虑一种情况：</p>
+<ol>
+<li>S1获得S1和S2的选票，并且成为Term=1的Leader</li>
+<li>S2突然crash又重启，vateFor变为-1</li>
+<li>S3也发起Term=1的选举，获得S2和S3的投票，成为Term=1的Leader（S1：握草，你这家伙怎么出尔反尔，说好只投我呢（）</li>
+<li>此时，问题就是同一个Term出现两个Leader</li>
+</ol>
+<p><strong>log[]</strong></p>
+<p>​    这个我想必须持久化吧。这是唯一能用来重建应用程序状态的信息，如果上层突然挂了，还可以通过log来恢复</p>
+<p><strong>commitIndex &amp; lastApplied</strong></p>
+<p>​    commitIndex不需要持久化，这可以通过follower和leader的几次RPC通信就可以确定</p>
+<p>​    lastApplied感觉也不需要持久化</p>
+<p><strong>nextIndex[] &amp; matchIndex[]</strong></p>
+<p>​    这两个是用于Leader和Follower同步日志的，当Leader crash之后，恢复由于不再是Leader，因此持久化了也没有任何意义。</p>
 <h2 id="Muti-Raft"><a href="#Muti-Raft" class="headerlink" title="Muti-Raft"></a>Muti-Raft</h2><p class="note note-success">muti-Raft是什么</p>
 
 <p>​    分布式系统的实现最大原因是为了解决单机的不可扩展性，提高存储系统的伸缩性；此外，单机由于都是Leader处理写请求，性能不好。为了支持大容量数据与高性能，就需要设计多个Raft集群，也就是multi-Raft。对于每个集群，也称为Group，集群中维护了不同分片数据，客户端在GET时，会向一个中心节点，称为ShardCtrler（TiDB中称为PD）发送请求，得到该分片所在Group对应的Server的元数据，从而发送请求到服务端。</p>
