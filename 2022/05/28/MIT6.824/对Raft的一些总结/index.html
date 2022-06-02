@@ -16,21 +16,23 @@
   <meta name="author" content="w1nd">
   <meta name="keywords" content="IT BLOG">
   
-    <meta name="description" content="记录学习笔记，技术文章，生活点滴">
+    <meta name="description" content="​    历时一个半月，总算完成6.824的四个Lab，虽然为了赶进度很多思路都是借鉴网上的博文，思路，但作为第一次接触分布式共识算法小白的我来说，也从其中学到了不少东西。在实现过程中，也遇到了许多Bug，一些Conner case要反复调试才能出来，对此，也认识到了实现一个可靠完备的共识算法是十分艰辛的。接下来，我会以问题的形式总结一些在实现6.824Lab过程中的思考，也是对Raft算法的一个">
 <meta property="og:type" content="article">
-<meta property="og:title" content="结构式：代理模式">
-<meta property="og:url" content="https://2w1nd.github.io/2022/03/15/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E7%BB%93%E6%9E%84%E5%BC%8F%EF%BC%9A%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:title" content="对Raft的一些总结">
+<meta property="og:url" content="https://2w1nd.github.io/2022/05/28/MIT6.824/%E5%AF%B9Raft%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%BB%E7%BB%93/index.html">
 <meta property="og:site_name" content="浅风w1ndの博客">
-<meta property="og:description" content="记录学习笔记，技术文章，生活点滴">
+<meta property="og:description" content="​    历时一个半月，总算完成6.824的四个Lab，虽然为了赶进度很多思路都是借鉴网上的博文，思路，但作为第一次接触分布式共识算法小白的我来说，也从其中学到了不少东西。在实现过程中，也遇到了许多Bug，一些Conner case要反复调试才能出来，对此，也认识到了实现一个可靠完备的共识算法是十分艰辛的。接下来，我会以问题的形式总结一些在实现6.824Lab过程中的思考，也是对Raft算法的一个">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-03-15T05:50:39.000Z">
-<meta property="article:modified_time" content="2022-05-23T02:36:21.388Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220602195113739.png">
+<meta property="article:published_time" content="2022-05-28T13:32:56.000Z">
+<meta property="article:modified_time" content="2022-06-02T12:15:13.674Z">
 <meta property="article:author" content="w1nd">
-<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="Raft">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220602195113739.png">
   
   
-  <title>结构式：代理模式 - 浅风w1ndの博客</title>
+  <title>对Raft的一些总结 - 浅风w1ndの博客</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -201,7 +203,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="结构式：代理模式"></span>
+            <span id="subtitle" data-typed-text="对Raft的一些总结"></span>
           
         </div>
 
@@ -212,8 +214,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-03-15 13:50" pubdate>
-          2022年3月15日 下午
+        <time datetime="2022-05-28 21:32" pubdate>
+          2022年5月28日 晚上
         </time>
       </span>
     
@@ -224,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          0 字
+          3k 字
         
       </span>
     
@@ -235,7 +237,7 @@
         
         
         
-          1 分钟
+          26 分钟
         
       </span>
     
@@ -273,11 +275,83 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">结构式：代理模式</h1>
+            <h1 style="display: none">对Raft的一些总结</h1>
             
             <div class="markdown-body">
               
-              
+              <p>​    历时一个半月，总算完成6.824的四个Lab，虽然为了赶进度很多思路都是借鉴网上的博文，思路，但作为第一次接触分布式共识算法小白的我来说，也从其中学到了不少东西。在实现过程中，也遇到了许多Bug，一些Conner case要反复调试才能出来，对此，也认识到了实现一个可靠完备的共识算法是十分艰辛的。接下来，我会以问题的形式总结一些在实现6.824Lab过程中的思考，也是对Raft算法的一个个人总结吧。</p>
+<h2 id="Raft"><a href="#Raft" class="headerlink" title="Raft"></a>Raft</h2><p class="note note-success">为什么说Raft是强一致性的？</p>
+
+<p>​    这个问题是源于，看到部分博文说raft在接收到客户端请求并不能将entries同步到集群中的所有成员，所以并不能算强一致性。</p>
+<p>​    这里要先理解强一致性的概念，在剑桥大学一篇<a target="_blank" rel="noopener" href="https://www.cl.cam.ac.uk/teaching/0910/ConcDistS/11a-cons-tx.pdf">slide</a>中，阐述了这一概念</p>
+<blockquote>
+<p><strong>Strong consistency</strong> – ensures that only consistent state can be seen.</p>
+<ul>
+<li>All replicas return the same value when queried for the attribute of an object All replicas return the same value when queried for the attribute of an object. This may be achieved at a cost – high latency.</li>
+</ul>
+<p><strong>Weak consistency</strong> – for when the “fast access” requirement dominates.</p>
+<ul>
+<li>update some replica, e.g. the closest or some designated replica</li>
+<li>the updated replica sends up date messages to all other replicas.</li>
+<li>different replicas can return different values for the queried attribute of the object the value should be returned, or “not known”, with a timestamp</li>
+<li>in the long term all updates must propagate to all replicas …….<ul>
+<li>consider failure and restart procedures,</li>
+<li>consider order of arrival,</li>
+<li>consider possible conflicting updates consider possible conflicting updates</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>​    意思是，<strong>强一致</strong>集群中，对任何一个节点<strong>发起请求</strong>都会得到相同的回复，但将产生相对高的延迟；</p>
+<p>​    而对于<strong>弱一致</strong>性，则具有更低的响应延迟，但有可能回复过期的数据；</p>
+<p>​    <strong>最终一致性</strong>是弱一致性的特别情况，它是指数据会经过一段时间后达到一致性。</p>
+<p>可以看出来，强一致性强调的<strong>强一致性读</strong>，即不会读到过期的结果。而并不要求将每个写请求都写到集群中的每个节点上。</p>
+<p class="note note-success">领导选举的过程</p>
+
+<p>​    Raft对于每个节点会有三种状态：Candidate，Follower，Leader。使用发送RPC的请求的方式进行选举。对于Follower，会维护一个随机时长的定时器，当没有收到Leader心跳检测并且定时器时间到，就会触发选举。这是，该Follower会转变为Candidate，并且Term++，然后向所有节点发送RequestVote RPC。等待其他节点投票给自己。</p>
+<p>​    如果该Candidate收到的选票超过半数，就会转变为Leader，并且立即发送AE给其他节点；如果其他节点赢得了选举，会导致接下来发送RequestVote RPC中Term小于该节点的Term或者说相等但该节点已经投了自己，这是就会使得自己转变为Follower；还有一种平票的情况，很极端，但有可能发生，那么这时候不会出现Leader，因为没有一个节点的票超过半数，这是等待选举计时器再次到（随机时间很重要），再次触发选举。</p>
+<p class="note note-success">日志复制</p>
+
+<p>​    一旦Leader被选举出来，就会开始为每个节点提供服务。客户端发送给Leader节点请求，Raft层收到后会生成一个Entry，通过发送AppendEntries RPC（简称AE）复制给其他的节点，其中包含了Leader含有的所有日志条目（包括刚刚的Entry），还有一些其他信息（任期号，ID，前一日志任期号和索引【用于检查日志是否过期以及执行快照】，Leader提交的日志号）。</p>
+<p>​    Follower再确认Leader身份后，就需要重置定时器，然后判断当前Follower是否复制过了该节点</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">return</span> index &lt;= rf.getLastLog().Index &amp;&amp; rf.logs[index-rf.getFirstLog().Index].Term == term<br></code></pre></td></tr></table></figure>
+
+<p>​    一旦不满足上述要求，说明 日志缺失 或者 日志过老，对于前者，需要使用<code>conflictIndex</code>返回缺失的第一个Index，等待下次AE进行复制；对于后者，则需要根据任期找出第一个不匹配的日志，设置<code>conflictIndex</code>，然后等待下次AE进行覆盖。</p>
+<p>​    下次AE就可以确定该节点冲突的Index和Term，从而进行日志拷贝。</p>
+<p class="note note-success">安全性</p>
+
+<p>​    所谓安全，我认为是指作为Leader的节点必须要具有日志控制的绝对权。因为在不可靠的网络中，Leader是十分有可能宕机，而新Leader是否如何处理一些不正常的日志就变得尤为关键，另外还有Follower和Cadidate宕机的情况。</p>
+<p>​    对于Leader宕机的处理情况，我们需要加入<strong>选举约束</strong>和<strong>新Leader不能提交之前任期内的日志条目</strong>来保证：</p>
+<p>​    选举约束：这是在选举时增加对日志最后条目的判断，也就是通过索引和任期来判断哪个日志更新，如果任期号不同，任期号大的更新；任期号相同，日志较长的更新。</p>
+<p>​    新Leader不能提交之前任期内的日志条目：也就是说Leader只会计算<strong>自己产生的新日志</strong>的副本条目来判断是否提交。具体见Lab2文章分析</p>
+<p class="note note-success">持久化，哪些需要持久化，为什么；为什么其他不需要？</p>
+
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220602195113739.png" srcset="/img/loading.gif" lazyload alt="Raft维护的状态"></p>
+<p>​    根据Figure2，所知道的状态有：</p>
+<ul>
+<li><code>currentTerm</code>：从0开始递增，server所知道的最大的Term号</li>
+<li><code>voteFor</code>：server投票给的Cadidate ID</li>
+<li><code>log[]</code>：server维护的日志列表</li>
+<li><code>commitIndex</code>：server提交的最高日志索引值</li>
+<li><code>lastApplied</code>：状态机apply的最高日志索引值</li>
+<li><code>nextIndex</code>：集群中每个节点<strong>待接收</strong>的日志索引号（模糊）</li>
+<li><code>matchIndex</code>：集群中每个节点和该server对齐的日志Index（准确）</li>
+</ul>
+<p>​    </p>
+<h2 id="Muti-Raft"><a href="#Muti-Raft" class="headerlink" title="Muti-Raft"></a>Muti-Raft</h2><p class="note note-success">muti-Raft是什么</p>
+
+<p>​    分布式系统的实现最大原因是为了解决单机的不可扩展性，提高存储系统的伸缩性；此外，单机由于都是Leader处理写请求，性能不好。为了支持大容量数据与高性能，就需要设计多个Raft集群，也就是multi-Raft。对于每个集群，也称为Group，集群中维护了不同分片数据，客户端在GET时，会向一个中心节点，称为ShardCtrler（TiDB中称为PD）发送请求，得到该分片所在Group对应的Server的元数据，从而发送请求到服务端。</p>
+<p class="note note-success">multi-Raft需要解决哪些问题？</p>
+
+<ol>
+<li>数据如何分片</li>
+<li>如何让分片在系统中分布的更加均匀（分片迁移）</li>
+<li>如果删除已经不需要分片</li>
+<li>如果在分片迁移时依旧提供给客户端服务</li>
+<li>如何处理Snapshot</li>
+</ol>
+<p>​    </p>
+
               
             </div>
             <hr/>
@@ -294,7 +368,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="category-chain-item">设计模式</a>
+  <a href="/categories/%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95/" class="category-chain-item">共识算法</a>
   
   
 
@@ -309,7 +383,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">#设计模式</a>
+        <a href="/tags/Raft/">#Raft</a>
       
     </div>
   
@@ -321,8 +395,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>结构式：代理模式</div>
-      <div>https://2w1nd.github.io/2022/03/15/设计模式/结构式：代理模式/</div>
+      <div>对Raft的一些总结</div>
+      <div>https://2w1nd.github.io/2022/05/28/MIT6.824/对Raft的一些总结/</div>
     </div>
     <div class="license-meta">
       
@@ -334,7 +408,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年3月15日</div>
+          <div>2022年5月28日</div>
         </div>
       
       
@@ -364,18 +438,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/03/15/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%A1%8C%E4%B8%BA%E5%BC%8F%EF%BC%9A%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" title="行为式：观察者模式">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">行为式：观察者模式</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/03/15/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E7%BB%93%E6%9E%84%E5%BC%8F%EF%BC%9A%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8F/" title="结构式：外观模式">
-                        <span class="hidden-mobile">结构式：外观模式</span>
+                      <a href="/2022/05/23/%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/" title="架构初探">
+                        <span class="hidden-mobile">架构初探</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -396,7 +464,7 @@
         var options = Object.assign(
           {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
           {
-            id: '2b2575193e415e60c671e82eecfdc9ef'
+            id: '72ab78266f4ebc6ab8fca382eac878e9'
           }
         )
         var gitalk = new Gitalk(options);
