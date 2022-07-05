@@ -19,7 +19,7 @@
     <meta name="description" content="​    这其实和上一篇文章“GMP调度模型”有着一定关联，当一个协程通过GMP模型调度产生对象以后，就要涉及到Go的内存管理机制了。本文的内存管理是一个比较大的概念，包含了垃圾分配和对象内存管理。 0 整体架构&amp;概念​    首先要明确自动内存管理其实就是指垃圾回收，由程序语言的运行时系统（runtime）管理动态内存。另外，几个英文对照的概念：  Mutator：业务线程，分配新对象，">
 <meta property="og:type" content="article">
 <meta property="og:title" content="GO的内存管理">
-<meta property="og:url" content="https://2w1nd.github.io/2022/05/22/GO%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:url" content="https://2w1nd.github.io/2022/05/22/Go/GO%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/index.html">
 <meta property="og:site_name" content="浅风w1ndの博客">
 <meta property="og:description" content="​    这其实和上一篇文章“GMP调度模型”有着一定关联，当一个协程通过GMP模型调度产生对象以后，就要涉及到Go的内存管理机制了。本文的内存管理是一个比较大的概念，包含了垃圾分配和对象内存管理。 0 整体架构&amp;概念​    首先要明确自动内存管理其实就是指垃圾回收，由程序语言的运行时系统（runtime）管理动态内存。另外，几个英文对照的概念：  Mutator：业务线程，分配新对象，">
 <meta property="og:locale" content="zh_CN">
@@ -411,7 +411,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>GO的内存管理</div>
-      <div>https://2w1nd.github.io/2022/05/22/GO的内存管理/</div>
+      <div>https://2w1nd.github.io/2022/05/22/Go/GO的内存管理/</div>
     </div>
     <div class="license-meta">
       
@@ -477,19 +477,23 @@
             
   <article id="comments" lazyload>
     
-  <div id="gitalk-container"></div>
+  <div id="valine"></div>
   <script type="text/javascript">
-    Fluid.utils.loadComments('#gitalk-container', function() {
-      Fluid.utils.createCssLink('/css/gitalk.css')
-      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.4.16/Valine.min.js', function() {
         var options = Object.assign(
-          {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {"appId":"4wcDV0Egznc7ygOKEYrQ8Nqg-gzGzoHsz","appKey":"A7xf01gO28vify5BlDfL0REw","path":"window.location.pathname","placeholder":"欢迎评论~","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true},
           {
-            id: '346877c01aa83e6f89987e367fb814d4'
+            el: "#valine",
+            path: window.location.pathname
           }
         )
-        var gitalk = new Gitalk(options);
-        gitalk.render('gitalk-container');
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
       });
     });
   </script>

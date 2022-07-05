@@ -23,17 +23,17 @@
 <meta property="og:site_name" content="浅风w1ndの博客">
 <meta property="og:description" content="​    该论文是Google的三架马车之一，是实现了一个面向大规模密集型应用，可伸缩的的分布式文件系统。分布式存储的开篇之作，论文中主要阐述了该系统接口的扩展，如何设计，最后又讲了性能测试以及生产环境下性能数据。 ​    读后感不一定按论文框架描述，主要还是自己对系统的理解与总结 0 前言​    论文在简介中谈到了系统设计的初始思路，要考虑的因素  组件（程序，系统，机器）故障属于常态事件，">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422084854082.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422133801597.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422142334520.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422143246991.png">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220422084854082.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220422133801597.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220422142334520.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220422143246991.png?raw=true">
 <meta property="article:published_time" content="2022-04-20T08:58:45.000Z">
-<meta property="article:modified_time" content="2022-04-22T07:15:50.920Z">
+<meta property="article:modified_time" content="2022-06-03T09:01:11.320Z">
 <meta property="article:author" content="w1nd">
 <meta property="article:tag" content="分布式系统">
 <meta property="article:tag" content="GFS">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422084854082.png">
+<meta name="twitter:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220422084854082.png?raw=true">
   
   
   <title>GFS论文读后感 - 浅风w1ndの博客</title>
@@ -294,7 +294,7 @@
 </ul>
 <p>​    首先，在分布式存储中经常出现的话题有，<strong>并行性能</strong>，<strong>容错</strong>，<strong>复制</strong>，<strong>一致性</strong>。GFS在解决这些问题用到了比较直观的方式，下面会谈到。</p>
 <p>​    在开始之前，我看到网上有篇文章写得很好，脉络清晰并且作者的思想也很<code>make sense</code>，我这里就对其中一些我不太明白的点进行总结，具体可以看这篇<a target="_blank" rel="noopener" href="https://spongecaptain.cool/post/paper/googlefilesystem/">Google File System-GFS 论文阅读</a></p>
-<h2 id="1-设计概述"><a href="#1-设计概述" class="headerlink" title="1 设计概述"></a>1 设计概述</h2><p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422084854082.png" srcset="/img/loading.gif" lazyload alt="image-20220422084854082"></p>
+<h2 id="1-设计概述"><a href="#1-设计概述" class="headerlink" title="1 设计概述"></a>1 设计概述</h2><p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220422084854082.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220422084854082.png"></p>
 <p>​    典型得<code>Master + Worker</code>结构，一个 Master 来管理任务、分配任务，而 Worker 是真正干活的节点。</p>
 <p class="note note-success">分块存储</p>
 
@@ -311,7 +311,7 @@
 <ul>
 <li>小数据量（比如仅仅占据一个 chunk 的文件，文件至少占据一个 chunk）的文件很多时，当很多 GFS Client 同时将 record 存储到该文件时就会造成局部的 hot spots 热点。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422133801597.png" srcset="/img/loading.gif" lazyload alt="image-20220422133801597"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220422133801597.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220422133801597.png"></p>
 <p class="note note-success">单Master节点的设计</p>
 
 <p><code>Master</code> 周期性通过 HeartBeat 机制和每一个 chunkserver 进行通信，进行指令的发送以及状态信息的接收</p>
@@ -354,12 +354,12 @@
 <p class="note note-success">一致性模型</p>
 
 <p>​    GFS并不是强一致性的，他实现的是一个最终一致性的系统</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422142334520.png" srcset="/img/loading.gif" lazyload alt="image-20220422142334520"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220422142334520.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220422142334520.png"></p>
 <p>​    上图是指修改之后的文件区域状态，这取决于修改类型，修改成功与否，是否存在并发</p>
 <p>​    具体文件区域状态意思可以看参考博客</p>
 <h2 id="2-系统内部交互"><a href="#2-系统内部交互" class="headerlink" title="2 系统内部交互"></a>2 系统内部交互</h2><p class="note note-success">租赁和修改顺序</p>
 
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220422143246991.png" srcset="/img/loading.gif" lazyload alt="image-20220422143246991"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220422143246991.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220422143246991.png"></p>
 <p>​    详细流程解释这里也不说了。。</p>
 <p>​    值得一提的是，数据流是通过线性进行传递的，也就是Client 负责给 primary 传输写入的数据，而 primary 负责给下一个 replica 传输数据，而下一个 replica 又负责给下下一个 replica 传输数据。如此，能充分利用每台机器的网络带宽，避免网络瓶颈和高延迟链接，并最小化通过所有数据的延迟。</p>
 <p class="note note-success">原子的记录追加</p>
@@ -489,19 +489,23 @@
             
   <article id="comments" lazyload>
     
-  <div id="gitalk-container"></div>
+  <div id="valine"></div>
   <script type="text/javascript">
-    Fluid.utils.loadComments('#gitalk-container', function() {
-      Fluid.utils.createCssLink('/css/gitalk.css')
-      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.4.16/Valine.min.js', function() {
         var options = Object.assign(
-          {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {"appId":"4wcDV0Egznc7ygOKEYrQ8Nqg-gzGzoHsz","appKey":"A7xf01gO28vify5BlDfL0REw","path":"window.location.pathname","placeholder":"欢迎评论~","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true},
           {
-            id: '4511609943547cb5083905e7d51c033c'
+            el: "#valine",
+            path: window.location.pathname
           }
         )
-        var gitalk = new Gitalk(options);
-        gitalk.render('gitalk-container');
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
       });
     });
   </script>

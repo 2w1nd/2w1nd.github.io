@@ -23,15 +23,15 @@
 <meta property="og:site_name" content="浅风w1ndの博客">
 <meta property="og:description" content="​    在MIT6.824的第一个Lab中，就是要我们实现一个MapReduce系统，当时只是粗略看了一下其基本的实现，再参照网上思路完成了该Lab。今天面试被问到该论文，很多问题都没答好，看来论文的阅读还是十分重要。🤔  0 前言​    首先从摘要出发，摘要首先基本说明MapReduce大致流程，其实现需要注意的点以及其作用。 ​    MapReduce是用于处理和生成超大数据集的算法模">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220419232929058.png">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220419210000811.png">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220419232929058.png?raw=true">
+<meta property="og:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220419210000811.png?raw=true">
 <meta property="article:published_time" content="2022-04-19T12:37:35.000Z">
-<meta property="article:modified_time" content="2022-04-19T15:30:00.435Z">
+<meta property="article:modified_time" content="2022-06-03T09:01:50.947Z">
 <meta property="article:author" content="w1nd">
 <meta property="article:tag" content="MapReduce">
 <meta property="article:tag" content="分布式系统">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220419232929058.png">
+<meta name="twitter:image" content="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220419232929058.png?raw=true">
   
   
   <title>MapReduce论文读后感 - 浅风w1ndの博客</title>
@@ -282,7 +282,7 @@
             <div class="markdown-body">
               
               <p>​    在MIT6.824的第一个Lab中，就是要我们实现一个MapReduce系统，当时只是粗略看了一下其基本的实现，再参照网上思路完成了该Lab。今天面试被问到该论文，很多问题都没答好，看来论文的阅读还是十分重要。🤔</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220419232929058.png" srcset="/img/loading.gif" lazyload alt="image-20220419232929058"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220419232929058.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220419232929058.png"></p>
 <h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0 前言"></a>0 前言</h2><p>​    首先从摘要出发，摘要首先基本说明MapReduce大致流程，其实现需要注意的点以及其作用。</p>
 <p>​    <code>MapReduce</code>是用于处理和生成超大数据集的算法模型的一个模型。通常流程是：用户用户首先创建一个 <code>Map</code> 函数处理一个基于 <code>key/value pair</code> 的数据集合，输出中间的基于 <code>key/value pair</code> 的数据集合（<code>shuffle</code>）；然后再创建一个 <code>Reduce</code>函数用来合并所有的具有相同中间 <code>key</code> 值的中间 <code>value</code>值</p>
 <p>​    实现该模型需要注意的是</p>
@@ -294,7 +294,7 @@
 </ul>
 <p>​    在初期，该模型是Google用来处理海量的原始数据，比如文档抓取，Web请求日志等等；还有处理各种类型的衍生数据，比如倒排索引，Web文档的图结构的各种表示形式。这些数据处理很容易理解，但由于数据量太大，需要在多台主机上并行计算，但如何分发数据，处理错误？为此诞生了<code>MapRedece</code>模型。</p>
 <h2 id="1-编程模型"><a href="#1-编程模型" class="headerlink" title="1 编程模型"></a>1 编程模型</h2><p>​    论文在第二部分讲了该模型的大致框架以及应用，感觉框架很容易理解，这里贴张图即可。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/2w1nd/pic-bed/blog/image-20220419210000811.png" srcset="/img/loading.gif" lazyload alt="MapReduce统计单词"></p>
+<p><img src="https://github.com/2w1nd/pic-bed/blob/main/blog/image-20220419210000811.png?raw=true" srcset="/img/loading.gif" lazyload alt="image-20220419210000811.png"></p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">map</span>(k1,v1) -&gt;<span class="hljs-built_in">list</span>(k2,v2)<br><span class="hljs-built_in">reduce</span>(k2,<span class="hljs-built_in">list</span>(v2)) -&gt;<span class="hljs-built_in">list</span>(v2)<br></code></pre></td></tr></table></figure>
 
 <p>有趣的栗子</p>
@@ -472,19 +472,23 @@
             
   <article id="comments" lazyload>
     
-  <div id="gitalk-container"></div>
+  <div id="valine"></div>
   <script type="text/javascript">
-    Fluid.utils.loadComments('#gitalk-container', function() {
-      Fluid.utils.createCssLink('/css/gitalk.css')
-      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.4.16/Valine.min.js', function() {
         var options = Object.assign(
-          {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {"appId":"4wcDV0Egznc7ygOKEYrQ8Nqg-gzGzoHsz","appKey":"A7xf01gO28vify5BlDfL0REw","path":"window.location.pathname","placeholder":"欢迎评论~","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true},
           {
-            id: '56ff17c637261b0842901d298a2bc1b3'
+            el: "#valine",
+            path: window.location.pathname
           }
         )
-        var gitalk = new Gitalk(options);
-        gitalk.render('gitalk-container');
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
       });
     });
   </script>

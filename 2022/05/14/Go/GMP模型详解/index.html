@@ -19,7 +19,7 @@
     <meta name="description" content="​    前几天上青训营的课时老师在将Go的垃圾回收时提到了GMP模型，但并没有作深入讲解，后面的课似乎也不会在提及了，故参考网上博文以及自己的一些理解来总结一下。在此之前，Goroutine想必学过Go的人都是必知的，它是类似线程一样的可调度单位，也是使得Go享誉天生支持高并发这一名号的缘由。通过创建多个Goroutine来处理任务，将这些Goroutine分配，负载，调度到处理器采用的就是GM">
 <meta property="og:type" content="article">
 <meta property="og:title" content="GMP模型详解">
-<meta property="og:url" content="https://2w1nd.github.io/2022/05/14/GMP%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:url" content="https://2w1nd.github.io/2022/05/14/Go/GMP%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3/index.html">
 <meta property="og:site_name" content="浅风w1ndの博客">
 <meta property="og:description" content="​    前几天上青训营的课时老师在将Go的垃圾回收时提到了GMP模型，但并没有作深入讲解，后面的课似乎也不会在提及了，故参考网上博文以及自己的一些理解来总结一下。在此之前，Goroutine想必学过Go的人都是必知的，它是类似线程一样的可调度单位，也是使得Go享誉天生支持高并发这一名号的缘由。通过创建多个Goroutine来处理任务，将这些Goroutine分配，负载，调度到处理器采用的就是GM">
 <meta property="og:locale" content="zh_CN">
@@ -482,7 +482,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>GMP模型详解</div>
-      <div>https://2w1nd.github.io/2022/05/14/GMP模型详解/</div>
+      <div>https://2w1nd.github.io/2022/05/14/Go/GMP模型详解/</div>
     </div>
     <div class="license-meta">
       
@@ -548,19 +548,23 @@
             
   <article id="comments" lazyload>
     
-  <div id="gitalk-container"></div>
+  <div id="valine"></div>
   <script type="text/javascript">
-    Fluid.utils.loadComments('#gitalk-container', function() {
-      Fluid.utils.createCssLink('/css/gitalk.css')
-      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.4.16/Valine.min.js', function() {
         var options = Object.assign(
-          {"clientID":"86f226e9ed3278ed531f","clientSecret":"650a04c534ecc65811ab5d3c679243fecd804b1a","repo":"2w1nd.github.io","owner":"2w1nd","admin":["2w1nd"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {"appId":"4wcDV0Egznc7ygOKEYrQ8Nqg-gzGzoHsz","appKey":"A7xf01gO28vify5BlDfL0REw","path":"window.location.pathname","placeholder":"欢迎评论~","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true},
           {
-            id: '1721dcd5179f46259b091ffd12babb1a'
+            el: "#valine",
+            path: window.location.pathname
           }
         )
-        var gitalk = new Gitalk(options);
-        gitalk.render('gitalk-container');
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
       });
     });
   </script>

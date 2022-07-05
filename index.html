@@ -227,6 +227,67 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
+        <a href="/2022/06/03/%E6%88%91%E5%AF%B9%E4%BA%8E%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84%E8%AE%A4%E8%AF%86/" target="_self">
+          我对于操作系统的体系架构认识
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2022/06/03/%E6%88%91%E5%AF%B9%E4%BA%8E%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84%E8%AE%A4%E8%AF%86/" target="_self">
+        <div>
+          
+          0 前言​    该文章用来概括我对操作系统体系结构的认知，多建立于平常看的书籍与文章，以此用来帮助自己在脑中建立一颗有关操作系统的“多叉树”，在此之前，还未做过6.081，6.828等课程Lab，在这里也立个flag，毕业前做完&#x3D; &#x3D;。 ​    在操作系统导论中，将操作系统划分为了三部分：并发，持久性，虚拟化。其中并发是讲了线程与进程的一些知识，包括锁，条件变量，互斥量等。持久性则是讲了IO与
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-06-03 20:32" pubdate>
+              2022-06-03
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/OS/">#OS</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
         <a href="/2022/05/28/MIT6.824/%E5%AF%B9Raft%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%BB%E7%BB%93/" target="_self">
           对Raft的一些总结
         </a>
@@ -349,12 +410,12 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
-        <a href="/2022/05/22/GO%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" target="_self">
+        <a href="/2022/05/22/Go/GO%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" target="_self">
           GO的内存管理
         </a>
       </h1>
 
-      <a class="index-excerpt" href="/2022/05/22/GO%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" target="_self">
+      <a class="index-excerpt" href="/2022/05/22/Go/GO%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" target="_self">
         <div>
           
           ​    这其实和上一篇文章“GMP调度模型”有着一定关联，当一个协程通过GMP模型调度产生对象以后，就要涉及到Go的内存管理机制了。本文的内存管理是一个比较大的概念，包含了垃圾分配和对象内存管理。 0 整体架构&amp;概念​    首先要明确自动内存管理其实就是指垃圾回收，由程序语言的运行时系统（runtime）管理动态内存。另外，几个英文对照的概念：  Mutator：业务线程，分配新对象，
@@ -471,12 +532,12 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
-        <a href="/2022/05/14/GMP%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3/" target="_self">
+        <a href="/2022/05/14/Go/GMP%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3/" target="_self">
           GMP模型详解
         </a>
       </h1>
 
-      <a class="index-excerpt" href="/2022/05/14/GMP%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3/" target="_self">
+      <a class="index-excerpt" href="/2022/05/14/Go/GMP%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3/" target="_self">
         <div>
           
           ​    前几天上青训营的课时老师在将Go的垃圾回收时提到了GMP模型，但并没有作深入讲解，后面的课似乎也不会在提及了，故参考网上博文以及自己的一些理解来总结一下。在此之前，Goroutine想必学过Go的人都是必知的，它是类似线程一样的可调度单位，也是使得Go享誉天生支持高并发这一名号的缘由。通过创建多个Goroutine来处理任务，将这些Goroutine分配，负载，调度到处理器采用的就是GM
@@ -1074,67 +1135,6 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/CMU15445/">#CMU15445</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2022/04/03/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC75%E5%9C%BA%E5%8F%8C%E5%91%A8%E8%B5%9B/" target="_self">
-          第75场双周赛
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2022/04/03/LC%E5%91%A8%E8%B5%9B/%E7%AC%AC75%E5%9C%BA%E5%8F%8C%E5%91%A8%E8%B5%9B/" target="_self">
-        <div>
-          
-          6033. 转换数字的最少位翻转次数 - 力扣（LeetCode） (leetcode-cn.com) 1234567891011121314151617181920212223class Solution &amp;#123;public:    int minBitFlips(int start, int goal) &amp;#123;        int bit &#x3D; 1;        uint32_t
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2022-04-03 09:28" pubdate>
-              2022-04-03
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E7%AE%97%E6%B3%95/" class="category-chain-item">算法</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/LC%E5%8F%8C%E5%91%A8%E8%B5%9B/">#LC双周赛</a>
             
           </div>
         
