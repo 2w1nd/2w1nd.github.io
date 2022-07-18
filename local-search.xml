@@ -4,31 +4,6 @@
   
   
   <entry>
-    <title>我对于操作系统的体系架构认识</title>
-    <link href="/2022/06/03/%E6%88%91%E5%AF%B9%E4%BA%8E%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84%E8%AE%A4%E8%AF%86/"/>
-    <url>/2022/06/03/%E6%88%91%E5%AF%B9%E4%BA%8E%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84%E8%AE%A4%E8%AF%86/</url>
-    
-    <content type="html"><![CDATA[<h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0 前言"></a>0 前言</h2><p>​    该文章用来概括我对操作系统体系结构的认知，多建立于平常看的书籍与文章，以此用来帮助自己在脑中建立一颗有关操作系统的“多叉树”，在此之前，还未做过6.081，6.828等课程Lab，在这里也立个flag，毕业前做完= =。</p><p>​    在操作系统导论中，将操作系统划分为了三部分：并发，持久性，虚拟化。其中并发是讲了线程与进程的一些知识，包括锁，条件变量，互斥量等。持久性则是讲了IO与文件系统；虚拟化讲了内存，页表，进程调度等。我个人感觉这种划分方式不太好，虚拟化和并发的一些内容其实可以放在一起讲的。从而，我将操作系统划分为了：系统结构，内存管理，进程管理，文件系统，IO设备，网络系统</p><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220603214620442.png" alt="image-20220603214620442"></p><p>​    以下逐一概括其中内容，不深究细节，仅作总结。文章内容不一定涵盖所有OS知识，仅含个人所学。</p><h2 id="1-系统结构"><a href="#1-系统结构" class="headerlink" title="1 系统结构"></a>1 系统结构</h2><h3 id="1-1-冯诺伊曼架构"><a href="#1-1-冯诺伊曼架构" class="headerlink" title="1.1 冯诺伊曼架构"></a>1.1 冯诺伊曼架构</h3><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604151826962.png" alt="image-20220604151826962"></p><p>​    如图，这是一种冯诺伊曼架构。要注意的是，CPU还包含运算单元，控制单元，寄存器。寄存器分为：</p><ol><li>通用寄存器：用于存放进行计算的数据</li><li>程序计数器：用于存放下一条指令的位置</li><li>指令寄存器：存放程序寄存器的指令，也就是指令本身</li></ol><p>​    内存总线分为：</p><ul><li>地址总线：指定CPU要操作的内存地址</li><li>数据总线：用于读写内存的数据</li></ul><p>​    IO总线又称为控制总线，主要用来收发信号，比如中断，设备复位等。</p><p>​    所以，程序在CPU的执行流程一般是：CPU读取程序计数器中的指令地址，然后控制单元操作地址总线到指定内存地址，接着通知内存准备数据，内存准备好后会通过数据总线返回到CPU的指令寄存器；然后CPU分析，如果计算类型，由运算单元执行，如果是存储类型，由控制单元执行；程序计数器++；</p><blockquote><p>​    64位和32位的机器区别在于运算的数据大小以及寻址空间的大小。</p></blockquote><h3 id="1-2-存储器"><a href="#1-2-存储器" class="headerlink" title="1.2 存储器"></a>1.2 存储器</h3><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604161023505.png" alt="存储器层次结构"></p><p>​    寄存器的读取速度一般为0.5ns；CPU Cache由L1到L3读取速度逐渐变慢，容量变大，L1 <code>1ns</code>，L2 <code>2ns</code>，L3 <code>3ns</code>（注：SRAM：静态随机存取存储器，断电数据即失）。内存：<code>100ns</code>，（注：DRAM：动态随机存取存储器）。本地磁盘HDD/SDD：HDD也就是磁盘，SDD也就是固态硬盘，前者速度比内存慢10W倍，后者慢10~100倍。</p><h3 id="1-3-CPU-Cache"><a href="#1-3-CPU-Cache" class="headerlink" title="1.3 CPU Cache"></a>1.3 CPU Cache</h3><p>​    CPU Cache L1，L2都是每个CPU独有的，而L3是共享的</p><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604163646996.png" alt="Cpu Cache（来自小林图解系统）"></p><p>​    CPU访问内存数据，是一小块数据读取的，在内存中称为<strong>内存块（Block）</strong>。而不同的Block会映射到同一个Cache Line上，这样，当CPU想要访问某个Block，会先通过取模去访问某个Cache Line。这种策略称为<strong>直接相联映射</strong>。</p><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604165301106.png" alt="image-20220604165301106"></p><p>​    读取时，采用组标记，CPU Line索引，偏移量的方式进行读取。</p><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604165406230.png" alt="image-20220604165406230"></p><p>​    除此之外，还有全相联，组相联等策略。</p><h4 id="1-3-1-CPU-Cache数据写入"><a href="#1-3-1-CPU-Cache数据写入" class="headerlink" title="1.3.1 CPU Cache数据写入"></a>1.3.1 CPU Cache数据写入</h4><p>​    也就是什么时候将数据写回内存</p><ul><li>写直达：如果写命中，则将数据写入到Cache Block，主内存；不命中，则写入到主内存；</li><li>写回：写命中，则将数据写入Cache Block并标记为脏；不命中，则定位到Cache Block，如果为脏，则写回主内存，从主内存读取数据到Cache Block，然后写入数据到Cache Block。否则不为脏，则从主内存读取数据到Cache Block，写入数据到Cache Block，将Cache Block标记为脏。</li></ul><blockquote><p>注：写命中是指<strong>要写的内存中的位置已经load进了Cache</strong>，也就是绑定了Cache Block。可以理解为Cache和内存绑定上了</p></blockquote><p>​    详细见小林图解系统。TODO：这里的写回策略很多文章写的摸棱两可的，暂时没想更好的说法，今后有时间再看看源码吧。</p><h4 id="1-3-2-Cache缓存一致性"><a href="#1-3-2-Cache缓存一致性" class="headerlink" title="1.3.2 Cache缓存一致性"></a>1.3.2 Cache缓存一致性</h4><p>​    使用<strong>写传播</strong>和<strong>事务的串行化</strong>来实现。前者是指数据更新要及时传播到其他Cache，后者是指操作顺序必须串行化。</p><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604194332093.png" alt="image-20220604194332093"></p><h4 id="1-3-3-CPU读写数据的伪共享"><a href="#1-3-3-CPU读写数据的伪共享" class="headerlink" title="1.3.3 CPU读写数据的伪共享"></a>1.3.3 CPU读写数据的伪共享</h4><h2 id="2-内存管理"><a href="#2-内存管理" class="headerlink" title="2 内存管理"></a>2 内存管理</h2><h2 id="3-进程管理"><a href="#3-进程管理" class="headerlink" title="3 进程管理"></a>3 进程管理</h2><p>​    </p><p>​    </p><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>《图解系统——亮白风格》</p><p>《趣谈操作系统》</p><p>《》</p>]]></content>
-    
-    
-    <categories>
-      
-      <category>操作系统</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>OS</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>对Raft的一些总结</title>
     <link href="/2022/05/28/MIT6.824/%E5%AF%B9Raft%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%BB%E7%BB%93/"/>
     <url>/2022/05/28/MIT6.824/%E5%AF%B9Raft%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%BB%E7%BB%93/</url>
