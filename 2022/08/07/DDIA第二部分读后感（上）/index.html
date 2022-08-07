@@ -1,0 +1,1196 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="w1nd">
+  <meta name="keywords" content="IT BLOG">
+  
+    <meta name="description" content="​    这一部分就是本书比较困难且有意思的了，在前言就解释了为什么要将数据分布到多台机器上：  可伸缩性：将单台机器的数据量，读取&#x2F;写入负载分散到多台机器上 容错性：一台机器故障，另一台机器可以接管 延迟：使得每个用户可以请求到离自己最近的机器，提高速度  ​    并且提出了三种架构： ​    共享内存架构：这其实讲得就是一种单机架构，通过 垂直伸缩（购买更强大的机器），提供容错能力。 ​">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DDIA第二部分读后感（上）">
+<meta property="og:url" content="https://2w1nd.github.io/2022/08/07/DDIA%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86%E8%AF%BB%E5%90%8E%E6%84%9F%EF%BC%88%E4%B8%8A%EF%BC%89/index.html">
+<meta property="og:site_name" content="浅风w1ndの博客">
+<meta property="og:description" content="​    这一部分就是本书比较困难且有意思的了，在前言就解释了为什么要将数据分布到多台机器上：  可伸缩性：将单台机器的数据量，读取&#x2F;写入负载分散到多台机器上 容错性：一台机器故障，另一台机器可以接管 延迟：使得每个用户可以请求到离自己最近的机器，提高速度  ​    并且提出了三种架构： ​    共享内存架构：这其实讲得就是一种单机架构，通过 垂直伸缩（购买更强大的机器），提供容错能力。 ​">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220726201623698.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220729225914424.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220730234056162.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731004750344.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731101204268.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731102424792.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731110744286.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731112954264.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731135147835.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731142310640.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731142359536.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220805090337540.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220805233420314.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220805234240697.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220806143529858.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220806150222598.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220806151947914.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220806161919339.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220806162140193.png">
+<meta property="article:published_time" content="2022-08-07T13:51:43.000Z">
+<meta property="article:modified_time" content="2022-08-07T13:52:01.133Z">
+<meta property="article:author" content="w1nd">
+<meta property="article:tag" content="DDIA">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220726201623698.png">
+  
+  
+  <title>DDIA第二部分读后感（上） - 浅风w1ndの博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"2w1nd.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+
+<body><!-- hexo injector body_begin start -->
+  <div id="particles-js"></div>
+<!-- hexo injector body_begin end -->
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>浅风w1ndの博客</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/book/">
+                <i class="iconfont icon-books"></i>
+                读书
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/Default4.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="DDIA第二部分读后感（上）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-08-07 21:51" pubdate>
+          2022年8月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          16k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          134 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">DDIA第二部分读后感（上）</h1>
+            
+            <div class="markdown-body">
+              
+              <p>​    这一部分就是本书比较困难且有意思的了，在前言就解释了<strong>为什么要将数据分布到多台机器上</strong>：</p>
+<ul>
+<li>可伸缩性：将单台机器的数据量，读取/写入负载分散到多台机器上</li>
+<li>容错性：一台机器故障，另一台机器可以接管</li>
+<li>延迟：使得每个用户可以请求到离自己最近的机器，提高速度</li>
+</ul>
+<p>​    并且提出了<strong>三种架构</strong>：</p>
+<p>​    共享内存架构：这其实讲得就是一种单机架构，通过 垂直伸缩（购买更强大的机器），提供容错能力。</p>
+<p>​    共享磁盘架构：利用多台具有独立处理器和内存的机器，但数据存储在机器之间的磁盘阵列上，磁盘通过网络连接进行数据传输。</p>
+<p>​    无共享架构：又称水平扩展。在这种架构，运行 程序的每台机器/虚拟机都称为节点。每个节点只使用各自的处理器，内存和磁盘。节点之间的任何协调，都是在软件层面使用传统网络实现的。</p>
+<p>​    然后就是复制和分区</p>
+<ul>
+<li><p>复制（Replication）</p>
+<p>  ​    在几个不同的节点上保存数据的相同副本，可能放在不同的位置。 复制提供了冗余：如果一些节点不可用，剩余的节点仍然可以提供数据服务。 复制也有助于改善性能。</p>
+</li>
+<li><p>分区 (Partitioning)</p>
+<p>  ​    将一个大型数据库拆分成较小的子集（称为 <strong>分区</strong>，即 partitions），从而不同的分区可以指派给不同的 <strong>节点</strong>（nodes，亦称 <strong>分片</strong>，即 sharding）。</p>
+</li>
+</ul>
+<p>​    文中的图解释的很清楚：</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220726201623698.png" srcset="/img/loading.gif" lazyload alt="image-20220726201623698"></p>
+<p>​    接下来分享下读后感吧，应该会分两篇，这一部分内容很多</p>
+<h2 id="一-复制"><a href="#一-复制" class="headerlink" title="一 复制"></a>一 复制</h2><p>​    一开始又讲了需要复制原因：降低延迟，提高可用性，可伸缩性。另外，本章不考虑分区，也就是说假设每台服务器可以保存整个数据集的副本。</p>
+<p>​    本章将围绕三种主要复制算法进行讨论：<strong>单领导者（single leader，单主）</strong>，<strong>多领导者（multi leader，多主）</strong> 和 <strong>无领导者（leaderless，无主）</strong>。</p>
+<p>​    另外还会考虑一些问题：</p>
+<ul>
+<li>同步复制与异步复制</li>
+<li>如何处理失败副本</li>
+<li>复制延迟</li>
+<li>处理节点宕机等</li>
+</ul>
+<h3 id="1-1-单主复制"><a href="#1-1-单主复制" class="headerlink" title="1.1 单主复制"></a>1.1 单主复制</h3><p>​    也称为<strong>基于领导者的复制</strong>，相信学过raft的同学都比较熟悉，他的基本工作流如下：</p>
+<ol>
+<li>一个副本（节点）被指定为Leader，当客户端写入数据时，会将请求发送给Leader，其将数据写入其磁盘</li>
+<li>其他副本（节点）被称为Follower（文中又说是从库，备库，热备），Leader会定时将数据同步到其他的Follower，这时要注意保证处理的顺序与单一性语义</li>
+<li>客户端读取数据可以从Leader或Follower读，但写入数据只能是Leader</li>
+</ol>
+<p>​    这里提出一个概念，温备是指不处理客户端任何查询的Follower</p>
+<h4 id="1-1-1-同步复制与异步复制"><a href="#1-1-1-同步复制与异步复制" class="headerlink" title="1.1.1 同步复制与异步复制"></a>1.1.1 同步复制与异步复制</h4><p>​    同步异步的概念想必都知道了（不知道百度去😒）。如果是同步复制策略，好处是<strong>能保证有与主库一致的最新数据副本</strong>。坏处是<strong>如果同步从库没有响应（比如它已经崩溃，或者出现网络故障，或其它任何原因），主库就无法处理写入操作。主库必须阻止所有写入，并等待同步副本再次可用</strong>。</p>
+<p>​    所以文章提出一种<strong>半同步</strong>的方案：添加一个同步从库，其他的从库均为异步，如果同步从库变得不可用或缓慢，则将一个异步从库改为同步运行，这样至少保证两个节点具有最新的数据副本</p>
+<p>​    最后讲了，通常情况下，基于领导者的复制都配置为完全异步。在这种情况下，如果主库失效且不可恢复，则任何尚未复制给从库的写入都会丢失。这意味着即使已经向客户端确认成功，写入也不能保证是 <strong>持久（Durable）</strong> 的。</p>
+<h4 id="1-1-2-设置新从库"><a href="#1-1-2-设置新从库" class="headerlink" title="1.1.2 设置新从库"></a>1.1.2 设置新从库</h4><p>​    这不是一个简单的问题，加入新的节点往往是在数据不断变化的环境下进行的，如果只是单纯的复制，会看到数据不同部分在不同时间点的内容，其结果可能没有意义。文中提出的方法如下：</p>
+<ol>
+<li>在某一时刻获取主库的一致性快照（一般不会锁定数据库）。</li>
+<li>将快照复制到新的从库节点</li>
+<li>从库连接到主库，并拉取快照之后发生的所有数据变更。这里一般会用到序列号，用于标记数据位置</li>
+<li>当从库处理完快照之后积累的数据变更，我们就说它 <strong>赶上（caught up）</strong> 了主库，现在它可以继续及时处理主库产生的数据变化了。</li>
+</ol>
+<h4 id="1-1-3-处理节点宕机"><a href="#1-1-3-处理节点宕机" class="headerlink" title="1.1.3 处理节点宕机"></a>1.1.3 处理节点宕机</h4><p>​    也就是保证即使个别节点失效，也能保证整个系统运行。也就是实现复制高可用。</p>
+<p class="note note-success">从库失效：追赶恢复</p>
+
+<p>​    前面说过，从库会记录主库的数据变更。如果从库崩溃并重新启动，从库可以连接到主库，并请求在从库断开期间发生的所有数据变更。当应用完所有这些变更后，它就赶上了主库，并可以像以前一样继续接收数据变更流。这里的处理还是比较简单的</p>
+<p class="note note-success">主库失效：故障切换</p>
+
+<p>​    这里的处理就稍微复杂些，因为要涉及到<strong>故障切换</strong>：选出新主库，并将客户端写操作发送给新主库，其他从库从新主库拉取数据。</p>
+<p>​    自动的故障切换过程通常如下步骤：</p>
+<ol>
+<li><strong>确认主库失效</strong>。大多数系统只是使用超时来检测系统是否出错：节点频繁地相互来回传递消息，如果一个节点在一段时间内（例如 30 秒）没有响应，就认为它挂了。</li>
+<li><strong>选出新主库</strong>。通过一个选举过程来完成，或者选定一个控制器节点来指定。通常由从库来进行投票</li>
+<li><strong>重新配置系统以启动新的主库</strong>。也就是系统需要确保旧主库意识到新主库的存在，并成为一个从库。</li>
+</ol>
+<p>​    故障切换有可能出错的点：</p>
+<ul>
+<li>如果使用异步复制，则新主库可能没有收到老主库宕机的最后写入操作。在选出新主库后，如果老主库重新加入集群，新主库在此期间可能会收到冲突的写入，那这些写入该如何处理？最常见的解决方案是简单丢弃老主库未复制的写入，这很可能打破客户对于数据持久性的期望。</li>
+<li>脑裂（出现两个节点认为自己是主库）。</li>
+<li>如何设置正确的超时时间…</li>
+</ul>
+<p>​    感觉这部分没啥说的。</p>
+<h4 id="1-1-4-复制日志的实现"><a href="#1-1-4-复制日志的实现" class="headerlink" title="1.1.4 复制日志的实现"></a>1.1.4 复制日志的实现</h4><p class="note note-success">基于语句的复制</p>
+
+<p>​    也就是存储每个执行语句（例如<code>INSERT</code>、<code>UPDATE</code> 或 <code>DELETE</code>）。但这有一些问题：</p>
+<ul>
+<li>任何调用 <strong>非确定性函数（nondeterministic）</strong> 的语句，可能会在每个副本上生成不同的值。例如，使用 <code>NOW()</code> 获取当前日期时间，或使用 <code>RAND()</code> 获取一个随机数。</li>
+<li>如果语句使用了 <strong>自增列（auto increment）</strong>，或者依赖于数据库中的现有数据（例如，<code>UPDATE ... WHERE &lt;某些条件&gt;</code>），则必须在每个副本上按照完全相同的顺序执行它们，否则可能会产生不同的效果。当有多个并发执行的事务时，这可能成为一个限制。</li>
+<li>有副作用的语句（例如：触发器、存储过程、用户定义的函数）可能会在每个副本上产生不同的副作用，除非副作用是绝对确定性的。</li>
+</ul>
+<p>​    当然，可以主库可以用固定的返回值替换掉任何不确定的函数调用，以便所有从库获得相同的值。</p>
+<p class="note note-success">传输预写式日志（WAL）</p>
+
+<p>​    </p>
+<p class="note note-success">逻辑日志复制（基于行）</p>
+
+<p>​    另一种方法是对复制和存储引擎使用不同的日志格式，这样可以将复制日志从存储引擎的内部实现中解耦出来。这种复制日志被称为逻辑日志（logical log），以将其与存储引擎的（物理）数据表示区分开来。</p>
+<p>关系数据库的逻辑日志通常是以行的粒度来描述对数据库表的写入记录的序列：</p>
+<ul>
+<li>对于插入的行，日志包含所有列的新值。</li>
+<li>对于删除的行，日志包含足够的信息来唯一标识被删除的行，这通常是主键，但如果表上没有主键，则需要记录所有列的旧值。</li>
+<li>对于更新的行，日志包含足够的信息来唯一标识被更新的行，以及所有列的新值（或至少所有已更改的列的新值）。</li>
+</ul>
+<p>​    修改多行的事务会生成多条这样的日志记录，后面跟着一条指明事务已经提交的记录。 MySQL 的二进制日志（当配置为使用基于行的复制时）使用了这种方法。</p>
+<p>​    由于逻辑日志与存储引擎的内部实现是解耦的，系统可以更容易地做到向后兼容，从而使主库和从库能够运行不同版本的数据库软件，或者甚至不同的存储引擎。</p>
+<p>​    对于外部应用程序来说，逻辑日志格式也更容易解析。如果要将数据库的内容发送到外部系统，例如复制到数据仓库进行离线分析，或建立自定义索引和缓存，这一点会很有用。这种技术被称为 <strong>数据变更捕获（change data capture）</strong>。</p>
+<p>​    这里感觉写得都不错，直接copy了😁</p>
+<p class="note note-success">基于触发器的复制</p>
+
+<p>​    触发器允许你将数据更改（写入事务）发生时自动执行的自定义应用程序代码注册在数据库系统中。触发器有机会将更改记录到一个单独的表中，使用外部程序读取这个表，再加上一些必要的业务逻辑，就可以将数据变更复制到另一个系统去。</p>
+<p>​    基于触发器的复制通常比其他复制方法具有更高的开销，并且比数据库内置的复制更容易出错，也有很多限制。然而由于其灵活性，它仍然是很有用的</p>
+<h3 id="1-2-复制延迟问题"><a href="#1-2-复制延迟问题" class="headerlink" title="1.2 复制延迟问题"></a>1.2 复制延迟问题</h3><p>​    由于在这种读伸缩的体系结构中，只需添加更多的从库，就可以提高只读请求的服务容量。前面说了，通常采用异步的方式进行数据读取，但如果从库落后，可能会看到过时的信息或者产生一定时间内的不一致。但通常最终从库最终会追赶上主库，也就是实现最终一致性。</p>
+<h4 id="1-2-1-读己之写"><a href="#1-2-1-读己之写" class="headerlink" title="1.2.1 读己之写"></a>1.2.1 读己之写</h4><p>​    也就是让用户写入数据之后读取自己的数据。也就是实现<strong>写后读一致性</strong>。</p>
+<p>​    如何实现？这里简述文中提出的几种方法：</p>
+<ul>
+<li>对于用户<strong>可能修改</strong>的内容，总是从主库中读取。（怎么知道？通过实际的设计或一些约定俗成的事，比如用户个人资料只能自己修改，不能别人修改。所以，总是从主库读取用户自己的档案，如果要读取其他用户的档案就去从库）</li>
+<li>如果大部分内容被用户修改了，那上述方法就没用了，因为大部分内容从主库读取（读伸缩没效果）。这里提出的方法是：<strong>使用其他标准决定是否从主库中读取</strong>，例如跟踪上次更新时间，在上次更新后的一分钟内，从主库读。还可以监控从库的复制延迟，防止向任何滞后主库超过一分钟的从库发出查询。</li>
+<li>客户端<strong>记住最近一次写入的时间戳</strong>，从库在收到用户的读取请求时，要判断该时间戳是否是最新的，是的话就说明该时间戳的变更传播到了本从库中，可以读取。如果不够新，则从另一个从库读取，或者等待从库追赶上来。（时间戳是指逻辑时间戳）</li>
+</ul>
+<p>​    如果副本分布在多个数据中心（地理位置上分离），还会有额外的复杂性。任何需要由主库提供服务的请求都必须路由到包含该主库的数据中心。</p>
+<p>​    还有一种情况是，用户在多个设备请求服务，这是就需要<strong>跨设备的写后读一致性：如果用户在一个设备上输入了一些信息，然后在另一个设备上查看，则应该看到他们刚输入的信息。</strong>需要考虑的问题如下：</p>
+<ul>
+<li>记录时间戳将变得复杂，因为不同设备是很难知道对方发生了什么的。需要对这些元数据进行中心化</li>
+<li>如果副本分布在不同的数据中心，很难保证来自不同设备的连接会路由到同一数据中心。（例如，用户的台式计算机使用家庭宽带连接，而移动设备使用蜂窝数据网络，则设备的网络路由可能完全不同）。如果你的方法需要读主库，可能首先需要把来自该用户所有设备的请求都路由到同一个数据中心。</li>
+</ul>
+<p>​    跨设备的写后读一致性还是很有意思的，我经常用qq在电脑发送些文件给小号，然后用手机在本账号就可以直接看到，后面再仔细了解下这种实现思路。</p>
+<h4 id="1-2-2-单调读"><a href="#1-2-2-单调读" class="headerlink" title="1.2.2 单调读"></a>1.2.2 单调读</h4><p>​    考虑一种情况：用户1进行了两次相同的查询，首先查询了一个延迟很小的从库，然后是一个延迟较大的从库（可能请求服务器是随机的）。第一个查询返回了最近另一个用户2最近添加的数据，第二个没有任何返回。这样就会让人十分困惑了。就像<strong>时间倒流</strong></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220729225914424.png" srcset="/img/loading.gif" lazyload alt="图 5-4 用户首先从新副本读取，然后从旧副本读取。时间看上去回退了。为了防止这种异常，我们需要单调的读取"></p>
+<p>​    单调读可以保证这种异常不会发生。单调读意味着如果一个用户顺序地进行多次读取，则他们不会看到时间回退，也就是说，如果已经读取到较新的数据，后续的读取不会得到更旧的数据。</p>
+<p>​    实现单调读的方式：确保每个用户总是从同一个副本进行读取（不同的用户可以从不同的副本读取）。例如，可以基于用户 ID 的散列来选择副本，而不是随机选择副本。但是，如果该副本出现故障，用户的查询将需要重新路由到另一个副本。</p>
+<h4 id="1-2-3-一致前缀读"><a href="#1-2-3-一致前缀读" class="headerlink" title="1.2.3 一致前缀读"></a>1.2.3 一致前缀读</h4><p>​    简述文章的栗子也就是说，存在一种情况，用户1发送A，用户2回复B，由于读取从库的延迟不同（前者高，后者低），导致会出现<strong>预知未来</strong>的情况。</p>
+<p>​    <strong>一致前缀读</strong>可以防止这种异常，也就是说如果一系列写入按某个顺序发生，那么任何人读取这些写入时，也会看见它们以同样的顺序出现。</p>
+<p>​    这是分区中的一个问题，在许多分布式数据库中，不同的分区独立运行，因此不存在 <strong>全局的写入顺序</strong>：当用户从数据库中读取数据时，可能会看到数据库的某些部分处于较旧的状态，而某些则处于较新的状态。</p>
+<p>​    一种解决方案是，确保任何因果相关的写入都写入相同的分区，但在一些应用中可能无法高效地完成这种操作。还有一些显式跟踪因果依赖关系的算法。maybe后续会说…</p>
+<h3 id="1-3-多主复制"><a href="#1-3-多主复制" class="headerlink" title="1.3 多主复制"></a>1.3 多主复制</h3><p>​    前面讲的都是单主的情况，单主主要的缺点是只有一个主库，所有的写入都必须通过它，如果主库无法连接，则无法向数据库写入。</p>
+<p>​    多主也就是指允许多个节点接受写入，处理写入的每个节点都必须将该数据变更转发给所有其他节点。</p>
+<h4 id="1-3-1-应用场景"><a href="#1-3-1-应用场景" class="headerlink" title="1.3.1 应用场景"></a>1.3.1 应用场景</h4><p class="note note-success">运维多个数据中心</p>
+
+<p>​    考虑如果副本分布在不同的数据中心（地理上隔离）。如果使用单主复制，则每次写入都必须经过该数据中心。</p>
+<p>​    而多主复制可以在每个数据中心都有主库，在每个数据中心内使用常规的主从复制；在数据中心之间，每个数据中心的主库都会将其更改复制到其他数据中心的主库中。</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220730234056162.png" srcset="/img/loading.gif" lazyload alt="image-20220730234056162"></p>
+<p>​    对比下在多个数据中心，单主和多主的适应情况：</p>
+<ul>
+<li><p>性能</p>
+<p>  单主：每个写入必须经过轮询或其他方法找到主库所在的数据中心，会增加写入时间</p>
+<p>  多主：每个写操作都可以在本地数据中心进行处理，并与其他数据中心异步复制</p>
+</li>
+<li><p>容忍数据中心停机</p>
+<p>  单主：如果主库所在的数据中心发生故障，故障切换必须使另一个数据中心里的从库成为主库</p>
+<p>  多主：每个数据中心可以独立于其他数据中心继续运行，并且当发生故障的数据中心归队时，复制会自动赶上。</p>
+</li>
+<li><p>容忍网络问题</p>
+<p>  ​    数据中心之间的通信通常穿过公共互联网，这可能不如数据中心内的本地网络可靠。</p>
+<p>  单主：对数据中心之间的连接问题非常敏感，因为通过这个连接进行的写操作是同步的</p>
+<p>  多主：异步复制功能的多主配置通常能更好地承受网络问题：临时的网络中断并不会妨碍正在处理的写入。</p>
+</li>
+</ul>
+<p>​    多主复制的主要问题是：需要解决<strong>写冲突</strong>。</p>
+<p class="note note-success">需要离线操作的客户端</p>
+
+<p>​    也就是：应用程序在断网之后仍然需要继续工作。例如一些文档编辑器允许离线状态进行任何更改，则设备下次上线时，需要服务器和其他设备同步。</p>
+<p>​    所以，需要每个设备都有一个充当主库的本地数据库（它接受写请求），并且所有设备的数据之间同步时，存在异步的多主复制过程。</p>
+<p class="note note-success">协同编辑</p>
+
+<p>​    实时协作编辑应用程序允许多个人同时编辑文档。当一个用户编辑文档时，所做的更改将立即应用到其本地副本（Web 浏览器或客户端应用程序中的文档状态），并异步复制到服务器和编辑同一文档的任何其他用户。</p>
+<p>​    如果要保证不会发生编辑冲突，则应用程序必须先取得文档的锁定，然后用户才能对其进行编辑。如果另一个用户想要编辑同一个文档，首先必须等到第一个用户提交修改并释放锁定。这种协作模式相当于主从复制模型下在主节点上执行事务操作。</p>
+<p>​    但为了加速协作，需要把“锁的粒度”设置得比较小，并避免锁定。这种方法允许多个用户同时进行编辑，但同时也带来了多主复制的所有挑战，包括需要解决冲突。</p>
+<h4 id="1-3-2-处理写入冲突"><a href="#1-3-2-处理写入冲突" class="headerlink" title="1.3.2 处理写入冲突"></a>1.3.2 处理写入冲突</h4><p>​    前面说过，多主复制最大的问题就是<strong>写冲突</strong>。熟悉MySQL的同学可以认为出现了不可重复读的情况</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731004750344.png" srcset="/img/loading.gif" lazyload alt="图 5-7 两个主库同时更新同一记录引起的写入冲突"></p>
+<p class="note note-success">同步与异步冲突检测</p>
+
+<p>​    在单主配置中，第二个写入会被阻塞直到第一个写入完成，或者中止第二个写入事务并强制用户重试。</p>
+<p>​    多主配置中，个写入都是成功的，在稍后的某个时间点才能异步地检测到冲突，那这时候解决冲突已经为时已晚。</p>
+<p>​    可以采用等待写入被复制到所有副本，然后再告诉用户写入成功。但这样还不如用单主配置。</p>
+<p class="note note-success">避免冲突</p>
+
+<p>​    处理冲突最好的策略就是避免他们：如果应用程序可以确保特定记录的所有写入都通过同一个主库，那么冲突就不会发生。但依然有可能出现某个数据中心出现故障，需要将流量重新路由到另一个数据中心，或者可能是因为用户已经迁移到另一个位置，现在更接近其它的数据中心。在这种情况下，冲突避免将失效，必须处理不同主库同时写入的可能性。（TODO：如何处理？）</p>
+<p class="note note-success">收敛至一致的状态</p>
+
+<p>​    对于单主：如果同一个字段有多个更新，则最后一个写操作将决定该字段的最终值。</p>
+<p>​    而对于多主：没有明确的写入顺序，无法清除其最终值。如何使得数据库以一种收敛的方式解决冲突？</p>
+<ul>
+<li>给每个写入一个唯一的 ID（例如时间戳、长随机数、UUID 或者键和值的哈希），挑选最高 ID 的写入作为胜利者，并丢弃其他写入。使用时间戳的方式又称为<strong>最后写入胜利（LWW）</strong>。</li>
+<li>以某种方式将这些值合并在一起 - 例如，按字母顺序排序，然后连接它们</li>
+<li>用一种可保留所有信息的显式数据结构来记录冲突，并编写解决冲突的应用程序代码</li>
+</ul>
+<p class="note note-success">自定义冲突解决逻辑</p>
+
+<p>​    解决冲突最合适的方法取绝于应用程序。处理冲突的代码通常在写入或读取时执行：</p>
+<ul>
+<li><p>写时执行</p>
+<p>  ​    只要数据库系统检测到复制更改日志中存在冲突，就会调用冲突处理程序。</p>
+</li>
+<li><p>读时执行</p>
+<p>  ​    当检测到冲突时，所有冲突写入被存储。下一次读取数据时，会将这些多个版本的数据返回给应用程序。应用程序可以提示用户或自动解决冲突，并将结果写回数据库。</p>
+</li>
+</ul>
+<p class="note note-success">自动冲突解决</p>
+
+<p>​    自定义代码很容易出错。有几项研究值得一提：</p>
+<ul>
+<li><strong>无冲突复制数据类型（CRDT）</strong>：是可以由多个用户同时编辑的集合、映射、有序列表、计数器等一系列数据结构。</li>
+<li><strong>可合并的持久数据结构</strong>：显式跟踪历史记录，类似于 Git 版本控制系统，并使用三向合并功能（而 CRDT 使用双向合并）。</li>
+<li><strong>操作转换</strong>： Etherpad 【30】和 Google Docs 【31】等协同编辑应用背后的冲突解决算法。它是专为有序列表的并发编辑而设计的，例如构成文本文档的字符列表。</li>
+</ul>
+<h4 id="1-3-3-多主复制拓扑"><a href="#1-3-3-多主复制拓扑" class="headerlink" title="1.3.3 多主复制拓扑"></a>1.3.3 多主复制拓扑</h4><p>​    复制拓扑用来描述写入操作从一个节点传播到另一个节点的通信路径。</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731101204268.png" srcset="/img/loading.gif" lazyload alt="image-20220731101204268"></p>
+<p>a. 环型拓扑：默认情况下 MySQL 仅支持 <strong>环形拓扑（circular topology）</strong>，其中每个节点都从一个节点接收写入，并将这些写入（加上自己的写入）转发给另一个节点</p>
+<p>b. 全部到全部：其中每个主库都将其写入发送给其他所有的主库。</p>
+<p>c. 星型拓扑：一个指定的根节点将写入转发给所有其他节点。星形拓扑可以推广到树。（ 不要与星型模式混淆，其中描述了数据模型的结构，而不是节点之间的通信拓扑）</p>
+<p>​    在环形和星形拓扑中，写入可能需要在到达所有副本之前通过多个节点，为了防止出现无限循环：每个节点被赋予一个唯一的标识符，并且在复制日志中，每次写入都会使用其经过的所有节点的标识符进行标记，当一个节点收到用自己的标识符标记的数据更改时，该数据更改将被忽略，因为节点知道它已经被处理过。</p>
+<p>​    环形和星形拓扑的问题是，如果只有一个节点发生故障，则可能会中断其他节点之间的复制消息流，导致它们无法通信，除非节点被修复。拓扑结构可以重新配置为跳过发生故障的节点，但在大多数部署中，这种重新配置必须手动完成。</p>
+<p>​    另一方面，全部到全部的拓扑也可能有问题。特别是，一些网络链接可能比其他网络链接更快（例如由于网络拥塞），结果是一些复制消息可能 “超越” 其他复制消息。</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731102424792.png" srcset="/img/loading.gif" lazyload alt="使用多主复制时，写入可能会以错误的顺序到达某些副本"></p>
+<p>​    在图中，客户端 A 向主库 1 的表中插入一行，客户端 B 在主库 3 上更新该行。然而，主库 2 可以以不同的顺序接收写入：它可能先接收到更新（从它的角度来看，是对数据库中不存在的行的更新），稍后才接收到相应的插入（其应该在更新之前）。</p>
+<p>​    就像一致前缀和看到的：更新取决于先前的插入，所以我们需要确保所有节点先处理插入，然后再处理更新。仅仅在每一次写入时添加一个时间戳是不够的，因为时钟不可能被充分地同步，所以主库 2 就无法正确地对这些事件进行排序。</p>
+<p>​    要正确排序这些事件，需要使用一种称为<strong>版本向量</strong>的技术。</p>
+<h3 id="1-4-无主复制"><a href="#1-4-无主复制" class="headerlink" title="1.4 无主复制"></a>1.4 无主复制</h3><p>​    到目前为止所讨论的复制方法 —— 单主复制、多主复制 —— 都是这样的想法：客户端向一个主库发送写请求，而数据库系统负责将写入复制到其他副本。主库决定写入的顺序，而从库按相同顺序应用主库的写入。</p>
+<p>​    在一些无主复制的实现中，客户端直接将写入发送到几个副本中，而另一些情况下，由一个 <strong>协调者（coordinator）</strong> 节点代表客户端进行写入。但与主库数据库不同，协调者不执行特定的写入顺序。</p>
+<h4 id="1-4-1-当节点故障时写入数据库"><a href="#1-4-1-当节点故障时写入数据库" class="headerlink" title="1.4.1 当节点故障时写入数据库"></a>1.4.1 当节点故障时写入数据库</h4><p>​    假设你有一个带有三个副本的数据库，而其中一个副本目前不可用，或许正在重新启动以安装系统更新。在基于领导者的配置中，如果要继续处理写入，则可能需要执行故障切换。</p>
+<p>​    但在无主配置中，不存在故障转移。在无主中：客户端（用户 1234）并行发送写入到所有三个副本，并且两个可用副本接受写入，但是不可用副本错过了它。假设三个副本中的两个承认写入是足够的：在用户 1234 已经收到两个确定的响应之后，我们认为写入成功。客户简单地忽略了其中一个副本错过了写入的事实。</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731110744286.png" srcset="/img/loading.gif" lazyload alt="image-20220731110744286"></p>
+<p>​    但这会有问题，不可用的节点重新联机，客户端开始读取它。节点关闭期间发生的任何写入都不在该节点上。因此，如果从该节点读取数据，则可能会从响应中拿到陈旧的（过时的）值。</p>
+<p>​    解决方案是：读请求将被并行地发送到多个节点。客户可能会从不同的节点获得不同的响应，即来自一个节点的最新值和来自另一个节点的陈旧值。版本号将被用于确定哪个值是更新的。</p>
+<p class="note note-success">读修复和反熵</p>
+
+<p>​    在一个不可用的节点重新联机之后，它如何赶上它错过的写入？</p>
+<p>​    两种机制：</p>
+<ul>
+<li><p>读修复</p>
+<p>  ​    当客户端并行读取多个节点时，它可以检测到任何陈旧的响应。用户 2345 获得了来自副本 3 的版本 6 值和来自副本 1 和 2 的版本 7 值。客户端发现副本 3 具有陈旧值，并将新值写回到该副本。这种方法适用于读频繁的值。</p>
+</li>
+<li><p>反熵过程</p>
+<p>  ​    一些数据存储具有后台进程，该进程不断查找副本之间的数据差异，并将任何缺少的数据从一个副本复制到另一个副本。与基于领导者的复制中的复制日志不同，此反熵过程不会以任何特定的顺序复制写入，并且在复制数据之前可能会有显著的延迟。</p>
+</li>
+</ul>
+<p>​    如果没有反熵过程，很少被读取的值可能会从某些副本中丢失，从而降低了持久性，因为只有在应用程序读取值时才执行读修复。</p>
+<p class="note note-success">读写的法定人数</p>
+
+<p>​    有多少个副本接受写入才可以认为写入成功？</p>
+<p>​    一般说，如果有 n 个副本，每个写入必须由 w 个节点确认才能被认为是成功的，并且我们必须至少为每个读取查询 r 个节点。 （在前面的例子中，$n=3，w = 2，r = 2$）。只要 $w + r &gt; n$，我们可以预期在读取时能获得最新的值，因为 r 个读取中至少有一个节点是最新的。</p>
+<p>​    参数 n、w 和 r 通常是可配置的。一个常见的选择是使 n 为奇数（通常为 3 或 5）并设置 $w = r = (n + 1) / 2$（向上取整）。但是你可以根据需要更改数字。</p>
+<p>法定人数条件 $w + r &gt; n$允许系统容忍不可用的节点，如下所示：</p>
+<ul>
+<li>如果 $w &lt; n$，当节点不可用时，我们仍然可以处理写入。</li>
+<li>如果 $r &lt; n$，当节点不可用时，我们仍然可以处理读取。</li>
+<li>对于 $n = 3，w = 2，r = 2$，我们可以容忍一个不可用的节点。</li>
+<li>对于 $n = 5，w = 3，r = 3$，我们可以容忍两个不可用的节点。</li>
+<li>通常，读取和写入操作始终并行发送到所有 n 个副本。参数 w 和 r 决定我们等待多少个节点，即在我们认为读或写成功之前，有多少个节点需要报告成功</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731112954264.png" srcset="/img/loading.gif" lazyload alt="如果 w + r &gt; nw+r&gt;n，读取 r 个副本，至少有一个副本必然包含了最近的成功写入"></p>
+<p>​    如果可用的节点少于所需的 w 或 r，则写入或读取将返回错误。节点可能由于多种原因而不可用，比如：节点关闭（异常崩溃，电源关闭）、操作执行过程中的错误（由于磁盘已满而无法写入）、客户端和服务器节点之间的网络中断或任何其他原因。</p>
+<h4 id="1-4-2-法定人数一致性的局限性"><a href="#1-4-2-法定人数一致性的局限性" class="headerlink" title="1.4.2 法定人数一致性的局限性"></a>1.4.2 法定人数一致性的局限性</h4><p>​    法定人数不一定必须是大多数（也就是不一定$w + r &gt; n$），重要的是读写使用的节点至少有一个节点的交集。其他法定人数的配置是可能的，这使得分布式算法的设计有一定的灵活性。</p>
+<p>​    可以将 w 和 r 设置为较小的数字，以使 $w + r ≤ n$（即法定条件不满足）。在这种情况下，读取和写入操作仍将被发送到 n 个节点，但操作成功只需要少量的成功响应。</p>
+<p>​    较小的w和r有可能会读取到陈旧的数据；但允许更低的延迟和更高的可用性：如果存在网络中断，并且许多副本变得无法访问，则有更大的机会可以继续处理读取和写入。</p>
+<p>​    在$w + r &gt; n$的情况，也有可能返回陈旧值，比如：</p>
+<ul>
+<li>使用宽松的法定人数，w 个写入和 r 个读取也有可能落在完全不同的节点上，因此 r 节点和 w 之间不再保证有重叠节点</li>
+<li>如果写操作与读操作同时发生，写操作可能仅反映在某些副本上。在这种情况下，不确定读取返回的是旧值还是新值</li>
+<li>如果两个写入同时发生，不清楚哪一个先发生。在这种情况下，唯一安全的解决方案是合并并发写入。如果根据时间戳（最后写入胜利）挑选出一个胜者，则写入可能由于时钟偏差而丢失。</li>
+<li>如果写操作在某些副本上成功，而在其他节点上失败（例如，因为某些节点上的磁盘已满），在小于 w 个副本上写入成功。所以整体判定写入失败，但整体写入失败并没有在写入成功的副本上回滚。这意味着一个写入虽然报告失败，后续的读取仍然可能会读取这次失败写入的值</li>
+<li>如果携带新值的节点发生故障，需要从其他带有旧值的副本进行恢复，则存储新值的副本数可能会低于 w，从而打破法定人数条件</li>
+<li>时序的边缘情况</li>
+</ul>
+<p class="note note-success">监控陈旧度</p>
+
+<p>​    对于基于领导者的复制，数据库通常会提供复制延迟的测量值，你可以将其提供给监视系统。这之所以能做到，是因为写入是按照相同的顺序应用于主库和从库，并且每个节点对应了复制日志中的一个位置（已经在本地应用的写入数量）。通过从主库的当前位置中减去从库的当前位置，可以测量复制延迟的程度。</p>
+<p>​    在无主复制的系统中，没有固定的写入顺序，这使得监控变得更加困难。而且，如果数据库只使用读修复（没有反熵过程），那么对于一个值可能会有多陈旧其实是没有限制的 - 如果一个值很少被读取，那么由一个陈旧副本返回的值可能是古老的。</p>
+<h4 id="1-4-3-宽松的法定人数与提示移交"><a href="#1-4-3-宽松的法定人数与提示移交" class="headerlink" title="1.4.3 宽松的法定人数与提示移交"></a>1.4.3 宽松的法定人数与提示移交</h4><p>​    在一个大型的集群中（节点数量明显多于 n 个），网络中断期间客户端可能仍能连接到一些数据库节点，但又不足以组成一个特定的法定人数。在这种情况下，数据库设计人员需要权衡一下：</p>
+<ul>
+<li>对于所有无法达到 w 或 r 个节点法定人数的请求，是否返回错误是更好的？</li>
+<li>或者我们是否应该接受写入，然后将它们写入一些可达的节点，但不在这些值通常所存在的 n 个节点上？</li>
+</ul>
+<p>​    后者被认为是一个 <strong>宽松的法定人数</strong>：写和读仍然需要 w 和 r 个成功的响应，但这些响应可能来自不在指定的 n 个 “主” 节点中的其它节点。就好比说，如果你把自己锁在房子外面了，你可能会去敲开邻居的门，问是否可以暂时呆在他们的沙发上。</p>
+<p>​    一旦网络中断得到解决，一个节点代表另一个节点临时接受的任何写入都将被发送到适当的 “主” 节点。这就是所谓的 <strong>提示移交</strong>（一旦你再次找到你的房子的钥匙，你的邻居可以礼貌地要求你离开沙发回家）。</p>
+<p>​    宽松的法定人数对写入可用性的提高特别有用：只要有任何 w 个节点可用，数据库就可以接受写入。然而，这意味着即使当 $w + r &gt; n$时，也不能确保读取到某个键的最新值，因为最新的值可能已经临时写入了 n 之外的某些节点</p>
+<p>​    在传统意义上，宽松的法定人数实际上并不是法定人数。它只是一个持久性的保证，即数据已存储在某处的 w 个节点。但不能保证 r 个节点的读取能看到它，除非提示移交已经完成。</p>
+<p class="note note-success">运维多个数据中心</p>
+
+<p>​    无主复制也适用于多数据中心操作，既然它旨在容忍冲突的并发写入、网络中断和延迟尖峰。</p>
+<p>​    副本的数量 n 包括所有数据中心的节点，你可以在配置中指定每个数据中心所拥有的副本的数量。无论数据中心如何，每个来自客户端的写入都会发送到所有副本，但客户端通常只等待来自其本地数据中心内的法定节点的确认，从而不会受到跨数据中心链路延迟和中断的影响。对其他数据中心的高延迟写入通常被配置为异步执行，尽管该配置仍有一定的灵活性</p>
+<h4 id="1-4-4-检测并发写入"><a href="#1-4-4-检测并发写入" class="headerlink" title="1.4.4 检测并发写入"></a>1.4.4 检测并发写入</h4><p>​    在 Dynamo 风格的数据库中，在 <strong>读修复</strong> 或 <strong>提示移交</strong> 期间也可能会产生冲突。其问题在于，由于可变的网络延迟和部分节点的故障，事件可能以不同的顺序到达不同的节点。例如，下图显示了两个客户机 A 和 B 同时写入三节点数据存储中的键 X：</p>
+<ul>
+<li>节点 1 接收来自 A 的写入，但由于暂时中断，未接收到来自 B 的写入。</li>
+<li>节点 2 首先接收来自 A 的写入，然后接收来自 B 的写入。</li>
+<li>节点 3 首先接收来自 B 的写入，然后从 A 写入。</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731135147835.png" srcset="/img/loading.gif" lazyload alt="图 5-12 并发写入 Dynamo 风格的数据存储：没有明确定义的顺序。"></p>
+<p>​    接下来，就会出现问题，节点 2 认为 X 的最终值是 B，而其他节点认为值是 A 。为了最终达成一致，副本应该趋于相同的值。如何做到这一点？在前面多主复制”处理写入冲突“已经说过一些，这里具体说LWW</p>
+<p class="note note-success">最后写入胜利（丢弃并发写入）</p>
+
+<p>​    为每个写入附加一个时间戳，然后挑选最大的时间戳作为 <strong>“最近的”</strong>，并丢弃具有较早时间戳的任何写入。这种冲突解决算法被称为 <strong>最后写入胜利（LWW, last write wins）</strong>。</p>
+<p>​    LWW 实现了最终收敛的目标，但以 <strong>持久性</strong> 为代价：如果同一个键有多个并发写入，即使它们反馈给客户端的结果都是成功的（因为它们被写入 w 个副本），也只有一个写入将被保留，而其他写入将被默默地丢弃。但LWW甚至会丢弃不是并发的写入。</p>
+<p>​    在类似缓存的一些情况下，写入丢失可能是可以接受的。但如果数据丢失不可接受，LWW 是解决冲突的一个很烂的选择。（Redis？）</p>
+<p>​    在数据库中使用 LWW 的唯一安全方法是确保一个键只写入一次，然后视为不可变，从而避免对同一个键进行并发更新。</p>
+<p class="note note-success">”此前发生“的关系和并发</p>
+
+<p>​    如果两个操作中的任何一个都不在另一个之前发生（即，两个操作都不知道对方），那么这两个操作是并发的。</p>
+<p>​    因此，只要有两个操作 A 和 B，就有三种可能性：A 在 B 之前发生，或者 B 在 A 之前发生，或者 A 和 B 并发。我们需要的是一个算法来告诉我们两个操作是否是并发的。如果一个操作发生在另一个操作之前，则后面的操作应该覆盖前面的操作，但是如果这些操作是并发的，则存在需要解决的冲突。</p>
+<p>​    这里引言的部分我觉得很有意思</p>
+<blockquote>
+<p>​    指出了由于分布式系统中的时钟问题，现实中是很难判断两个事件是否是 <strong>同时</strong> 发生的，所以并发虽是”同时“，但事实上，它们在字面时间上重叠与否并不重要。</p>
+<p>​    如果两个操作都意识不到对方的存在，就称这两个操作 <strong>并发</strong>，而不管它们实际发生的物理时间。人们有时把这个原理和物理学中的狭义相对论联系起来，该理论引入了信息不能比光速更快的思想。因此，如果两个事件发生的时间差小于光通过它们之间的距离所需要的时间，那么这两个事件不可能相互影响。</p>
+</blockquote>
+<p class="note note-success">捕获”此前发生“关系</p>
+
+<p>​    阐述了确定两个操作是否为并发的算法。</p>
+<p>​    这里就放图了，感觉画得也挺好得</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731142310640.png" srcset="/img/loading.gif" lazyload alt="图 5-13 在同时编辑购物车时捕获两个客户端之间的因果关系。"></p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220731142359536.png" srcset="/img/loading.gif" lazyload alt="图 5-14 图 5-13 中的因果依赖关系图。"></p>
+<p>​    服务器可以只通过查看版本号来确定两个操作是否是并发的 —— 它不需要对值本身进行解释，算法的工作原理如下：</p>
+<ul>
+<li>服务器为每个键维护一个版本号，每次写入该键时都递增版本号，并将新版本号与写入的值一起存储。</li>
+<li>当客户端读取键时，服务器将返回所有未覆盖的值以及最新的版本号。客户端在写入前必须先读取。</li>
+<li>当客户端写入键时，必须包含之前读取的版本号，并且必须将之前读取的所有值合并在一起（针对写入请求的响应可以像读取请求一样，返回所有当前值，这使得我们可以像购物车示例那样将多个写入串联起来）。</li>
+<li>当服务器接收到具有特定版本号的写入时，它可以覆盖该版本号或更低版本的所有值（因为它知道它们已经被合并到新的值中），但是它必须用更高的版本号来保存所有值（因为这些值与正在进行的其它写入是并发的）。</li>
+</ul>
+<p class="note note-success">合并并发写入的值</p>
+
+<p>​    </p>
+<p class="note note-success">版本向量</p>
+
+<p>​    所有副本的版本号集合称为 <strong>版本向量</strong>。</p>
+<h2 id="二-分区"><a href="#二-分区" class="headerlink" title="二 分区"></a>二 分区</h2><p>​    麻了，在公司电脑写的丢了，又得重写一遍这一部分。</p>
+<p>​    分区是一种将大型数据库拆成小型数据库的方式。与网络分区无关，这只是节点之间故障的一种。</p>
+<blockquote>
+<p>​    分区在MongoDB，Elasticsearch 和 Solr Cloud 中被称为 分片 (shard)，在 HBase 中称之为区域 (Region)，Bigtable 中则是表块（tablet），Cassandra 和 Riak 中是 虚节点（vnode)，Couchbase 中叫做 虚桶 (vBucket)。</p>
+</blockquote>
+<p>​    分区主要为了可伸缩性，不同的分区可以放在不共享集群中的不同节点上。因此，大数据集可以分布在多个磁盘上，并且查询负载可以分布在多个处理器上。</p>
+<p>​    虽然每个节点可以独立执行对自己的查询，但大型，复杂的查询可能会跨越多个节点并行处理，这会带来许多困难。</p>
+<h3 id="2-1-分区与复制"><a href="#2-1-分区与复制" class="headerlink" title="2.1 分区与复制"></a>2.1 分区与复制</h3><p>​    分区通常与复制结合使用，使得每个分区的副本存储在多个节点上。这样也可以提高容错性</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220805090337540.png" srcset="/img/loading.gif" lazyload alt="图 6-1 组合使用复制和分区：每个节点充当某些分区的主库，其他分区充当从库。"></p>
+<h3 id="2-2-键值数据的分区"><a href="#2-2-键值数据的分区" class="headerlink" title="2.2 键值数据的分区"></a>2.2 键值数据的分区</h3><p>​    分区目标是将数据和查询负载均匀分布在各个节点上。</p>
+<p><strong>偏斜</strong>：一些分区比其他分区有更多的数据或查询</p>
+<p><strong>热点</strong>：不均衡导致的高负载的分区</p>
+<p>​    分区方法很重要，这能避免部分偏斜情况的发现，下面简单看看几种方法</p>
+<h4 id="2-2-1-根据键的范围分区"><a href="#2-2-1-根据键的范围分区" class="headerlink" title="2.2.1 根据键的范围分区"></a>2.2.1 根据键的范围分区</h4><p>​    该方法是<strong>为每个分区指定一块连续的键范围</strong>。如果知道范围之间的边界，则可以轻松确定哪个分区包含某个值。例如从 书架某个卷拿到需要的书</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220805233420314.png" srcset="/img/loading.gif" lazyload alt="图 6-2 印刷版百科全书按照关键字范围进行分区"></p>
+<p>​    但如果键的范围不是均匀分布，那么数据也会不均匀。</p>
+<p>​    此外，某些特定的访问模式会导致热点。例如主键是时间戳，则分区对应于时间范围，这样给每天分配一个分区，这很容易导致写入过载。</p>
+<h4 id="2-2-2-根据键的散列分区"><a href="#2-2-2-根据键的散列分区" class="headerlink" title="2.2.2 根据键的散列分区"></a>2.2.2 根据键的散列分区</h4><p>​    该方法对键值使用散列函数处理，使得数据可以均匀分布(如果散列函数足够均匀)。例如，Cassandra 和 MongoDB 使用 MD5，Voldemort 使用 Fowler-Noll-Vo 函数。</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220805234240697.png" srcset="/img/loading.gif" lazyload alt="image-20220805234240697"></p>
+<p>​    这里指出一致性哈希最好不要用在这里，通常一致性哈希用于跨互联网级别的缓存系统，例如 CDN 中，是一种能均匀分配负载的方法。</p>
+<p>​    该方法缺点在于：失去了键范围分区的一个很好的属性：高效执行范围查询的能力。在Cassandra中，采用了折中的方法，可以使用由多个列组成的复合主键来声明。键中只有第一列会作为散列的依据，而其他列则被用作 Casssandra 的 SSTables 中排序数据的连接索引。</p>
+<h4 id="2-2-3-负载偏斜与热点消除"><a href="#2-2-3-负载偏斜与热点消除" class="headerlink" title="2.2.3 负载偏斜与热点消除"></a>2.2.3 负载偏斜与热点消除</h4><p>​    虽然分区能够均匀的分配数据，但对于请求同一个键的操作，会导致所有请求都路由到同一个分区，例如秒杀场景下抢购商品，同一个键的大量写入（键可能是商品ID）。</p>
+<p>​    对于这种情况，一般无法自动补偿，所以应用程序有责任去减少偏斜，例如，如果一个主键被认为是非常火爆的，一个简单的方法是在主键的开始或结尾添加一个随机数。只要一个两位数的十进制随机数就可以将主键分散为 100 种不同的主键，从而存储在不同的分区中。</p>
+<p>​    但上述方法的缺点在于读取需要做许多额外操作，因为读取出来的数据需要将其合并。</p>
+<h3 id="2-3-分区与次级索引"><a href="#2-3-分区与次级索引" class="headerlink" title="2.3 分区与次级索引"></a>2.3 分区与次级索引</h3><p>​    直接通过键确定分区就好比MySQL中的聚簇索引，我们可以通过使用次级索引，来实现一些更为复杂的分区操作。</p>
+<p>​    有两种用次级索引对数据库进行分区的方法：<strong>基于文档的分区（document-based）</strong> 和 <strong>基于关键词（term-based）的分区</strong>。</p>
+<h4 id="2-3-1-基于文档的次级索引进行分区"><a href="#2-3-1-基于文档的次级索引进行分区" class="headerlink" title="2.3.1 基于文档的次级索引进行分区"></a>2.3.1 基于文档的次级索引进行分区</h4><p>​    该方法是使用文档ID对数据库进行分区，增加一个次级索引对其过滤。搜索某个区间内的红色汽车先根据键的哈希值找到对应分区，再从次级索引得到对应车的id</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220806143529858.png" srcset="/img/loading.gif" lazyload alt="image-20220806143529858"></p>
+<p>​    该方法的好处是：每个分区是完全独立的，每个分区维护自己的次级索引，仅覆盖该分区中的文档。也就是说，无论何时写入数据库，只需要处理正在编写的文档ID的分区即可。所以该索引又称为本地索引。</p>
+<p>​    但是如果单纯搜索红色汽车，如果没有其他处理，则将查询发送到所有分区，并合并所有返回的结果。这称为 <strong>分散 / 聚集（scatter/gather）</strong>，该代价是有的。</p>
+<h4 id="2-3-2-基于关键词（Term）的次级索引进行分区"><a href="#2-3-2-基于关键词（Term）的次级索引进行分区" class="headerlink" title="2.3.2 基于关键词（Term）的次级索引进行分区"></a>2.3.2 基于关键词（Term）的次级索引进行分区</h4><p>​    该方法构建一个覆盖所有分区数据的 <strong>全局索引</strong>，而不是给每个分区创建自己的次级索引（本地索引）。那么就需要对索引进行分区。例如分区1存储红色的索引，分区2存储白色的索引…。该索引称为<strong>关键词分区</strong>。</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220806150222598.png" srcset="/img/loading.gif" lazyload alt="image-20220806150222598"></p>
+<p>​    好处在于不需要 <strong>分散 / 收集</strong> 所有分区，客户端只需要向包含关键词的分区发出请求。</p>
+<p>​    缺点在于在于写入速度较慢且较为复杂，因为写入单个文档现在可能会影响索引的多个分区（文档中的每个关键词可能位于不同的分区或者不同的节点上） 。</p>
+<h3 id="2-4-分区再平衡"><a href="#2-4-分区再平衡" class="headerlink" title="2.4 分区再平衡"></a>2.4 分区再平衡</h3><p>​    随着时间变化，数据会：查询吞吐量增加，所以你想要添加更多的 CPU 来处理负载；数据集大小增加，所以你想添加更多的磁盘和 RAM 来存储它；机器出现故障，其他机器需要接管故障机器的责任。所有这些都会引发负载从集群中的一个节点向另一个节点移动，该过程称为<strong>再平衡</strong>。</p>
+<p>​    而目标是：</p>
+<ul>
+<li>负载（数据存储，读取和写入请求）应该在集群中的节点之间公平地共享。</li>
+<li>再平衡发生时，数据库应该继续接受读取和写入。</li>
+<li>节点之间只移动必须的数据，以便快速再平衡，并减少网络和磁盘IO</li>
+</ul>
+<h4 id="2-4-1-再平衡策略"><a href="#2-4-1-再平衡策略" class="headerlink" title="2.4.1 再平衡策略"></a>2.4.1 再平衡策略</h4><p class="note note-success">反面教材：hash mod N</p>
+
+<p>​    该方法是指<strong>对键的hash值进行取模然后分配到对应分区</strong>。但问题是，如果节点数量 N 发生变化，大多数键将需要从一个节点移动到另一个节点。例如，假设 $hash(key)=123456$。如果最初有 10 个节点，那么这个键一开始放在节点 6 上（因为 123456 mod 10 = 6）。当你增长到 11 个节点时，键需要移动到节点 3$（123456 mod 11 = 3）$，当你增长到 12 个节点时，需要移动到节点 0$（123456 mod 12 = 0）$。</p>
+<p class="note note-success">固定数量的分区</p>
+
+<p>​    该方法是：创建比节点更多的分区，并为每个节点分配多个分区。如此，如果一个节点被添加到集群中，新节点可以从当前每个节点中 <strong>窃取</strong> 一些分区，直到分区再次公平分配，如果从集群中删除一个节点，则会发生相反的情况。</p>
+<p>​    如此，分区数量不会改变，键所指定的分区也不会改变，唯一改变是分区所在的节点。另外，改变是异步，原有分区仍然接受读写操作</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220806151947914.png" srcset="/img/loading.gif" lazyload alt="image-20220806151947914"></p>
+<p>​    该方法的难点在于分区数量的确定：如果分区非常大，再平衡和从节点故障恢复变得昂贵。但是，如果分区太小，则会产生太多的开销。</p>
+<p class="note note-success">动态分区</p>
+
+<p>​    该方法是<strong>基于键的范围分区的情况，根据分区大小动态创建或删减分区</strong>。也就是当分区增长到超过配置的大小时（在 HBase 上，默认值是 10GB），会被分成两个分区，每个分区约占一半的数据；如果大量数据被删除并且分区缩小到某个阈值以下，则可以将其与相邻分区合并。</p>
+<p>​    分区拆分后，可以将其中的一半转移到另一个节点，以平衡负载。在HBase中，分区文件的传输通过HDFS实现。</p>
+<p>​    优点在于分区数量适应总数据量。如果只有少量的数据，少量的分区就足够了，所以开销很小；如果有大量的数据，每个分区的大小被限制在一个可配置的最大值。</p>
+<p>​    要注意一开始从一个分区开始，由于此时数据集比较小，所有写入操作都必须由单个节点处理，而其他节点则处于空闲状态。所以可以采用预分割。</p>
+<p class="note note-success">按节点比例分区</p>
+
+<p>​    这是将上述两种方法相结合，保证分区数与节点数成正比，也就是<strong>每个节点具有固定数量的分区</strong>。每个分区的大小与数据集大小成比例地增长，而节点数量保持不变，但是当增加节点数时，分区将再次变小。由于较大的数据量通常需要较大数量的节点进行存储，因此这种方法也使每个分区的大小较为稳定。</p>
+<p>​    当一个新节点加入集群时，它随机选择固定数量的现有分区进行拆分，然后占有这些拆分分区中每个分区的一半，同时将每个分区的另一半留在原地。随机化可能会产生不公平的分割，但是平均在更大数量的分区上时（在 Cassandra 中，默认情况下，每个节点有 256 个分区），新节点最终从现有节点获得公平的负载份额。</p>
+<h4 id="2-4-2-运维：手动还是自动再平衡"><a href="#2-4-2-运维：手动还是自动再平衡" class="headerlink" title="2.4.2 运维：手动还是自动再平衡"></a>2.4.2 运维：手动还是自动再平衡</h4><p>​    直接说结论：最好采用应用自动生成建议的分区分配，管理员提交才能生效（自动和手动结合）。</p>
+<h3 id="2-5-请求路由"><a href="#2-5-请求路由" class="headerlink" title="2.5 请求路由"></a>2.5 请求路由</h3><p>​    客户端发出请求，需要知道连接的节点，并且分区再平衡，也需要知道对应节点的位置。这个问题称为<strong>服务发现</strong>。方案有如下：</p>
+<ol>
+<li>允许客户联系任何节点。如果该节点恰巧拥有请求的分区，则它可以直接处理该请求；否则，它将请求转发到适当的节点，接收回复并传递给客户端。</li>
+<li>首先将所有来自客户端的请求发送到路由层，它决定了应该处理请求的节点，并相应地转发。此路由层本身不处理任何请求；它仅负责分区的负载均衡。</li>
+<li>要求客户端知道分区和节点的分配。在这种情况下，客户端可以直接连接到适当的节点，而不需要任何中介</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220806161919339.png" srcset="/img/loading.gif" lazyload alt="image-20220806161919339"></p>
+<p>​    难点在于所有参与者都达成共识 - 否则请求将被发送到错误的节点，得不到正确的处理。 所以又可以依赖一个独立协调服务，比如 ZooKeeper 来跟踪集群元数据，每个节点在 ZooKeeper 中注册自己，ZooKeeper 维护分区到节点的可靠映射。  其他参与者（如路由层或分区感知客户端）可以在 ZooKeeper 中订阅此信息。 只要分区分配发生了改变，或者集群中添加或删除了一个节点，ZooKeeper 就会通知路由层使路由信息保持最新状态。</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220806162140193.png" srcset="/img/loading.gif" lazyload alt="image-20220806162140193"></p>
+<p>​    还有一种方法在节点之间使用 <strong>流言协议</strong> 来传播集群状态的变化。请求可以发送到任意节点，该节点会转发到包含所请求的分区的适当节点。</p>
+<p>​    </p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/DB/" class="category-chain-item">DB</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/DDIA/">#DDIA</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>DDIA第二部分读后感（上）</div>
+      <div>https://2w1nd.github.io/2022/08/07/DDIA第二部分读后感（上）/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>w1nd</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年8月7日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/06/23/DDIA%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86%E8%AF%BB%E5%90%8E%E6%84%9F/" title="DDIA第一部分读后感">
+                        <span class="hidden-mobile">DDIA第一部分读后感</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.4.16/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"4wcDV0Egznc7ygOKEYrQ8Nqg-gzGzoHsz","appKey":"A7xf01gO28vify5BlDfL0REw","path":"window.location.pathname","placeholder":"欢迎评论~","avatar":"mp","meta":["nick","mail","link"],"requiredFields":["nick"],"pageSize":10,"lang":"zh-CN","highlight":true,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<!-- hexo injector body_end start -->
+  <script src="/js/particles.js"></script>
+
+  <script src="/js/particles.min.js"></script>
+
+  <div id="particles-js"></div>
+<!-- hexo injector body_end end --></body>
+</html>
