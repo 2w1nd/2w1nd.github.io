@@ -25,13 +25,14 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220603214620442.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604151826962.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220818225923952.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604161023505.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604163646996.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604165301106.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604165406230.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604194332093.png">
 <meta property="article:published_time" content="2022-06-03T12:32:46.000Z">
-<meta property="article:modified_time" content="2022-07-18T15:45:21.948Z">
+<meta property="article:modified_time" content="2022-08-18T15:58:48.344Z">
 <meta property="article:author" content="w1nd">
 <meta property="article:tag" content="OS">
 <meta name="twitter:card" content="summary_large_image">
@@ -232,7 +233,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.6k 字
+          1.8k 字
         
       </span>
     
@@ -243,7 +244,7 @@
         
         
         
-          14 分钟
+          16 分钟
         
       </span>
     
@@ -306,9 +307,21 @@
 <blockquote>
 <p>​    64位和32位的机器区别在于运算的数据大小以及寻址空间的大小。</p>
 </blockquote>
-<h3 id="1-2-存储器"><a href="#1-2-存储器" class="headerlink" title="1.2 存储器"></a>1.2 存储器</h3><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604161023505.png" srcset="/img/loading.gif" lazyload alt="存储器层次结构"></p>
+<h3 id="1-2-微内核与宏内核"><a href="#1-2-微内核与宏内核" class="headerlink" title="1.2 微内核与宏内核"></a>1.2 微内核与宏内核</h3><p>​    宏内核：将整个系统分为内核和应用两层。内核运行在特权级，应用运行在非特权级。优点在于生态好；缺点安全性可靠性不行，系统过于复杂。</p>
+<p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220818225923952.png" srcset="/img/loading.gif" lazyload alt="宏内核"></p>
+<p>​    微内核：将操作系统功能移到用户态，使用消息机制通信</p>
+<p>特点</p>
+<ul>
+<li>使用任务作为资源调度的基本单位，线程为执行单位</li>
+<li>进程间通过端口通信</li>
+<li>允许用户态处理系统调用</li>
+<li>允许用户态的多进程，一个或多个用户态线程可映射到同一个内核线程</li>
+<li>允许用户态管理自己的虚拟内存</li>
+</ul>
+<p>​    优点在于易于扩展，安全可靠，易于移植；缺点是性能差（模块间函数调用变成进程间通信），生态不行。</p>
+<h3 id="1-3-存储器"><a href="#1-3-存储器" class="headerlink" title="1.3 存储器"></a>1.3 存储器</h3><p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604161023505.png" srcset="/img/loading.gif" lazyload alt="存储器层次结构"></p>
 <p>​    寄存器的读取速度一般为0.5ns；CPU Cache由L1到L3读取速度逐渐变慢，容量变大，L1 <code>1ns</code>，L2 <code>2ns</code>，L3 <code>3ns</code>（注：SRAM：静态随机存取存储器，断电数据即失）。内存：<code>100ns</code>，（注：DRAM：动态随机存取存储器）。本地磁盘HDD/SDD：HDD也就是磁盘，SDD也就是固态硬盘，前者速度比内存慢10W倍，后者慢10~100倍。</p>
-<h3 id="1-3-CPU-Cache"><a href="#1-3-CPU-Cache" class="headerlink" title="1.3 CPU Cache"></a>1.3 CPU Cache</h3><p>​    CPU Cache L1，L2都是每个CPU独有的，而L3是共享的</p>
+<h3 id="1-4-CPU-Cache"><a href="#1-4-CPU-Cache" class="headerlink" title="1.4 CPU Cache"></a>1.4 CPU Cache</h3><p>​    CPU Cache L1，L2都是每个CPU独有的，而L3是共享的</p>
 <p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604163646996.png" srcset="/img/loading.gif" lazyload alt="Cpu Cache（来自小林图解系统）"></p>
 <p>​    CPU访问内存数据，是一小块数据读取的，在内存中称为<strong>内存块（Block）</strong>。而不同的Block会映射到同一个Cache Line上，这样，当CPU想要访问某个Block，会先通过取模去访问某个Cache Line。这种策略称为<strong>直接相联映射</strong>。</p>
 <p><img src="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220604165301106.png" srcset="/img/loading.gif" lazyload alt="image-20220604165301106"></p>
