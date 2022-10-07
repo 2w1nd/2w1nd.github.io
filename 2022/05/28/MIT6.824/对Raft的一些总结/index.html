@@ -26,7 +26,7 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220602195113739.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/2w1nd/pic-bed/main/blog/image-20220602211908893.png">
 <meta property="article:published_time" content="2022-05-28T13:32:56.000Z">
-<meta property="article:modified_time" content="2022-09-25T12:24:26.992Z">
+<meta property="article:modified_time" content="2022-10-07T10:58:18.271Z">
 <meta property="article:author" content="w1nd">
 <meta property="article:tag" content="Raft">
 <meta name="twitter:card" content="summary_large_image">
@@ -227,7 +227,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          5.1k 字
+          5.4k 字
         
       </span>
     
@@ -238,7 +238,7 @@
         
         
         
-          43 分钟
+          45 分钟
         
       </span>
     
@@ -376,8 +376,9 @@
 <li>Leader等待自己的状态机执行，直到<code>apply index 超过 ReadIndex</code>，这样就能提供线性读了</li>
 <li>Leader也可以执行Read请求，将结果返回给client</li>
 </ol>
-<p>Lease Read</p>
-<p>​    </p>
+<p><strong>Lease Read</strong></p>
+<p>​    Read Index的优化方式会多出一次heartbeat的开销，在论文中还提到一种通过 clock + heartbeat 的 lease read 优化方法。就是 leader 发送 heartbeat 的时候，会：首先记录一个时间点 start，当系统大部分节点都回复了 heartbeat response，那么我们就可以认为 leader 的 lease 有效期可以到 <code>start + election timeout / clock drift bound</code>这个时间点。</p>
+<p>​    也就是在上述Read Index的2步骤通过该方法判断是否为leader，会减少这次开销</p>
 <p><strong>Asynchronous Apply</strong></p>
 <p>​    由于一旦log被commited了，被commited的log在任何时候被apply都不会影响数据的一致性，当一个log被commited之后，我们可以用另一个线程去异步apply这个log。</p>
 <ol>
